@@ -1,27 +1,14 @@
 # Tesseract
 
-[![Build Status](https://travis-ci.com/ros-industrial-consortium/tesseract.svg?branch=master)](https://travis-ci.com/ros-industrial-consortium/tesseract)
-[![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
+[![Build Status](https://travis-ci.com/ros-industrial-consortium/tesseract_ros1.svg?branch=master)](https://travis-ci.com/ros-industrial-consortium/tesseract_ros1)
+[![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract_ros1.svg)](http://github.com/ros-industrial-consortium/tesseract_ros1/issues)
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![license - bsd 2 clause](https://img.shields.io/:license-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 [![support level: consortium](https://img.shields.io/badge/support%20level-consortium-brightgreen.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
 
-The planning framework (Tesseract) was designed to be light weight, limiting the number of dependencies, mainly only using standard libraries like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
-
-## Tesseract Core Packages
-
-* **tesseract** – This is the main class that manages the major component Environment, Forward Kinematics, Inverse Kinematics and loading from various data.
-* **tesseract_collision** – This package contains privides a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.
-* **tesseract_common** – This package contains common functionality needed by the majority of the packages.
-* **tesseract_environment** – This package contains the Tesseract Environment which provides functionality to add,remove,move and modify links and joint. It also manages adding object to the contact managers and provides the ability.
-* **tesseract_geometry** – This package contains geometry types used by Tesseract including primitive shapes, mesh, convex hull mesh, octomap and signed distance field.
-* **tesseract_kinematics** –  This package contains a common interface for Forward and Inverse kinematics for Chain, Tree's and Graphs including implementation using KDL and OPW Kinematics.
-* **tesseract_motion_planners** – This package contains a common interface for Motion Planners and includes implementation for OMPL, TrajOpt and Descartes.
-* **tesseract_scene_graph** – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.
-* **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
-* **tesseract_visualization** – This package contains visualization utilities and libraries.
+The planning framework (Tesseract) was designed to be light weight, limiting the number of dependencies, mainly only using standard libraries like, eigen, boost, orocos and to the packages below.
 
 ## Tesseract ROS Packages
 
