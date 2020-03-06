@@ -36,13 +36,36 @@
 #include <tesseract_geometry/geometry_loaders.h>
 %}
 
+%include <std_shared_ptr.i>
+%include <std_string.i>
+%include <std_vector.i>
+%include <std_pair.i>
+%include <std_map.i>
+%include <std_unordered_map.i>
+%include <stdint.i>
+%include <attribute.i>
+%include <exception.i>
+
+%exception {
+  try {
+    $action
+  }
+  SWIG_CATCH_STDEXCEPT
+}
+
+%feature("director:except") {
+    if ($error != NULL) {
+        throw Swig::DirectorMethodException();
+    }
+}
 
 %include "../eigen.i"
 %include "../shared_factory.i"
 %include "../json_typemaps.i"
 %include "../eigen_types.i"
 
-%import "../tesseract_python.i"
+// Why was this needed?
+//%import "tesseract_python.i"
 
 %include "rosmsg_typemaps.i"
 

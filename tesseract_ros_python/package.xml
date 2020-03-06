@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tesseract_python</name>
+  <name>tesseract_ros_python</name>
   <version>0.1.0</version>
-  <description>The tesseract_python package</description>
+  <description>The tesseract_ros_python package</description>
   <maintainer email="wason@wasontech.com">John Wason</maintainer>
   <license>Apache 2.0</license>
   <author >John Wason</author>

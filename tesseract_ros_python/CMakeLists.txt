@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_python)
+project(tesseract_ros_python)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Read version
-FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml" tesseract_python_version1 REGEX "<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
-IF ("${tesseract_python_version1}" STREQUAL "" )
-MESSAGE(FATAL_ERROR "Could not read tesseract_python version.")
+FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml" tesseract_ros_python_version1 REGEX "<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
+IF ("${tesseract_ros_python_version1}" STREQUAL "" )
+MESSAGE(FATAL_ERROR "Could not read tesseract_ros_python version.")
 ENDIF()
-STRING (REGEX REPLACE "<version>([0-9]+\\.[0-9]+\\.[0-9]+)</version>" "\\1" tesseract_python_version ${tesseract_python_version1})
-MESSAGE(STATUS "tesseract_python version: ${tesseract_python_version}")
+STRING (REGEX REPLACE "<version>([0-9]+\\.[0-9]+\\.[0-9]+)</version>" "\\1" tesseract_ros_python_version ${tesseract_ros_python_version1})
+MESSAGE(STATUS "tesseract_ros_python version: ${tesseract_ros_python_version}")
 
 if (NOT MSVC)
   #add_compile_options(-std=c++11 -Wall -Wextra -Wno-write-strings -Wno-unused-paramete -Wno-suggest-override)
@@ -56,44 +56,6 @@ include(FindSWIG)
 find_package(SWIG 4.0 REQUIRED)
 include(UseSWIG)
 
-# Primary tesseract_python library
-
-set(SWIG_CXX_EXTENSION cxx)
-set_property(SOURCE swig/tesseract_python.i PROPERTY CPLUSPLUS ON)
-if (${PYTHON_VERSION_MAJOR} LESS 3)
-set_property(SOURCE swig/tesseract_python.i PROPERTY SWIG_FLAGS -relativeimport -threads)
-else()
-set_property(SOURCE swig/tesseract_python.i PROPERTY SWIG_FLAGS -relativeimport -threads -py3)
-endif()
-
-set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract)
-set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-swig_add_module(tesseract_python python swig/tesseract_python.i)
-swig_link_libraries(tesseract_python tesseract::tesseract_motion_planners_trajopt tesseract::tesseract_motion_planners_core tesseract::tesseract_visualization tesseract::tesseract trajopt::trajopt ${PYTHON_LIBRARIES} ${EIGEN3_LIBRARIES} ${PYTHON_LIBRARIES})
-target_include_directories(${SWIG_MODULE_tesseract_python_REAL_NAME} PUBLIC 
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/swig>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${SWIG_MODULE_tesseract_python_REAL_NAME}  SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${TinyXML2_INCLUDE_DIRS}
-	${PYTHON_INCLUDE_DIRS}
-	${NUMPY_INCLUDE_DIR}
-    $<TARGET_PROPERTY:tesseract::tesseract,INTERFACE_INCLUDE_DIRECTORIES>)
-
-set_target_properties(${SWIG_MODULE_tesseract_python_REAL_NAME}
-  PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract)
-set_target_properties(${SWIG_MODULE_tesseract_python_REAL_NAME}
-  PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract)
-set_target_properties(${SWIG_MODULE_tesseract_python_REAL_NAME}
-  PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract)
-
-add_custom_command(TARGET ${SWIG_MODULE_tesseract_python_REAL_NAME} POST_BUILD COMMAND 
-${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swig/__init__.py
-$<SHELL_PATH:$<TARGET_FILE_DIR:${SWIG_MODULE_tesseract_python_REAL_NAME}>>/__init__.py)
-
 # Check for ROS support
 find_package(tesseract_msgs)
 find_package(tesseract_rosutils)
@@ -108,17 +70,18 @@ if(NOT WIN32 AND tesseract_msgs_FOUND AND tesseract_rosutils_FOUND AND geometry_
 message(STATUS "Found Tesseract ROS support, building tesseract_ros_python")
 set (BUILD_TESSERACT_ROS_PYTHON ON CACHE BOOL "Build tesseract_ros_python module")
 else()
+message(WARNING "Tesseract ROS support not found. Tesseract_ros_python will not be built")
 set (BUILD_TESSERACT_ROS_PYTHON OFF CACHE BOOL "Build tesseract_ros_python module")
 endif()
 
 if(BUILD_TESSERACT_ROS_PYTHON)
   set(SWIG_CXX_EXTENSION cxx)
-  set_property(SOURCE swig/ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
-  set_property(SOURCE swig/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads)
+  set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads )
 
   set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract_ros)
   set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-  swig_add_module(tesseract_ros_python python swig/ros/tesseract_ros_python.i)
+  swig_add_module(tesseract_ros_python python swig/tesseract_ros/tesseract_ros_python.i)
   swig_link_libraries(tesseract_ros_python 
     ${tesseract_rosutils_LIBRARIES}
     ${tesseract_msgs_LIBRARIES}
@@ -151,7 +114,7 @@ if(BUILD_TESSERACT_ROS_PYTHON)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract_ros)
 
   add_custom_command(TARGET ${SWIG_MODULE_tesseract_ros_python_REAL_NAME} POST_BUILD COMMAND 
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swig/ros/__init__.py
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swig/tesseract_ros/__init__.py
     $<SHELL_PATH:$<TARGET_FILE_DIR:${SWIG_MODULE_tesseract_ros_python_REAL_NAME}>>/__init__.py)
 
 endif()
