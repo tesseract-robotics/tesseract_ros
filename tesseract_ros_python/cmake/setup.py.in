@@ -7,17 +7,16 @@ class BinaryDistribution(Distribution):
     def has_ext_modules(foo):
         return True
 
-setup(name='tesseract',
-      version='@tesseract_python_version@',
-      description='Tesseract Python Library',
+setup(name='tesseract_ros',
+      version='@tesseract_ros_python_version@',
+      description='Tesseract_ros Python Library',
       author='John Wason',
       author_email='wason@wasontech.com',
       url='http://robotraconteur.com/',
-      packages=['tesseract','tesseract_ros'],
-      package_data={'tesseract': ['_tesseract_python.pyd', '_tesseract_python.so'], \
-          'tesseract_ros': ['_tesseract_ros_python.pyd', '_tesseract_ros_python.so']},
+      packages=['tesseract_ros'],
+      package_data={'tesseract_ros': ['_tesseract_ros_python.pyd', '_tesseract_ros_python.so']},
 	  distclass=BinaryDistribution,
 	  license='Apache-2.0',
 	  install_requires=['numpy'],
-	  long_description='Tesseract package for Python'
+      long_description='Tesseract_ros package for Python'
      )
