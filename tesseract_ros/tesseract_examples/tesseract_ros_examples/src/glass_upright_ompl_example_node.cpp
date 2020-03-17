@@ -1,13 +1,13 @@
 /**
- * @file glass_up_right_example_node.cpp
- * @brief Glass up right example node
+ * @file glass_upright_example_node.cpp
+ * @brief Glass upright example node
  *
  * @author Levi Armstrong
- * @date July 22, 2019
+ * @date March 16, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -24,13 +24,13 @@
  * limitations under the License.
  */
 
-#include <tesseract_ros_examples/glass_up_right_ompl_example.h>
+#include <tesseract_ros_examples/glass_upright_ompl_example.h>
 
 using namespace tesseract_ros_examples;
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "glass_up_right_ompl_example_node");
+  ros::init(argc, argv, "glass_upright_ompl_example_node");
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
@@ -49,6 +49,6 @@ int main(int argc, char** argv)
   pnh.param("use_trajopt_constraint", use_trajopt_constraint, use_trajopt_constraint);
   pnh.param("planning_time", planning_time, planning_time);
 
-  GlassUpRightOMPLExample example(nh, plotting, rviz, range, use_constraint, use_trajopt_constraint, planning_time);
+  GlassUprightOMPLExample example(nh, plotting, rviz, range, use_constraint, use_trajopt_constraint, planning_time);
   example.run();
 }

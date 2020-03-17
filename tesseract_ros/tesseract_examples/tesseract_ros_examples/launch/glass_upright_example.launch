@@ -10,7 +10,7 @@
   <arg name="testing" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
-  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/glass_up_right_plan.json"/>
+  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/glass_upright_plan.json"/>
 
   <!-- Load universal robot description format (URDF) -->
   <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find tesseract_ros_examples)/urdf/lbr_iiwa_14_r820.xacro'" />
@@ -32,14 +32,14 @@
     <!-- If needed, broadcast static tf for robot root -->
     <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_glass_up_right_example_node" name="tesseract_ros_examples_glass_up_right_example_node">
+    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_glass_upright_example_node" name="tesseract_ros_examples_glass_upright_example_node">
       <param name="plotting" type="bool" value="$(arg plotting)"/>
       <param name="write_to_file" type="bool" value="$(arg write_to_file)"/>
       <param name="rviz" type="bool" value="$(arg rviz)"/>
     </node>
 
     <!-- Launch visualization -->
-    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_glass_up_right_example_rviz"
+    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_glass_upright_example_rviz"
         args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
   </group>
 

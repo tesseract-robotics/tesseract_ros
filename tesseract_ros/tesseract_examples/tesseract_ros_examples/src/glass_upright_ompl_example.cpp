@@ -1,13 +1,13 @@
 /**
- * @file glass_up_right_example.cpp
- * @brief Glass up right example implementation
+ * @file glass_upright_example.cpp
+ * @brief Glass upright example implementation
  *
  * @author Levi Armstrong
- * @date July 22, 2019
+ * @date March 16, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_ros_examples/glass_up_right_ompl_example.h>
+#include <tesseract_ros_examples/glass_upright_ompl_example.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/config/utils.h>
-#ifndef OMPL_LESS_1_4_0
+#ifndef OMPL_LESS_1_4_0  // Prior to version 1.4 constraints were not supported.
 #include <tesseract_motion_planners/ompl/config/ompl_planner_constrained_config.h>
 #endif
 
@@ -61,7 +61,7 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 namespace tesseract_ros_examples
 {
-#ifndef OMPL_LESS_1_4_0
+#ifndef OMPL_LESS_1_4_0  // Prior to version 1.4 constraints were not supported.
 class TrajOptGlassUprightConstraint : public ompl::base::Constraint
 {
 public:
@@ -205,7 +205,7 @@ private:
 
 #endif
 
-GlassUpRightOMPLExample::GlassUpRightOMPLExample(const ros::NodeHandle& nh,
+GlassUprightOMPLExample::GlassUprightOMPLExample(const ros::NodeHandle& nh,
                                                  bool plotting,
                                                  bool rviz,
                                                  double range,
@@ -221,7 +221,7 @@ GlassUpRightOMPLExample::GlassUpRightOMPLExample(const ros::NodeHandle& nh,
 {
 }
 
-bool GlassUpRightOMPLExample::run()
+bool GlassUprightOMPLExample::run()
 {
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
