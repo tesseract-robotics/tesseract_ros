@@ -1,6 +1,6 @@
 /**
- * @file glass_up_right_example_node.cpp
- * @brief Glass up right example node
+ * @file glass_upright_example_node.cpp
+ * @brief Glass upright example node
  *
  * @author Levi Armstrong
  * @date July 22, 2019
@@ -24,13 +24,13 @@
  * limitations under the License.
  */
 
-#include <tesseract_ros_examples/glass_up_right_example.h>
+#include <tesseract_ros_examples/glass_upright_example.h>
 
 using namespace tesseract_ros_examples;
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "glass_up_right_example_node");
+  ros::init(argc, argv, "glass_upright_example_node");
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
@@ -47,6 +47,6 @@ int main(int argc, char** argv)
   pnh.param<int>("steps", steps, steps);
   pnh.param<bool>("write_to_file", write_to_file, write_to_file);
 
-  GlassUpRightExample example(nh, plotting, rviz, steps, write_to_file, method);
+  GlassUprightExample example(nh, plotting, rviz, steps, write_to_file, method);
   example.run();
 }

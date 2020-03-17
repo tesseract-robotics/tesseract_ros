@@ -1,13 +1,13 @@
 /**
- * @file glass_up_right_example.h
+ * @file glass_upright_example.h
  * @brief An example of a robot with fixed orientation but free to move in cartesian space.
  *
  * @author Levi Armstrong
- * @date July 22, 2018
+ * @date March 16, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_ROS_EXAMPLES_GLASS_UP_RIGHT_EXAMPLE_H
-#define TESSERACT_ROS_EXAMPLES_GLASS_UP_RIGHT_EXAMPLE_H
+#ifndef TESSERACT_ROS_EXAMPLES_GLASS_UPRIGHT_OMPL_EXAMPLE_H
+#define TESSERACT_ROS_EXAMPLES_GLASS_UPRIGHT_OMPL_EXAMPLE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -39,38 +39,34 @@ namespace tesseract_ros_examples
 {
 /**
  * @brief An example of a robot with fixed orientation but free to move in cartesian space
- * leveraging tesseract and trajopt to generate a motion trajectory.
+ * leveraging OMPL RRTConnect to generate a motion trajectory.
  */
-class GlassUpRightExample : public Example
+class GlassUprightOMPLExample : public Example
 {
 public:
-  GlassUpRightExample(const ros::NodeHandle& nh,
-                      bool plotting,
-                      bool rviz,
-                      int steps,
-                      bool write_to_file,
-                      std::string method)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(std::move(method))
-  {
-  }
-  ~GlassUpRightExample() override = default;
-  GlassUpRightExample(const GlassUpRightExample&) = default;
-  GlassUpRightExample& operator=(const GlassUpRightExample&) = default;
-  GlassUpRightExample(GlassUpRightExample&&) = default;
-  GlassUpRightExample& operator=(GlassUpRightExample&&) = default;
+  GlassUprightOMPLExample(const ros::NodeHandle& nh,
+                          bool plotting,
+                          bool rviz,
+                          double range,
+                          bool use_constraint,
+                          bool use_trajopt_constraint,
+                          double planning_time);
+  ~GlassUprightOMPLExample() override = default;
+  GlassUprightOMPLExample(const GlassUprightOMPLExample&) = default;
+  GlassUprightOMPLExample& operator=(const GlassUprightOMPLExample&) = default;
+  GlassUprightOMPLExample(GlassUprightOMPLExample&&) = default;
+  GlassUprightOMPLExample& operator=(GlassUprightOMPLExample&&) = default;
 
   bool run() override;
 
 private:
   ros::NodeHandle nh_;
-  int steps_;
-  bool write_to_file_;
-  std::string method_;
-
-  trajopt::TrajOptProb::Ptr jsonMethod();
-  trajopt::TrajOptProb::Ptr cppMethod();
+  double range_;
+  bool use_constraint_;
+  bool use_trajopt_constraint_;
+  double planning_time_;
 };
 
 }  // namespace tesseract_ros_examples
 
-#endif  // TESSERACT_ROS_EXAMPLES_GLASS_UP_RIGHT_EXAMPLE_H
+#endif  // TESSERACT_ROS_EXAMPLES_GLASS_UPRIGHT_OMPL_EXAMPLE_H

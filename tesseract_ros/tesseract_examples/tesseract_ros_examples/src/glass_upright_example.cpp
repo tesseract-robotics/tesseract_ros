@@ -1,6 +1,6 @@
 /**
- * @file glass_up_right_example.cpp
- * @brief Glass up right example implementation
+ * @file glass_upright_example.cpp
+ * @brief Glass upright example implementation
  *
  * @author Levi Armstrong
  * @date July 22, 2019
@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_ros_examples/glass_up_right_example.h>
+#include <tesseract_ros_examples/glass_upright_example.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
@@ -56,7 +56,7 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 namespace tesseract_ros_examples
 {
-TrajOptProb::Ptr GlassUpRightExample::jsonMethod()
+TrajOptProb::Ptr GlassUprightExample::jsonMethod()
 {
   ros::NodeHandle nh;
   std::string trajopt_config;
@@ -74,7 +74,7 @@ TrajOptProb::Ptr GlassUpRightExample::jsonMethod()
   return ConstructProblem(root, tesseract_);
 }
 
-TrajOptProb::Ptr GlassUpRightExample::cppMethod()
+TrajOptProb::Ptr GlassUprightExample::cppMethod()
 {
   ProblemConstructionInfo pci(tesseract_);
 
@@ -162,7 +162,7 @@ TrajOptProb::Ptr GlassUpRightExample::cppMethod()
   return ConstructProblem(pci);
 }
 
-bool GlassUpRightExample::run()
+bool GlassUprightExample::run()
 {
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
