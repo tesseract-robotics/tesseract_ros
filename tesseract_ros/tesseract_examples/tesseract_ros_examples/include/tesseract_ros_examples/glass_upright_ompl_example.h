@@ -1,5 +1,5 @@
 /**
- * @file glass_upright_example.h
+ * @file glass_upright_ompl_example.h
  * @brief An example of a robot with fixed orientation but free to move in cartesian space.
  *
  * @author Levi Armstrong
@@ -48,7 +48,6 @@ public:
                           bool plotting,
                           bool rviz,
                           double range,
-                          bool use_constraint,
                           bool use_trajopt_constraint,
                           double planning_time);
   ~GlassUprightOMPLExample() override = default;
@@ -62,7 +61,6 @@ public:
 private:
   ros::NodeHandle nh_;
   double range_;
-  bool use_constraint_;
   bool use_trajopt_constraint_;
   double planning_time_;
 };

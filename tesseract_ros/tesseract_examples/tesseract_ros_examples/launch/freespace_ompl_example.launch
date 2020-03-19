@@ -7,7 +7,6 @@
   <arg name="rviz" default="true"/>
   <arg name="testing" default="false"/>
   <arg name="range" default="0.01"/>
-  <arg name="use_constraint" default="false"/>
   <arg name="planning_time" default="10.0"/>
 
   <!-- Load universal robot description format (URDF) -->
@@ -30,16 +29,15 @@
     <!-- If needed, broadcast static tf for robot root -->
     <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_glass_upright_ompl_example_node" name="tesseract_ros_examples_glass_upright_ompl_example_node">
+    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_freespace_ompl_example_node" name="tesseract_ros_examples_freespace_ompl_example_node">
       <param name="plotting" type="bool" value="$(arg plotting)"/>
       <param name="rviz" type="bool" value="$(arg rviz)"/>
       <param name="range" type="double" value="$(arg range)"/>
-      <param name="use_constraint" type="bool" value="$(arg use_constraint)"/>
       <param name="planning_time" type="double" value="$(arg planning_time)"/>
     </node>
 
     <!-- Launch visualization -->
-    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_glass_upright_ompl_example_rviz"
+    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_freespace_ompl_example_rviz"
         args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
   </group>
 

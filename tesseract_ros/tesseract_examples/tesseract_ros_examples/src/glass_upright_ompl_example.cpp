@@ -1,6 +1,6 @@
 /**
- * @file glass_upright_example.cpp
- * @brief Glass upright example implementation
+ * @file glass_upright_ompl_example.cpp
+ * @brief Glass upright OMPL example implementation
  *
  * @author Levi Armstrong
  * @date March 16, 2020
@@ -40,9 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/config/utils.h>
-#ifndef OMPL_LESS_1_4_0  // Prior to version 1.4 constraints were not supported.
 #include <tesseract_motion_planners/ompl/config/ompl_planner_constrained_config.h>
-#endif
 
 using namespace trajopt;
 using namespace tesseract;
@@ -61,7 +59,6 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 namespace tesseract_ros_examples
 {
-#ifndef OMPL_LESS_1_4_0  // Prior to version 1.4 constraints were not supported.
 class TrajOptGlassUprightConstraint : public ompl::base::Constraint
 {
 public:
@@ -203,19 +200,15 @@ private:
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin_;
 };
 
-#endif
-
 GlassUprightOMPLExample::GlassUprightOMPLExample(const ros::NodeHandle& nh,
                                                  bool plotting,
                                                  bool rviz,
                                                  double range,
-                                                 bool use_constraint,
                                                  bool use_trajopt_constraint,
                                                  double planning_time)
   : Example(plotting, rviz)
   , nh_(nh)
   , range_(range)
-  , use_constraint_(use_constraint)
   , use_trajopt_constraint_(use_trajopt_constraint)
   , planning_time_(planning_time)
 {
@@ -246,6 +239,9 @@ bool GlassUprightOMPLExample::run()
     // Check RViz to make sure nothing has changed
     if (!checkRviz())
       return false;
+
+    ROS_ERROR("Press enter to continue");
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
 
   // Add sphere to environment
@@ -291,67 +287,34 @@ bool GlassUprightOMPLExample::run()
   // Setup Problem
   tesseract_motion_planners::OMPLMotionPlanner ompl_planner;
 
-  tesseract_motion_planners::OMPLPlannerConfig::Ptr ompl_config;
-  if (use_constraint_)
+  auto ompl_config =
+      std::make_shared<tesseract_motion_planners::OMPLPlannerConstrainedConfig>(tesseract_, "manipulator");
+
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  ompl_config->collision_safety_margin = 0.01;
+  ompl_config->planning_time = planning_time_;
+  ompl_config->max_solutions = 2;
+  ompl_config->longest_valid_segment_fraction = 0.01;
+
+  ompl_config->collision_continuous = false;
+  ompl_config->collision_check = false;
+  ompl_config->simplify = false;
+  ompl_config->n_output_states = 50;
+
+  if (use_trajopt_constraint_)
   {
-#ifndef OMPL_LESS_1_4_0
-    auto ompl_cnt_config =
-        std::make_shared<tesseract_motion_planners::OMPLPlannerConstrainedConfig>(tesseract_, "manipulator");
-
-    ompl_cnt_config->start_waypoint =
-        std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-    ompl_cnt_config->end_waypoint =
-        std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
-    ompl_cnt_config->collision_safety_margin = 0.01;
-    ompl_cnt_config->planning_time = planning_time_;
-    ompl_cnt_config->max_solutions = 2;
-    ompl_cnt_config->longest_valid_segment_fraction = 0.01;
-
-    ompl_cnt_config->collision_continuous = false;
-    ompl_cnt_config->collision_check = false;
-    ompl_cnt_config->simplify = false;
-    ompl_cnt_config->n_output_states = 50;
-
-    if (use_trajopt_constraint_)
-    {
-      if (plotting_)
-        ompl_cnt_config->constraint =
-            std::make_shared<TrajOptGlassUprightConstraint>(tesseract_, kin, "manipulator", "tool0", plotter);
-      else
-        ompl_cnt_config->constraint =
-            std::make_shared<TrajOptGlassUprightConstraint>(tesseract_, kin, "manipulator", "tool0", nullptr);
-    }
+    if (plotting_)
+      ompl_config->constraint =
+          std::make_shared<TrajOptGlassUprightConstraint>(tesseract_, kin, "manipulator", "tool0", plotter);
     else
-    {
-      Eigen::Vector3d normal = -1.0 * Eigen::Vector3d::UnitZ();
-      ompl_cnt_config->constraint = std::make_shared<GlassUprightConstraint>(normal, kin);
-    }
-    ompl_config = ompl_cnt_config;
-#else
-    ROS_ERROR("Constraints are not supported in OMPL versions less than 1.4.0");
-    return false;
-#endif
+      ompl_config->constraint =
+          std::make_shared<TrajOptGlassUprightConstraint>(tesseract_, kin, "manipulator", "tool0", nullptr);
   }
   else
   {
-    auto ompl_freespace_config =
-        std::make_shared<tesseract_motion_planners::OMPLPlannerFreespaceConfig>(tesseract_, "manipulator");
-
-    ompl_freespace_config->start_waypoint =
-        std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-    ompl_freespace_config->end_waypoint =
-        std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
-    ompl_freespace_config->collision_safety_margin = 0.01;
-    ompl_freespace_config->planning_time = planning_time_;
-    ompl_freespace_config->max_solutions = 2;
-    ompl_freespace_config->longest_valid_segment_fraction = 0.01;
-
-    ompl_freespace_config->collision_continuous = false;
-    ompl_freespace_config->collision_check = false;
-    ompl_freespace_config->simplify = false;
-    ompl_freespace_config->n_output_states = 50;
-
-    ompl_config = ompl_freespace_config;
+    Eigen::Vector3d normal = -1.0 * Eigen::Vector3d::UnitZ();
+    ompl_config->constraint = std::make_shared<GlassUprightConstraint>(normal, kin);
   }
 
   for (int i = 0; i < 4; ++i)
@@ -402,6 +365,10 @@ bool GlassUprightOMPLExample::run()
     ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 
     plotter->plotTrajectory(kin->getJointNames(), traj);
+  }
+  else
+  {
+    ROS_ERROR("Failed to find a valid trajector: %s", status.message().c_str());
   }
 
   return true;

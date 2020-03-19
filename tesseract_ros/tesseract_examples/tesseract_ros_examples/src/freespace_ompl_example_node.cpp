@@ -1,6 +1,6 @@
 /**
- * @file glass_upright_ompl_example_node.cpp
- * @brief Glass upright OMPL example node
+ * @file freespace_ompl_example_node.cpp
+ * @brief An example of a feespace motion planning with OMPL.
  *
  * @author Levi Armstrong
  * @date March 16, 2020
@@ -24,29 +24,27 @@
  * limitations under the License.
  */
 
-#include <tesseract_ros_examples/glass_upright_ompl_example.h>
+#include <tesseract_ros_examples/freespace_ompl_example.h>
 
 using namespace tesseract_ros_examples;
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "glass_upright_ompl_example_node");
+  ros::init(argc, argv, "freespace_ompl_example_node");
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
   bool plotting = true;
   bool rviz = true;
   double range = 0.01;
-  bool use_trajopt_constraint = false;
   double planning_time = 60.0;
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
   pnh.param("range", range, range);
-  pnh.param("use_trajopt_constraint", use_trajopt_constraint, use_trajopt_constraint);
   pnh.param("planning_time", planning_time, planning_time);
 
-  GlassUprightOMPLExample example(nh, plotting, rviz, range, use_trajopt_constraint, planning_time);
+  FreespaceOMPLExample example(nh, plotting, rviz, range, planning_time);
   example.run();
 }
