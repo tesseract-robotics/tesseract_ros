@@ -226,7 +226,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
 
   // If current state is not visible must set trajectory for all links for a single state so static
   // objects will be visible
-  for (const auto& tf : states_data[0]->transforms)
+  for (const auto& tf : states_data[0]->link_transforms)
   {
     LinkWidget* lw = visualization_->getLink(tf.first);
     lw->clearTrajectory();
@@ -242,7 +242,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     link_trajectory.reserve(states_data.size());
     for (auto& state : states_data)
     {
-      link_trajectory.push_back(state->transforms[link_name]);
+      link_trajectory.push_back(state->link_transforms[link_name]);
     }
     visualization_->getLink(link_name)->setTrajectory(link_trajectory);
   }

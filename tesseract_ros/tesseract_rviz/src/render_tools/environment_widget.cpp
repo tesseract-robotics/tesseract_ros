@@ -159,7 +159,7 @@ void EnvironmentWidget::onUpdate()
   if (visualization_ && update_required_ && tesseract_->getEnvironment())
   {
     update_required_ = false;
-    visualization_->update(tesseract_->getEnvironment()->getCurrentState()->transforms);
+    visualization_->update(tesseract_->getEnvironment()->getCurrentState()->link_transforms);
   }
 }
 

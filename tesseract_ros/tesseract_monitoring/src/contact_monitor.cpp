@@ -123,7 +123,7 @@ void ContactMonitor::computeCollisionReportThread()
       tess_->getEnvironment()->setState(msg->name, msg->position);
       tesseract_environment::EnvState::ConstPtr state = tess_->getEnvironment()->getCurrentState();
 
-      manager_->setCollisionObjectsTransform(state->transforms);
+      manager_->setCollisionObjectsTransform(state->link_transforms);
       manager_->contactTest(contacts, type_);
     }
 
@@ -202,7 +202,7 @@ bool ContactMonitor::callbackComputeContactResultVector(tesseract_msgs::ComputeC
     tess_->getEnvironment()->setState(request.joint_states.name, request.joint_states.position);
     tesseract_environment::EnvState::ConstPtr state = tess_->getEnvironment()->getCurrentState();
 
-    manager_->setCollisionObjectsTransform(state->transforms);
+    manager_->setCollisionObjectsTransform(state->link_transforms);
     manager_->contactTest(contact_results, type_);
   }
 

@@ -320,8 +320,8 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     else
     {
       tcp_property_->setString(current_tcp);
-      tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() *
-             env_state_->transforms[current_tcp.toStdString()];
+      tcp_ = env_state_->link_transforms[inv_kin_->getTipLinkName()].inverse() *
+             env_state_->link_transforms[current_tcp.toStdString()];
     }
 
     Q_EMIT availableTCPLinksChanged(available_tcp_links_);
@@ -336,7 +336,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
                                                                 cartesian_marker_scale_property_->getFloat());
     make6Dof(*interactive_marker_);
 
-    Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
+    Eigen::Isometry3d pose = env_state_->link_transforms[inv_kin_->getTipLinkName()] * tcp_;
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     toOgre(position, orientation, pose);
@@ -421,7 +421,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
           assert(false);
       }
 
-      Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
+      Eigen::Isometry3d pose = env_state_->link_transforms[joint->child_link_name];
       Ogre::Vector3 position;
       Ogre::Quaternion orientation;
       toOgre(position, orientation, pose);
@@ -461,8 +461,8 @@ bool ManipulationWidget::changeTCP(const QString& tcp_link)
   else
   {
     tcp_property_->setString(tcp_link);
-    tcp_ =
-        env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[tcp_link.toStdString()];
+    tcp_ = env_state_->link_transforms[inv_kin_->getTipLinkName()].inverse() *
+           env_state_->link_transforms[tcp_link.toStdString()];
     success = true;
   }
 
@@ -537,8 +537,8 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
 {
   if (inv_kin_ && env_state_)
   {
-    const Eigen::Isometry3d& ref = env_state_->transforms[reference_frame];
-    const Eigen::Isometry3d& base = env_state_->transforms[inv_kin_->getBaseLinkName()];
+    const Eigen::Isometry3d& ref = env_state_->link_transforms[reference_frame];
+    const Eigen::Isometry3d& base = env_state_->link_transforms[inv_kin_->getBaseLinkName()];
 
     Eigen::Isometry3d local_tf = (base.inverse() * ref * transform) * tcp_.inverse();
     Eigen::VectorXd solutions;
@@ -582,7 +582,7 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
   const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
   const auto& joint = scene_graph->getJoint(joint_name);
   double current_joint_value = env_state_->joints[joint_name];
-  Eigen::Isometry3d child_pose = env_state_->transforms[joint->child_link_name];
+  Eigen::Isometry3d child_pose = env_state_->link_transforms[joint->child_link_name];
   Eigen::Isometry3d delta_pose = child_pose.inverse() * transform;
 
   Eigen::Vector3d delta_axis;
@@ -757,8 +757,8 @@ void ManipulationWidget::updateEnvironmentVisualization()
     for (auto& link_pair : visualization_->getLinks())
     {
       LinkWidget* link = link_pair.second;
-      auto it = env_state_->transforms.find(link->getName());
-      if (it != env_state_->transforms.end())
+      auto it = env_state_->link_transforms.find(link->getName());
+      if (it != env_state_->link_transforms.end())
       {
         link->setStartTransform(it->second);
       }
@@ -769,8 +769,8 @@ void ManipulationWidget::updateEnvironmentVisualization()
     for (auto& link_pair : visualization_->getLinks())
     {
       LinkWidget* link = link_pair.second;
-      auto it = env_state_->transforms.find(link->getName());
-      if (it != env_state_->transforms.end())
+      auto it = env_state_->link_transforms.find(link->getName());
+      if (it != env_state_->link_transforms.end())
       {
         link->setEndTransform(it->second);
       }
@@ -780,7 +780,7 @@ void ManipulationWidget::updateEnvironmentVisualization()
 
 void ManipulationWidget::updateCartesianMarkerVisualization()
 {
-  Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
+  Eigen::Isometry3d pose = env_state_->link_transforms[inv_kin_->getTipLinkName()] * tcp_;
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   toOgre(position, orientation, pose);
@@ -793,7 +793,7 @@ void ManipulationWidget::udpateJointMarkerVisualization()
   for (auto& joint_marker : joint_interactive_markers_)
   {
     const auto& joint = scene_graph->getJoint(joint_marker.first);
-    Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
+    Eigen::Isometry3d pose = env_state_->link_transforms[joint->child_link_name];
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     toOgre(position, orientation, pose);
