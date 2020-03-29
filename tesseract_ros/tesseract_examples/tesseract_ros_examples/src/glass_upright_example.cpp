@@ -249,7 +249,7 @@ bool GlassUprightExample::run()
   AdjacencyMap::Ptr adjacency_map =
       std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                             prob->GetKin()->getActiveLinkNames(),
-                                                            prob->GetEnv()->getCurrentState()->transforms);
+                                                            prob->GetEnv()->getCurrentState()->link_transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);

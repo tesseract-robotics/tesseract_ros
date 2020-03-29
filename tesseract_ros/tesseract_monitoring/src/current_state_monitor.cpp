@@ -351,7 +351,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     std::string base_link = env_->getRootLinkName();
     std::vector<geometry_msgs::TransformStamped> transforms;
     transforms.reserve(env_state_.joints.size());
-    for (const auto& pose : env_state_.transforms)
+    for (const auto& pose : env_state_.link_transforms)
     {
       if (pose.first != base_link)
       {

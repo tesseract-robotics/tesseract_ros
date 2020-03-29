@@ -851,7 +851,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::LINK_TRANSFORMS)
   {
-    for (const auto& link_pair : tesseract_->getEnvironmentConst()->getCurrentState()->transforms)
+    for (const auto& link_pair : tesseract_->getEnvironmentConst()->getCurrentState()->link_transforms)
     {
       res.link_transforms.names.push_back(link_pair.first);
       geometry_msgs::Pose pose;
@@ -862,13 +862,11 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_TRANSFORMS)
   {
-    tesseract_environment::EnvState::ConstPtr current_state = tesseract_->getEnvironmentConst()->getCurrentState();
-    for (const auto& joint : tesseract_->getEnvironmentConst()->getSceneGraph()->getJoints())
+    for (const auto& joint_pair : tesseract_->getEnvironmentConst()->getCurrentState()->joint_transforms)
     {
-      res.joint_transforms.names.push_back(joint->getName());
+      res.joint_transforms.names.push_back(joint_pair.first);
       geometry_msgs::Pose pose;
-      tf::poseEigenToMsg(
-          current_state->transforms.at(joint->parent_link_name) * joint->parent_to_joint_origin_transform, pose);
+      tf::poseEigenToMsg(joint_pair.second, pose);
       res.joint_transforms.transforms.push_back(pose);
     }
   }
