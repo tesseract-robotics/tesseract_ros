@@ -158,9 +158,17 @@ public:
     return true;
   }
 
-  bool isSatisfied(const Eigen::Ref<const Eigen::VectorXd>& /*x*/) const override { assert(false); }
+  bool isSatisfied(const Eigen::Ref<const Eigen::VectorXd>& /*x*/) const override
+  {
+    assert(false);
+    return false;
+  }
 
-  double distance(const Eigen::Ref<const Eigen::VectorXd>& /*x*/) const override { assert(false); }
+  double distance(const Eigen::Ref<const Eigen::VectorXd>& /*x*/) const override
+  {
+    assert(false);
+    return 0;
+  }
 
   void jacobian(const Eigen::Ref<const Eigen::VectorXd>& /*x*/, Eigen::Ref<Eigen::MatrixXd> /*out*/) const override
   {
