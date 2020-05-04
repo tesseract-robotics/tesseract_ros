@@ -1194,6 +1194,7 @@ inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
     jtp.time_from_start = ros::Duration(i);
     traj_msg.points[static_cast<size_t>(i)] = jtp;
   }
+  std::size_t jn_to_index_size = jn_to_index.size();
 
   // Update only the joints which were provided.
   for (int i = 0; i < traj.rows(); ++i)
@@ -1204,6 +1205,9 @@ inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
           .positions[static_cast<size_t>(jn_to_index[joint_names[static_cast<size_t>(j)]])] = traj(i, j);
     }
   }
+  // This will be the case if joint_names[static_cast<size_t>(j)] was not already in the map
+  if (jn_to_index_size != jn_to_index.size())
+    ROS_WARN("Trying to set joints that are not in the environment. Check that the joint_names are correct");
 }
 
 /**
