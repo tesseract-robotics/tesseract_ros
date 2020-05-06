@@ -277,8 +277,6 @@ public:
     collisions_pub_.publish(msg);
     arrows_pub_.publish(msg);
     axes_pub_.publish(msg);
-
-    ros::Duration(0.5).sleep();
   }
 
   void waitForInput() override
