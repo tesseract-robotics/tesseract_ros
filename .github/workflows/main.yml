@@ -54,7 +54,7 @@ jobs:
              PARALLEL_TESTS: false,
              CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Xenial-Build/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"}
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=14"}
     steps:
       - uses: actions/checkout@v1
 
