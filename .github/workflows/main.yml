@@ -7,6 +7,7 @@ jobs:
     name: ${{ matrix.env.CI_NAME }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         env:
           - {CI_NAME: Clang-Format,
@@ -50,6 +51,7 @@ jobs:
              UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#master github:ros-industrial-consortium/tesseract#master github:ethz-adrl/ifopt#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl benchmark",
              DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
+             PARALLEL_TESTS: false,
              CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Xenial-Build/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"}
