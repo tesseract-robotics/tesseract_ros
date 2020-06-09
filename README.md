@@ -24,13 +24,19 @@
 
 See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66)
 
-## Clone Repository
+## Install Instructions
 
-This repository contains submodule tesseract_ext so use the *--recursive* flag as shown below.
+Clone this repository and the packages in the dependencies.rosinstall into your workspace. Build using [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) or something similar
 
-`git clone --recursive`
+.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
 
-.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace. If so do not clone with submodules and clone https://github.com/ros-industrial-consortium/tesseract_ext.git into your extended workspace.
+## Tesseract Examples
+### Online Planning Example
+This example demonstrates using TrajOpt to plan in an "online" manner. Use the joint state publisher gui to change the location of the collision obstacle or the target and watch it dynamically plan. Adjust the box_size parameter for faster adaption.
+
+```roslaunch tesseract_ros_examples online_planning_example.launch```
+
+![Online Planning Example](gh_pages/_static/examples/online_planning_example.gif)
 
 ## Building with Clang-Tidy Enabled
 
