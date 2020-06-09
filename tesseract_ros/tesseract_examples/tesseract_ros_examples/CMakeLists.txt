@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(trajopt REQUIRED)
+find_package(trajopt_ifopt REQUIRED)
+find_package(trajopt_sqp REQUIRED)
 find_package(tesseract REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_common REQUIRED)
@@ -51,6 +53,46 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
+target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example)
+target_include_directories(${PROJECT_NAME}_car_seat_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_car_seat_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_car_seat_example_node src/car_seat_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_car_seat_example_node ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example_node PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example_node)
+target_include_directories(${PROJECT_NAME}_car_seat_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_car_seat_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_freespace_ompl_example src/freespace_ompl_example.cpp)
+target_link_libraries(${PROJECT_NAME}_freespace_ompl_example tesseract::tesseract tesseract::tesseract_motion_planners_ompl ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_freespace_ompl_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_freespace_ompl_example)
+target_include_directories(${PROJECT_NAME}_freespace_ompl_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_freespace_ompl_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_freespace_ompl_example_node src/freespace_ompl_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_freespace_ompl_example_node ${PROJECT_NAME}_freespace_ompl_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_freespace_ompl_example_node )
+tesseract_clang_tidy(${PROJECT_NAME}_freespace_ompl_example_node)
+target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_glass_upright_example src/glass_upright_example.cpp)
@@ -96,24 +138,45 @@ if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
       ${catkin_INCLUDE_DIRS})
 endif()
 
-add_library(${PROJECT_NAME}_freespace_ompl_example src/freespace_ompl_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_ompl_example tesseract::tesseract tesseract::tesseract_motion_planners_ompl ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_freespace_ompl_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_freespace_ompl_example)
-target_include_directories(${PROJECT_NAME}_freespace_ompl_example PUBLIC
+add_library(${PROJECT_NAME}_online_planning_example src/online_planning_example.cpp)
+target_link_libraries(${PROJECT_NAME}_online_planning_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES}
+    trajopt::trajopt_ifopt trajopt::trajopt_sqp)
+tesseract_target_compile_options(${PROJECT_NAME}_online_planning_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_online_planning_example)
+target_include_directories(${PROJECT_NAME}_online_planning_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_freespace_ompl_example SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_online_planning_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_freespace_ompl_example_node src/freespace_ompl_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_ompl_example_node ${PROJECT_NAME}_freespace_ompl_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_freespace_ompl_example_node )
-tesseract_clang_tidy(${PROJECT_NAME}_freespace_ompl_example_node)
-target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node PRIVATE
+add_executable(${PROJECT_NAME}_online_planning_example_node src/online_planning_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_online_planning_example_node ${PROJECT_NAME}_online_planning_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_online_planning_example_node )
+tesseract_clang_tidy(${PROJECT_NAME}_online_planning_example_node)
+target_include_directories(${PROJECT_NAME}_online_planning_example_node PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node SYSTEM PRIVATE
+target_include_directories(${PROJECT_NAME}_online_planning_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example)
+target_include_directories(${PROJECT_NAME}_pick_and_place_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_pick_and_place_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_pick_and_place_example_node src/pick_and_place_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example_node ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example_node PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example_node)
+target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_puzzle_piece_example src/puzzle_piece_example.cpp)
@@ -136,26 +199,6 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example)
-target_include_directories(${PROJECT_NAME}_car_seat_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_car_seat_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_car_seat_example_node src/car_seat_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_example_node ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_car_seat_example_node)
-target_include_directories(${PROJECT_NAME}_car_seat_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_car_seat_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
 add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC)
@@ -174,26 +217,6 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_n
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example)
-target_include_directories(${PROJECT_NAME}_pick_and_place_example PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_pick_and_place_example SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_pick_and_place_example_node src/pick_and_place_example_node.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example_node ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example_node PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example_node)
-target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_scene_graph_example src/scene_graph_example.cpp)
@@ -228,16 +251,18 @@ install(
   TARGETS
     ${PROJECT_NAME}_basic_cartesian_example
     ${PROJECT_NAME}_basic_cartesian_example_node
-    ${PROJECT_NAME}_glass_upright_example
-    ${PROJECT_NAME}_glass_upright_example_node
-    ${PROJECT_NAME}_freespace_ompl_example
-    ${PROJECT_NAME}_freespace_ompl_example_node
-    ${PROJECT_NAME}_puzzle_piece_example
-    ${PROJECT_NAME}_puzzle_piece_example_node
     ${PROJECT_NAME}_car_seat_example
     ${PROJECT_NAME}_car_seat_example_node
+    ${PROJECT_NAME}_freespace_ompl_example
+    ${PROJECT_NAME}_freespace_ompl_example_node
+    ${PROJECT_NAME}_glass_upright_example
+    ${PROJECT_NAME}_glass_upright_example_node
+    ${PROJECT_NAME}_online_planning_example
+    ${PROJECT_NAME}_online_planning_example_node
     ${PROJECT_NAME}_pick_and_place_example
     ${PROJECT_NAME}_pick_and_place_example_node
+    ${PROJECT_NAME}_puzzle_piece_example
+    ${PROJECT_NAME}_puzzle_piece_example_node
     ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
     ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
     ${PROJECT_NAME}_scene_graph_example
