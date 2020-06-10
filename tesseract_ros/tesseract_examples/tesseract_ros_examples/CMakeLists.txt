@@ -324,15 +324,15 @@ if(CATKIN_ENABLE_TESTING)
 #    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit SYSTEM PRIVATE
 #        ${catkin_INCLUDE_DIRS})
 
-    add_rostest_gtest(${PROJECT_NAME}_pick_and_place_example_unit test/pick_and_place_example_unit.test test/pick_and_place_example_unit.cpp)
-    target_link_libraries(${PROJECT_NAME}_pick_and_place_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
-    tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE)
-    tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example_unit)
-    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include>")
-    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit SYSTEM PRIVATE
-        ${catkin_INCLUDE_DIRS})
+#    add_rostest_gtest(${PROJECT_NAME}_pick_and_place_example_unit test/pick_and_place_example_unit.test test/pick_and_place_example_unit.cpp)
+#    target_link_libraries(${PROJECT_NAME}_pick_and_place_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
+#    tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE)
+#    tesseract_clang_tidy(${PROJECT_NAME}_pick_and_place_example_unit)
+#    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE
+#        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#        "$<INSTALL_INTERFACE:include>")
+#    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit SYSTEM PRIVATE
+#        ${catkin_INCLUDE_DIRS})
 
     add_rostest_gtest(${PROJECT_NAME}_scene_graph_example_unit test/scene_graph_example_unit.test test/scene_graph_example_unit.cpp)
     target_link_libraries(${PROJECT_NAME}_scene_graph_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_scene_graph_example ${catkin_LIBRARIES})
