@@ -499,7 +499,7 @@ bool PickAndPlaceExample::run()
   if (write_to_file_)
   {
     std::string path = ros::package::getPath("pick_and_place") + "/file_output_place.csv";
-    stream_ptr->open(path, std::ofstream::out | std::ofstream::trunc);
+    stream_ptr_place->open(path, std::ofstream::out | std::ofstream::trunc);
     config_place.callbacks.push_back(trajopt::WriteCallback(stream_ptr_place, place_prob));
   }
 
