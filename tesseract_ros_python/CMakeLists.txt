@@ -27,8 +27,22 @@ find_package(tesseract_visualization REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 find_package(trajopt REQUIRED)
 
-find_package(PythonInterp REQUIRED)
+if(NOT PYTHON_VERSION)
+  set(PYTHON_VERSION  $ENV{ROS_PYTHON_VERSION})
+  message(STATUS "Setting Python Version: " ${PYTHON_VERSION})
+endif()
+
+if(PYTHON_VERSION)
+  if(${PYTHON_VERSION} LESS 3)
+    set(Python_ADDITIONAL_VERSIONS 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0)
+  else()
+    set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+  endif()
+endif()
+
+find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
 find_package(PythonLibs REQUIRED)
+message(STATUS "Building Python Version: " ${PYTHON_VERSION_MAJOR})
 
 # Find NumPy
 
@@ -76,8 +90,14 @@ endif()
 
 if(BUILD_TESSERACT_ROS_PYTHON)
   set(SWIG_CXX_EXTENSION cxx)
-  set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
-  set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads )
+
+  if (${PYTHON_VERSION_MAJOR} LESS 3)
+    set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
+    set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads)
+  else()
+    set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
+    set_property(SOURCE swig/tesseract_ros/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads -py3)
+  endif()
 
   set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract_ros)
   set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -131,9 +151,23 @@ if(SETUPTOOLS_DEB_LAYOUT)
   set(SETUPTOOLS_ARG_EXTRA "--install-layout=deb")
 endif()
 
-install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
-execute_process(COMMAND python setup.py install -f
+if (${PYTHON_VERSION_MAJOR} LESS 3)
+    install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
+    execute_process(COMMAND python2 setup.py install -f
 --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
+else()
+  install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
+  execute_process(COMMAND python3 setup.py install -f
+  --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
+endif()
+
+if (${PYTHON_VERSION_MAJOR} LESS 3)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv "prepend-non-duplicate;PYTHONPATH;lib/python2.7/dist-packages")
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
+else()
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv "prepend-non-duplicate;PYTHONPATH;lib/python3/dist-packages")
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
