@@ -1,13 +1,23 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_msgs)
 
-add_compile_options(
-  -std=c++14
-  -Wall
-  -Wextra
-  -Wsuggest-override
-  -Wconversion
-  -Wsign-conversion)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  add_compile_options(
+    -std=c++14
+    -Wall
+    -Wextra
+    -Winconsistent-missing-override
+    -Wconversion
+    -Wsign-conversion)
+else()
+  add_compile_options(
+    -std=c++14
+    -Wall
+    -Wextra
+    -Wsuggest-override
+    -Wconversion
+    -Wsign-conversion)
+endif()
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
