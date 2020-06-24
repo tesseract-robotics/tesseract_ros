@@ -33,6 +33,7 @@
   <exec_depend>xacro</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>tf</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
 
   <test_depend>rostest</test_depend>
 
