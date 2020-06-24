@@ -52,10 +52,10 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 namespace tesseract_ros_examples
 {
 FreespaceHybridExample::FreespaceHybridExample(const ros::NodeHandle& nh,
-                                           bool plotting,
-                                           bool rviz,
-                                           double range,
-                                           double planning_time)
+                                               bool plotting,
+                                               bool rviz,
+                                               double range,
+                                               double planning_time)
   : Example(plotting, rviz), nh_(nh), range_(range), planning_time_(planning_time)
 {
 }
@@ -129,7 +129,7 @@ bool FreespaceHybridExample::run()
 
   // Setup Problem
   tesseract_motion_planners::OMPLTrajOptFreespacePlanner hybrid_planner;
-  
+
   auto ompl_config = std::make_shared<tesseract_motion_planners::OMPLPlannerFreespaceConfig>(tesseract_, "manipulator");
 
   ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
@@ -151,38 +151,36 @@ bool FreespaceHybridExample::run()
     ompl_config->planners.push_back(rrtconnect_planner);
   }
 
-  auto trajopt_config = std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(tesseract_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  auto trajopt_config = std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(
+      tesseract_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
 
   trajopt_config->target_waypoints.push_back(ompl_config->start_waypoint);
   trajopt_config->target_waypoints.push_back(ompl_config->end_waypoint);
-  
+
   // Set the planner configuration
   hybrid_planner.setConfiguration(ompl_config, trajopt_config);
- 
 
-  
-  ros::Time tStart= ros::Time::now();
+  ros::Time tStart = ros::Time::now();
   tesseract_motion_planners::PlannerResponse ompl_planning_response;
   auto status = hybrid_planner.solve(ompl_planning_response);
   ROS_ERROR("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
-
   if (plotting_)
-    plotter->clear(); 
+    plotter->clear();
 
   if (status)
   {
     double d = 0;
     auto traj = ompl_planning_response.joint_trajectory.trajectory;
     for (unsigned i = 1; i < traj.rows(); ++i)
+    {
+      for (unsigned j = 0; j < traj.cols(); ++j)
       {
-	for (unsigned j = 0; j < traj.cols(); ++j)
-	  {
-	    d += std::abs(traj(i, j) - traj(i - 1, j));
-	  }
+        d += std::abs(traj(i, j) - traj(i - 1, j));
       }
+    }
     ROS_ERROR("trajectory norm: %.3f", d);
-    
+
     auto env = tesseract_->getEnvironmentConst();
     std::vector<ContactResultMap> collisions;
     tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();

@@ -37,7 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_ros_examples
 {
 /**
- * @brief An example of a robot leveraging OMPL RRTConnect to generate a freespace motion trajectory the TrajOpt to optimize
+ * @brief An example of a robot leveraging OMPL RRTConnect to generate a freespace motion trajectory the TrajOpt to
+ * optimize
  */
 class FreespaceHybridExample : public Example
 {
