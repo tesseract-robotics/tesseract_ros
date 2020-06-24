@@ -49,6 +49,12 @@ namespace tesseract_rviz
 static Ogre::NameGenerator tringle_list_generator("Tesseract_Triangle_List");
 static Ogre::NameGenerator material_name_generator("Tesseract_Triangle_List_Material");
 
+#ifdef noetic_BUILD
+const std::string GROUP_NAME = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
+#else
+const std::string GROUP_NAME = "rviz";
+#endif
+
 TriangleListMarker::TriangleListMarker(const std::string& ns,
                                        const int id,
                                        rviz::DisplayContext* context,
@@ -89,7 +95,7 @@ TriangleListMarker::TriangleListMarker(const std::string& ns,
     scene_node_->attachObject(manual_object_);
 
     material_name_ = material_name_generator.generate();
-    material_ = Ogre::MaterialManager::getSingleton().create(material_name_, "rviz");
+    material_ = Ogre::MaterialManager::getSingleton().create(material_name_, GROUP_NAME);
     material_->setReceiveShadows(false);
     material_->getTechnique(0)->setLightingEnabled(true);
     material_->setCullingMode(Ogre::CULL_NONE);

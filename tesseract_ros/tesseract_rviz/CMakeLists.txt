@@ -140,6 +140,7 @@ target_include_directories(${PROJECT_NAME}_render_tools SYSTEM PUBLIC
     ${QT_INCLUDE_DIR}
     ${OGRE_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_render_tools PUBLIC $ENV{ROS_DISTRO}_BUILD)
 
 #add_library(${PROJECT_NAME}_scene_plugin_core
 #  src/tesseract_scene_plugin/tesseract_scene_display.cpp
