@@ -210,7 +210,7 @@ bool PuzzlePieceAuxillaryAxesExample::run()
     return false;
 
   // Create plotting tool
-  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment());
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   if (rviz_)
   {

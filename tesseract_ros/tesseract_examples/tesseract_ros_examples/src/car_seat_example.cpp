@@ -336,7 +336,7 @@ bool CarSeatExample::run()
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   // Get predefined positions
   saved_positions_ = getPredefinedPosition();

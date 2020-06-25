@@ -175,7 +175,7 @@ bool GlassUprightExample::run()
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   if (rviz_)
   {

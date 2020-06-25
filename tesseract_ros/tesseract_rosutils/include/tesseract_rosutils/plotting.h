@@ -49,46 +49,76 @@ namespace tesseract_rosutils
 class ROSPlotting : public tesseract_visualization::Visualization
 {
 public:
-  ROSPlotting(tesseract_environment::Environment::ConstPtr env) : env_(std::move(env))
+  ROSPlotting(std::string root_link = "world", std::string topic_namespace = "tesseract")
+    : root_link_(root_link), topic_namespace_(topic_namespace)
   {
     ros::NodeHandle nh;
 
-    trajectory_pub_ = nh.advertise<tesseract_msgs::Trajectory>("/trajopt/display_tesseract_trajectory", 1, true);
-    collisions_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_collisions", 1, true);
-    arrows_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_arrows", 1, true);
-    axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_axes", 1, true);
+    trajectory_pub_ =
+        nh.advertise<tesseract_msgs::Trajectory>(topic_namespace + "/display_tesseract_trajectory", 1, true);
+    collisions_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_collisions", 1, true);
+    arrows_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_arrows", 1, true);
+    axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_axes", 1, true);
   }
+
+  void plotTrajectory(const tesseract_msgs::Trajectory& traj) { trajectory_pub_.publish(traj); }
 
   void plotTrajectory(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const tesseract_common::TrajArray>& traj) override
   {
     tesseract_msgs::Trajectory msg;
-
-    // Set tesseract state information
-    toMsg(msg.tesseract_state, *env_);
+    tesseract_common::JointTrajectory trajectory;
+    trajectory.joint_names = joint_names;
+    trajectory.trajectory = traj;
 
     // Set the joint trajectory message
-    toMsg(msg.joint_trajectory, *(env_->getCurrentState()), joint_names, traj);
+    toMsg(msg.joint_trajectory, trajectory);
 
-    trajectory_pub_.publish(msg);
+    plotTrajectory(msg);
+  }
+
+  void plotTrajectory(const tesseract_common::JointTrajectory& traj) override
+  {
+    tesseract_msgs::Trajectory msg;
+
+    // Set the joint trajectory message
+    toMsg(msg.joint_trajectory, traj);
+
+    plotTrajectory(msg);
+  }
+
+  void plotTrajectory(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const tesseract_common::TrajArray>& traj,
+                      const tesseract_environment::Environment::ConstPtr& env)
+  {
+    tesseract_msgs::Trajectory msg;
+
+    // Set tesseract state information
+    toMsg(msg.tesseract_state, *env);
+
+    // Set the joint trajectory message
+    toMsg(msg.joint_trajectory, *(env->getCurrentState()), joint_names, traj);
+
+    plotTrajectory(msg);
   }
 
   /**
    * @brief Plots waypoints according to their type. Currently only CARTESIAN_WAYPOINT is implemented.
    * @param waypoints A vector of waypoint pointers.
    */
-  void plotWaypoints(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
+  void plotWaypoints(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
+                     const tesseract_environment::Environment::ConstPtr& env)
   {
     for (auto& waypoint : waypoints)
     {
       if (waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
       {
         auto cart_wp = std::static_pointer_cast<const tesseract_motion_planners::CartesianWaypoint>(waypoint);
-        if (!cart_wp->getParentLinkName().empty() && cart_wp->getParentLinkName() != env_->getSceneGraph()->getRoot())
+        if (!cart_wp->getParentLinkName().empty() && cart_wp->getParentLinkName() != root_link_)
         {
-          if (env_->getLink(cart_wp->getParentLinkName()) != nullptr)
+          if (env->getLink(cart_wp->getParentLinkName()) != nullptr)
           {
-            Eigen::Isometry3d root_to_parent = env_->getLinkTransform(cart_wp->getParentLinkName());
+            Eigen::Isometry3d root_to_parent = env->getLinkTransform(cart_wp->getParentLinkName());
             plotAxis(root_to_parent * cart_wp->getTransform(), 0.05);
           }
           else
@@ -195,13 +225,8 @@ public:
                           const tesseract_collision::ContactResultVector& dist_results,
                           const Eigen::Ref<const Eigen::VectorXd>& safety_distances) override
   {
-    visualization_msgs::MarkerArray msg = getContactResultsMarkerArrayMsg(marker_counter_,
-                                                                          env_->getSceneGraph()->getRoot(),
-                                                                          "trajopt",
-                                                                          ros::Time::now(),
-                                                                          link_names,
-                                                                          dist_results,
-                                                                          safety_distances);
+    visualization_msgs::MarkerArray msg = getContactResultsMarkerArrayMsg(
+        marker_counter_, root_link_, topic_namespace_, ros::Time::now(), link_names, dist_results, safety_distances);
     if (!dist_results.empty())
     {
       collisions_pub_.publish(msg);
@@ -214,8 +239,8 @@ public:
                  double scale) override
   {
     visualization_msgs::MarkerArray msg;
-    auto marker = getMarkerArrowMsg(
-        marker_counter_, env_->getSceneGraph()->getRoot(), "trajopt", ros::Time::now(), pt1, pt2, rgba, scale);
+    auto marker =
+        getMarkerArrowMsg(marker_counter_, root_link_, topic_namespace_, ros::Time::now(), pt1, pt2, rgba, scale);
     msg.markers.push_back(marker);
     arrows_pub_.publish(msg);
   }
@@ -229,8 +254,8 @@ public:
     Eigen::Vector3d position = axis.matrix().block<3, 1>(0, 3);
 
     auto marker = getMarkerCylinderMsg(marker_counter_,
-                                       env_->getSceneGraph()->getRoot(),
-                                       "trajopt",
+                                       root_link_,
+                                       topic_namespace_,
                                        ros::Time::now(),
                                        position,
                                        position + x_axis,
@@ -239,8 +264,8 @@ public:
     msg.markers.push_back(marker);
 
     marker = getMarkerCylinderMsg(marker_counter_,
-                                  env_->getSceneGraph()->getRoot(),
-                                  "trajopt",
+                                  root_link_,
+                                  topic_namespace_,
                                   ros::Time::now(),
                                   position,
                                   position + y_axis,
@@ -249,8 +274,8 @@ public:
     msg.markers.push_back(marker);
 
     marker = getMarkerCylinderMsg(marker_counter_,
-                                  env_->getSceneGraph()->getRoot(),
-                                  "trajopt",
+                                  root_link_,
+                                  topic_namespace_,
                                   ros::Time::now(),
                                   position,
                                   position + z_axis,
@@ -267,9 +292,9 @@ public:
     marker_counter_ = 0;
     visualization_msgs::MarkerArray msg;
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getSceneGraph()->getRoot();
+    marker.header.frame_id = root_link_;
     marker.header.stamp = ros::Time();
-    marker.ns = "trajopt";
+    marker.ns = topic_namespace_;
     marker.id = 0;
     marker.type = visualization_msgs::Marker::ARROW;
     marker.action = visualization_msgs::Marker::DELETEALL;
@@ -384,13 +409,14 @@ public:
   }
 
 private:
-  tesseract_environment::Environment::ConstPtr env_; /**< The Env */
-  int marker_counter_;                               /**< Counter when plotting */
-  ros::Publisher scene_pub_;                         /**< Scene publisher */
-  ros::Publisher trajectory_pub_;                    /**< Trajectory publisher */
-  ros::Publisher collisions_pub_;                    /**< Collision Data publisher */
-  ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
-  ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
+  std::string root_link_;         /**< Root link of markers */
+  std::string topic_namespace_;   /**< Namespace used when publishing markers */
+  int marker_counter_;            /**< Counter when plotting */
+  ros::Publisher scene_pub_;      /**< Scene publisher */
+  ros::Publisher trajectory_pub_; /**< Trajectory publisher */
+  ros::Publisher collisions_pub_; /**< Collision Data publisher */
+  ros::Publisher arrows_pub_;     /**< Used for publishing arrow markers */
+  ros::Publisher axes_pub_;       /**< Used for publishing axis markers */
 };
 using ROSPlottingPtr = std::shared_ptr<ROSPlotting>;
 using ROSPlottingConstPtr = std::shared_ptr<const ROSPlotting>;

@@ -80,7 +80,8 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
     assert(false);
 
   // Set up plotting
-  plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+  plotter_ =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   // Extract necessary kinematic information
   manipulator_fk_ = tesseract_->getFwdKinematicsManager()->getFwdKinematicSolver("manipulator");
