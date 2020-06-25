@@ -221,7 +221,7 @@ bool BasicCartesianExample::run()
   }
 
   // Create plotting tool
-  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment());
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;

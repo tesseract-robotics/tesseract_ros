@@ -225,7 +225,7 @@ bool PuzzlePieceExample::run()
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   // These are used to keep visualization updated
   if (rviz_)
