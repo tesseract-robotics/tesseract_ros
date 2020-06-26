@@ -95,6 +95,27 @@ target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
+add_library(${PROJECT_NAME}_freespace_hybrid_example src/freespace_hybrid_example.cpp)
+target_link_libraries(${PROJECT_NAME}_freespace_hybrid_example tesseract::tesseract tesseract::tesseract_motion_planners_ompl_trajopt_freespace ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_freespace_hybrid_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_freespace_hybrid_example)
+target_include_directories(${PROJECT_NAME}_freespace_hybrid_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_freespace_hybrid_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_freespace_hybrid_example_node src/freespace_hybrid_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_freespace_hybrid_example_node ${PROJECT_NAME}_freespace_hybrid_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_freespace_hybrid_example_node )
+tesseract_clang_tidy(${PROJECT_NAME}_freespace_hybrid_example_node)
+target_include_directories(${PROJECT_NAME}_freespace_hybrid_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_freespace_hybrid_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
+  
 add_library(${PROJECT_NAME}_glass_upright_example src/glass_upright_example.cpp)
 target_link_libraries(${PROJECT_NAME}_glass_upright_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_glass_upright_example PUBLIC)
