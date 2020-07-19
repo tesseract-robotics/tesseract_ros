@@ -17,6 +17,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ProcessPlanPath.h>
 #include <tesseract_msgs/ProcessPlanSegment.h>
 #include <tesseract_msgs/ProcessPlanTransitionPair.h>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/waypoint.h>
@@ -261,7 +263,9 @@ inline bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory
  * @param file_path The location to save the file
  * @return true if successful
  */
-inline bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path)
+inline bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
+                      const std::string& file_path,
+                      char separator = ',')
 {
   std::ofstream myfile;
   myfile.open(file_path);
@@ -269,15 +273,76 @@ inline bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, 
   // Write Joint names as header
   std::copy(joint_trajectory.joint_names.begin(),
             joint_trajectory.joint_names.end(),
-            std::ostream_iterator<std::string>(myfile, ","));
+            std::ostream_iterator<std::string>(myfile, &separator));
   myfile << ",\n";
   for (const auto& point : joint_trajectory.points)
   {
-    std::copy(point.positions.begin(), point.positions.end(), std::ostream_iterator<double>(myfile, ","));
+    std::copy(point.positions.begin(), point.positions.end(), std::ostream_iterator<double>(myfile, &separator));
     myfile << "," + std::to_string(point.time_from_start.toSec()) + ",\n";
   }
   myfile.close();
   return true;
 }
+
+trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator = ',')
+{
+  trajectory_msgs::JointTrajectory joint_trajectory;
+  std::ifstream csv_file(file_path);
+
+  // Make sure the file is open
+  if (!csv_file.is_open())
+    throw std::runtime_error("Could not open csv file");
+
+  // Helper vars
+  std::string line, column_name;
+  int num_joints = 0;
+
+  // Read the column names
+  if (csv_file.good())
+  {
+    // Extract the first line in the file
+    std::getline(csv_file, line);
+
+    // Create a stringstream from line
+    std::stringstream ss(line);
+
+    // Extract joint name
+    std::vector<std::string> column_names;
+    while (std::getline(ss, column_name, separator))
+      column_names.push_back(column_name);
+
+    for (std::size_t i = 0; i < column_names.size() - 1; ++i)
+      joint_trajectory.joint_names.push_back(column_names[i]);
+
+    num_joints = column_names.size() - 1;
+  }
+
+  // Read data, line by line
+  while (std::getline(csv_file, line))
+  {
+    std::vector<std::string> tokens;
+    boost::split(tokens, line, boost::is_any_of(std::string(&separator)), boost::token_compress_on);
+    if (!tesseract_common::isNumeric(tokens))
+      throw std::runtime_error("jointTrajectoryFromCSVFile: Invalid format");
+
+    trajectory_msgs::JointTrajectoryPoint point;
+    double tfs = 0;
+    tesseract_common::toNumeric<double>(tokens.back(), tfs);
+    point.time_from_start.fromSec(tfs);
+    for (std::size_t i = 0; i < num_joints; ++i)
+    {
+      double val = 0;
+      tesseract_common::toNumeric<double>(tokens[i], val);
+      point.positions.push_back(val);
+    }
+    joint_trajectory.points.push_back(point);
+  }
+
+  // Close file
+  csv_file.close();
+
+  return joint_trajectory;
+}
+
 }  // namespace tesseract_rosutils
 #endif  // TESSERACT_ROSUTILS_CONVERSIONS_H

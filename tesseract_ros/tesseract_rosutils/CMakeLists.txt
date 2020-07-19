@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_geometry REQUIRED) # This should not be required, must be doing something wrong when creating targets
@@ -32,6 +33,7 @@ catkin_package(
     geometry_msgs
     std_msgs
   DEPENDS
+    Boost
     EIGEN3
     tesseract_scene_graph
     tesseract_geometry
@@ -43,7 +45,7 @@ catkin_package(
 )
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} INTERFACE
@@ -51,7 +53,8 @@ target_include_directories(${PROJECT_NAME} INTERFACE
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
     ${catkin_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
+    ${EIGEN3_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
 
 install(
   TARGETS ${PROJECT_NAME}
