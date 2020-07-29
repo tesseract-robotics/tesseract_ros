@@ -284,7 +284,7 @@ inline bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
   return true;
 }
 
-trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator = ',')
+inline trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator = ',')
 {
   trajectory_msgs::JointTrajectory joint_trajectory;
   std::ifstream csv_file(file_path);
