@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find tesseract_monitoring)/launch/environment_monitor.launch" />
+
+  <include file="$(find tesseract_planning_server)/launch/planning_server.launch" />
+
+</launch>

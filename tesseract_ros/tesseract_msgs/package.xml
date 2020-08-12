@@ -17,6 +17,7 @@
   <depend>shape_msgs</depend>
   <depend>octomap_msgs</depend>
   <depend>trajectory_msgs</depend>
+  <depend>actionlib_msgs</depend>
 
   <export>
     <architecture_independent/>
