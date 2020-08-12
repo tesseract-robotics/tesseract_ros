@@ -21,9 +21,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/core/waypoint.h>
-#include <tesseract_process_planners/process_definition.h>
-#include <tesseract_process_planners/process_planner.h>
 #include <tesseract_rosutils/utils.h>
 
 namespace tesseract_rosutils
@@ -61,81 +58,81 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
   return position;
 }
 
-/**
- * @brief Convert a cartesian pose to cartesian waypoint.
- * @param pose The cartesian pose
- * @param change_base A tranformation applied to the pose = change_base * pose
- * @return WaypointPtr
- */
-inline tesseract_motion_planners::Waypoint::Ptr
-toWaypoint(const geometry_msgs::Pose& pose,
-           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
-           const std::string& parent_link = "")
-{
-  Eigen::Isometry3d pose_eigen;
-  tf::poseMsgToEigen(pose, pose_eigen);
-  return std::make_shared<tesseract_motion_planners::CartesianWaypoint>(change_base * pose_eigen, parent_link);
-}
+///**
+// * @brief Convert a cartesian pose to cartesian waypoint.
+// * @param pose The cartesian pose
+// * @param change_base A tranformation applied to the pose = change_base * pose
+// * @return WaypointPtr
+// */
+// inline tesseract_motion_planners::Waypoint::Ptr
+// toWaypoint(const geometry_msgs::Pose& pose,
+//           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+//           const std::string& parent_link = "")
+//{
+//  Eigen::Isometry3d pose_eigen;
+//  tf::poseMsgToEigen(pose, pose_eigen);
+//  return std::make_shared<tesseract_motion_planners::CartesianWaypoint>(change_base * pose_eigen, parent_link);
+//}
 
-/**
- * @brief Convert a vector of cartesian poses to vector of cartesian waypoints
- * @param poses The vector of cartesian poses
- * @param change_base A tranformation applied to the pose = change_base * pose
- * @return std::vector<WaypointPtr>
- */
-inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
-toWaypoint(const std::vector<geometry_msgs::Pose>& poses,
-           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
-           const std::string& parent_link = "")
-{
-  std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
-  waypoints.reserve(poses.size());
-  for (const auto& pose : poses)
-    waypoints.push_back(toWaypoint(pose, change_base, parent_link));
+///**
+// * @brief Convert a vector of cartesian poses to vector of cartesian waypoints
+// * @param poses The vector of cartesian poses
+// * @param change_base A tranformation applied to the pose = change_base * pose
+// * @return std::vector<WaypointPtr>
+// */
+// inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
+// toWaypoint(const std::vector<geometry_msgs::Pose>& poses,
+//           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+//           const std::string& parent_link = "")
+//{
+//  std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
+//  waypoints.reserve(poses.size());
+//  for (const auto& pose : poses)
+//    waypoints.push_back(toWaypoint(pose, change_base, parent_link));
 
-  return waypoints;
-}
+//  return waypoints;
+//}
 
-/**
- * @brief Convert a list of vector of cartesian poses to list of vector of cartesian waypoints
- * @param pose_arrays The list of vector of cartesian poses
- * @param change_base A tranformation applied to the pose = change_base * pose
- * @return std::vector<std::vector<WaypointPtr>>
- */
-inline std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>
-toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
-           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
-           const std::string& parent_link = "")
-{
-  std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> paths;
-  paths.reserve(pose_arrays.size());
-  for (const auto& pose_array : pose_arrays)
-    paths.push_back(toWaypoint(pose_array.poses, change_base, parent_link));
+///**
+// * @brief Convert a list of vector of cartesian poses to list of vector of cartesian waypoints
+// * @param pose_arrays The list of vector of cartesian poses
+// * @param change_base A tranformation applied to the pose = change_base * pose
+// * @return std::vector<std::vector<WaypointPtr>>
+// */
+// inline std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>
+// toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
+//           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+//           const std::string& parent_link = "")
+//{
+//  std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> paths;
+//  paths.reserve(pose_arrays.size());
+//  for (const auto& pose_array : pose_arrays)
+//    paths.push_back(toWaypoint(pose_array.poses, change_base, parent_link));
 
-  return paths;
-}
+//  return paths;
+//}
 
-/**
- * @brief Convert a vector of double to joint waypoint
- * @param pose The joint positions
- * @return WaypointPtr
- */
-inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<double>& pose,
-                                                           const std::vector<std::string>& names)
-{
-  return std::make_shared<tesseract_motion_planners::JointWaypoint>(toEigen(pose), names);
-}
+///**
+// * @brief Convert a vector of double to joint waypoint
+// * @param pose The joint positions
+// * @return WaypointPtr
+// */
+// inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<double>& pose,
+//                                                           const std::vector<std::string>& names)
+//{
+//  return std::make_shared<tesseract_motion_planners::JointWaypoint>(toEigen(pose), names);
+//}
 
-inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const sensor_msgs::JointState& joint_state)
-{
-  assert(joint_state.name.size() == joint_state.position.size());
-  std::vector<std::string> joint_names = joint_state.name;
-  Eigen::VectorXd joint_positions(joint_state.position.size());
-  for (long i = 0; i < static_cast<long>(joint_state.position.size()); ++i)
-    joint_positions[i] = joint_state.position[static_cast<size_t>(i)];
+// inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const sensor_msgs::JointState& joint_state)
+//{
+//  assert(joint_state.name.size() == joint_state.position.size());
+//  std::vector<std::string> joint_names = joint_state.name;
+//  Eigen::VectorXd joint_positions(joint_state.position.size());
+//  for (long i = 0; i < static_cast<long>(joint_state.position.size()); ++i)
+//    joint_positions[i] = joint_state.position[static_cast<size_t>(i)];
 
-  return std::make_shared<tesseract_motion_planners::JointWaypoint>(joint_positions, joint_names);
-}
+//  return std::make_shared<tesseract_motion_planners::JointWaypoint>(joint_positions, joint_names);
+//}
 
 /**
  * @brief Convert a Tesseract Trajectory to Process Plan Path
@@ -151,21 +148,21 @@ inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common:
   return path;
 }
 
-/**
- * @brief Convert a process plan segment to a process plan segment message
- * @param segment_results The process segment plan
- * @param joint_names Joint names corresponding to the tesseract trajectory
- * @return Process Segment Message
- */
-inline tesseract_msgs::ProcessPlanSegment
-toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment)
-{
-  tesseract_msgs::ProcessPlanSegment process_segment;
-  process_segment.approach = toProcessPlanPath(process_plan_segment.approach);
-  process_segment.process = toProcessPlanPath(process_plan_segment.process);
-  process_segment.departure = toProcessPlanPath(process_plan_segment.departure);
-  return process_segment;
-}
+///**
+// * @brief Convert a process plan segment to a process plan segment message
+// * @param segment_results The process segment plan
+// * @param joint_names Joint names corresponding to the tesseract trajectory
+// * @return Process Segment Message
+// */
+// inline tesseract_msgs::ProcessPlanSegment
+// toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment)
+//{
+//  tesseract_msgs::ProcessPlanSegment process_segment;
+//  process_segment.approach = toProcessPlanPath(process_plan_segment.approach);
+//  process_segment.process = toProcessPlanPath(process_plan_segment.process);
+//  process_segment.departure = toProcessPlanPath(process_plan_segment.departure);
+//  return process_segment;
+//}
 
 /**
  * @brief Append a process segment to an existing joint_trajectory
