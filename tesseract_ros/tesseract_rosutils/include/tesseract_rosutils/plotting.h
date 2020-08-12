@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/publisher.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TesseractState.h>
-#include <tesseract_motion_planners/core/waypoint.h>
 #include <Eigen/Geometry>
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -102,35 +101,35 @@ public:
     plotTrajectory(msg);
   }
 
-  /**
-   * @brief Plots waypoints according to their type. Currently only CARTESIAN_WAYPOINT is implemented.
-   * @param waypoints A vector of waypoint pointers.
-   */
-  void plotWaypoints(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
-                     const tesseract_environment::Environment::ConstPtr& env)
-  {
-    for (auto& waypoint : waypoints)
-    {
-      if (waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
-      {
-        auto cart_wp = std::static_pointer_cast<const tesseract_motion_planners::CartesianWaypoint>(waypoint);
-        if (!cart_wp->getParentLinkName().empty() && cart_wp->getParentLinkName() != root_link_)
-        {
-          if (env->getLink(cart_wp->getParentLinkName()) != nullptr)
-          {
-            Eigen::Isometry3d root_to_parent = env->getLinkTransform(cart_wp->getParentLinkName());
-            plotAxis(root_to_parent * cart_wp->getTransform(), 0.05);
-          }
-          else
-            ROS_WARN("Unable to plot waypoint. Parent link '%s' not found", cart_wp->getParentLinkName().c_str());
-        }
-        else
-        {
-          plotAxis(cart_wp->getTransform(), 0.05);
-        }
-      }
-    }
-  }
+  //  /**
+  //   * @brief Plots waypoints according to their type. Currently only CARTESIAN_WAYPOINT is implemented.
+  //   * @param waypoints A vector of waypoint pointers.
+  //   */
+  //  void plotWaypoints(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
+  //                     const tesseract_environment::Environment::ConstPtr& env)
+  //  {
+  //    for (auto& waypoint : waypoints)
+  //    {
+  //      if (waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
+  //      {
+  //        auto cart_wp = std::static_pointer_cast<const tesseract_motion_planners::CartesianWaypoint>(waypoint);
+  //        if (!cart_wp->getParentLinkName().empty() && cart_wp->getParentLinkName() != root_link_)
+  //        {
+  //          if (env->getLink(cart_wp->getParentLinkName()) != nullptr)
+  //          {
+  //            Eigen::Isometry3d root_to_parent = env->getLinkTransform(cart_wp->getParentLinkName());
+  //            plotAxis(root_to_parent * cart_wp->getTransform(), 0.05);
+  //          }
+  //          else
+  //            ROS_WARN("Unable to plot waypoint. Parent link '%s' not found", cart_wp->getParentLinkName().c_str());
+  //        }
+  //        else
+  //        {
+  //          plotAxis(cart_wp->getTransform(), 0.05);
+  //        }
+  //      }
+  //    }
+  //  }
 
   static visualization_msgs::MarkerArray
   getContactResultsMarkerArrayMsg(int& id_counter,

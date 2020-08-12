@@ -271,7 +271,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 
     const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
     std::vector<std::string> joint_names = inv_kin_->getJointNames();
-    const Eigen::MatrixX2d& limits = inv_kin_->getLimits();
+    const Eigen::MatrixX2d& limits = inv_kin_->getLimits().joint_limits;
     inv_seed_.resize(inv_kin_->numJoints());
     int i = 0;
     joint_values_property_->removeChildren();
@@ -545,7 +545,7 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
     if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
     {
       Eigen::VectorXd temp_seed = solutions.head(inv_kin_->numJoints());
-      if (!tesseract_kinematics::isWithinLimits<double>(temp_seed, inv_kin_->getLimits()))
+      if (!tesseract_kinematics::isWithinLimits<double>(temp_seed, inv_kin_->getLimits().joint_limits))
         return;
 
       inv_seed_ = temp_seed;
@@ -623,7 +623,7 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
   else
     new_joint_value = current_joint_value - delta_joint_value;
 
-  const Eigen::MatrixX2d& limits = inv_kin_->getLimits();
+  const Eigen::MatrixX2d& limits = inv_kin_->getLimits().joint_limits;
   int i = 0;
   for (const auto& j : inv_kin_->getJointNames())
   {
