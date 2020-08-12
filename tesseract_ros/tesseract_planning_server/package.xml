@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_planning_server</name>
+  <version>0.1.0</version>
+  <description>Tesseract ROS Planning Server</description>
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author>Levi Armstrong</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>tesseract_monitoring</depend>
+  <depend>tesseract_msgs</depend>
+  <depend>tesseract_command_language</depend>
+  <depend>tesseract_process_managers</depend>
+  <depend>tesseract_motion_planners</depend>
+
+  <export>
+  </export>
+</package>
