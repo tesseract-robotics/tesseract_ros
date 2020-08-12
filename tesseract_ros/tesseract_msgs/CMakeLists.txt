@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
   shape_msgs
   octomap_msgs
   trajectory_msgs
+  actionlib_msgs
 )
 
 add_message_files(
@@ -59,6 +60,10 @@ add_message_files(
     ProcessPlanTransitionPair.msg
     OctreeSubType.msg
     SceneGraph.msg
+    PlanningRequest.msg
+    PlanningResponse.msg
+    ProfileMap.msg
+    PlannerProfileRemapping.msg
 )
 
 add_service_files(
@@ -71,6 +76,11 @@ add_service_files(
     SaveSceneGraph.srv
 )
 
+add_action_files(
+  DIRECTORY action
+  FILES GetMotionPlan.action
+)
+
 generate_messages(
   DEPENDENCIES
     std_msgs
@@ -79,6 +89,7 @@ generate_messages(
     shape_msgs
     octomap_msgs
     trajectory_msgs
+    actionlib_msgs
 )
 
 catkin_package(
@@ -90,4 +101,5 @@ catkin_package(
     shape_msgs
     octomap_msgs
     trajectory_msgs
+    actionlib_msgs
 )

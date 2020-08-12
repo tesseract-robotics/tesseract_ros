@@ -4,14 +4,13 @@
   <arg name="robot_description" default="robot_description"/>
   <arg name="descrete_plugin" default="tesseract_collision/BulletDiscreteBVHManager"/>
   <arg name="continuous_plugin" default="tesseract_collision/BulletCastBVHManager"/>
-  <arg name="joint_state_topic" default=""/>
-  <arg name="published_environment_topic" default=""/>
+  <arg name="monitor_environment_topic" default=""/>
 
-  <node pkg="tesseract_monitoring" type="tesseract_monitoring_environment_node" name="tesseract_monitoring_environment">
+  <node pkg="tesseract_planning_server" type="tesseract_planning_server_node" name="tesseract_planning_server">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
     <param name="descrete_plugin" type="string" value="$(arg descrete_plugin)"/>
     <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
-    <param name="joint_state_topic" type="string" value="$(arg joint_state_topic)"/>
-    <param name="published_environment_topic" type="string" value="$(arg published_environment_topic)"/>
+    <param name="monitor_environment_topic" type="string" value="$(arg monitor_environment_topic)"/>
   </node>
+
 </launch>

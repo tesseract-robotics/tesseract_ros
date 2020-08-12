@@ -1,0 +1,12 @@
+string TRAJOPT_PLANNER_NAME="TrajOptPlanner"
+string OMPL_PLANNER_NAME="OMPLPlanner"
+string DESCARTES_PLANNER_NAME="DescartesPlanner"
+string SIMPLE_FREESPACE_PLANNER_NAME = "SimpleFreespacePlanner"
+string SIMPLE_CARTESIAN_PLANNER_NAME = "SimpleCartesianPlanner"
+string SIMPLE_RASTER_PLANNER_NAME = "SimpleRasterPlanner"
+
+tesseract_msgs/PlanningRequest request
+---
+tesseract_msgs/PlanningResponse response
+---
+# Currently No Feedback
