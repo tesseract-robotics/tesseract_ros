@@ -65,9 +65,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
-#include <tesseract_motion_planners/core/waypoint.h>
 #include <tesseract_common/types.h>
-#include <tesseract_process_planners/process_definition.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
 namespace tesseract_rosutils
@@ -1491,70 +1489,70 @@ inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
   toMsg(*contact_result_msg, contact_result, stamp);
 }
 
-inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_planners::Waypoint& waypoint)
-{
-  switch (waypoint.getType())
-  {
-    case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
-    {
-      const auto& joint_wp = static_cast<const tesseract_motion_planners::JointWaypoint&>(waypoint);
-      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
-      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
-      {
-        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
-        joint_state.position.push_back(joint_wp.getPositions()[i]);
-      }
-      return true;
-    }
-    case tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
-    {
-      const auto& joint_wp = static_cast<const tesseract_motion_planners::JointTolerancedWaypoint&>(waypoint);
-      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
-      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
-      {
-        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
-        joint_state.position.push_back(joint_wp.getPositions()[i]);
-      }
-      return true;
-    }
-    default:
-    {
-      CONSOLE_BRIDGE_logError("Unable to convert waypoint type '%d' to joint state message.", waypoint.getType());
-      assert(false);
-      return false;
-    }
-  }
-}
+// inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_planners::Waypoint& waypoint)
+//{
+//  switch (waypoint.getType())
+//  {
+//    case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
+//    {
+//      const auto& joint_wp = static_cast<const tesseract_motion_planners::JointWaypoint&>(waypoint);
+//      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
+//      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
+//      {
+//        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
+//        joint_state.position.push_back(joint_wp.getPositions()[i]);
+//      }
+//      return true;
+//    }
+//    case tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+//    {
+//      const auto& joint_wp = static_cast<const tesseract_motion_planners::JointTolerancedWaypoint&>(waypoint);
+//      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
+//      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
+//      {
+//        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
+//        joint_state.position.push_back(joint_wp.getPositions()[i]);
+//      }
+//      return true;
+//    }
+//    default:
+//    {
+//      CONSOLE_BRIDGE_logError("Unable to convert waypoint type '%d' to joint state message.", waypoint.getType());
+//      assert(false);
+//      return false;
+//    }
+//  }
+//}
 
-/**
- * @brief Convert a vector of waypoints into a pose array
- * @param Pose Array
- * @param waypoints A vector of waypoints
- * @return True if successful, otherwise false
- */
-inline bool toMsg(geometry_msgs::PoseArray& pose_array,
-                  const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
-{
-  for (const auto& wp : waypoints)
-  {
-    if (wp->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
-    {
-      geometry_msgs::Pose pose;
-      const tesseract_motion_planners::CartesianWaypoint::Ptr& cwp =
-          std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(wp);
-      tf::poseEigenToMsg(cwp->getTransform(), pose);
-      pose_array.poses.push_back(pose);
-    }
-    else
-    {
-      CONSOLE_BRIDGE_logError("toPoseArray only support Cartesian Waypoints at this time.");
-      assert(false);
-      return false;
-    }
-  }
+///**
+// * @brief Convert a vector of waypoints into a pose array
+// * @param Pose Array
+// * @param waypoints A vector of waypoints
+// * @return True if successful, otherwise false
+// */
+// inline bool toMsg(geometry_msgs::PoseArray& pose_array,
+//                  const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
+//{
+//  for (const auto& wp : waypoints)
+//  {
+//    if (wp->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
+//    {
+//      geometry_msgs::Pose pose;
+//      const tesseract_motion_planners::CartesianWaypoint::Ptr& cwp =
+//          std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(wp);
+//      tf::poseEigenToMsg(cwp->getTransform(), pose);
+//      pose_array.poses.push_back(pose);
+//    }
+//    else
+//    {
+//      CONSOLE_BRIDGE_logError("toPoseArray only support Cartesian Waypoints at this time.");
+//      assert(false);
+//      return false;
+//    }
+//  }
 
-  return true;
-}
+//  return true;
+//}
 
 /**
  * @brief Convert a vector of Eigen::Isometry3d into a pose array
@@ -1574,35 +1572,35 @@ inline bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::
   return true;
 }
 
-/**
- * @brief Convert a process definition into a single pose array
- * @param pose_array A pose array to load the process definition into.
- * @param process_definition A process definition
- * @return True if successful, otherwise false
- */
-inline bool toMsg(geometry_msgs::PoseArray& pose_array,
-                  const tesseract_process_planners::ProcessDefinition& process_definition)
-{
-  for (size_t i = 0; i < process_definition.segments.size(); ++i)
-  {
-    if (!toMsg(pose_array, process_definition.segments[i].approach))
-      return false;
+///**
+// * @brief Convert a process definition into a single pose array
+// * @param pose_array A pose array to load the process definition into.
+// * @param process_definition A process definition
+// * @return True if successful, otherwise false
+// */
+// inline bool toMsg(geometry_msgs::PoseArray& pose_array,
+//                  const tesseract_process_planners::ProcessDefinition& process_definition)
+//{
+//  for (size_t i = 0; i < process_definition.segments.size(); ++i)
+//  {
+//    if (!toMsg(pose_array, process_definition.segments[i].approach))
+//      return false;
 
-    if (!toMsg(pose_array, process_definition.segments[i].process))
-      return false;
+//    if (!toMsg(pose_array, process_definition.segments[i].process))
+//      return false;
 
-    if (!toMsg(pose_array, process_definition.segments[i].departure))
-      return false;
+//    if (!toMsg(pose_array, process_definition.segments[i].departure))
+//      return false;
 
-    if (i < process_definition.transitions.size())
-    {
-      if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end))
-        return false;
-    }
-  }
+//    if (i < process_definition.transitions.size())
+//    {
+//      if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end))
+//        return false;
+//    }
+//  }
 
-  return true;
-}
+//  return true;
+//}
 
 /**
  * @brief Convert allowed collision matrix to a vector of allowed collision entry messages

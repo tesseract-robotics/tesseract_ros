@@ -17,8 +17,6 @@ find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
-find_package(tesseract_process_planners REQUIRED)
-
 
 catkin_package(
   INCLUDE_DIRS
@@ -40,12 +38,11 @@ catkin_package(
     tesseract_visualization
     tesseract_collision
     tesseract_common
-    tesseract_process_planners
     tesseract_motion_planners
 )
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} INTERFACE
@@ -73,7 +70,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 if(CATKIN_ENABLE_TESTING)
   find_package(GTest REQUIRED)
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
   tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
   tesseract_clang_tidy(${PROJECT_NAME}_unit)
   target_include_directories(${PROJECT_NAME}_unit PRIVATE
