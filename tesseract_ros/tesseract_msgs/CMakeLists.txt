@@ -58,6 +58,7 @@ add_message_files(
     ProcessPlanSegment.msg
     ProcessPlanTransitionPair.msg
     OctreeSubType.msg
+    SceneGraph.msg
 )
 
 add_service_files(

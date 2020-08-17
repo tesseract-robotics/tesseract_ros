@@ -1010,6 +1010,78 @@ inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_m
   return joint;
 }
 
+/**
+ * @brief Convert allowed collision matrix to a vector of allowed collision entry messages
+ * @param acm_msg Vector of allowed collision entries to populate
+ * @param acm Allowed collision matrix to convert to message
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
+                  const tesseract_scene_graph::AllowedCollisionMatrix& acm)
+{
+  for (const auto& entry : acm.getAllAllowedCollisions())
+  {
+    tesseract_msgs::AllowedCollisionEntry entry_msg;
+    entry_msg.link_1 = entry.first.first;
+    entry_msg.link_2 = entry.first.second;
+    entry_msg.reason = entry.second;
+    acm_msg.push_back(entry_msg);
+  }
+
+  return true;
+}
+
+inline void toMsg(tesseract_msgs::SceneGraph& scene_graph_msg, const tesseract_scene_graph::SceneGraph& scene_graph)
+{
+  scene_graph_msg.id = scene_graph.getName();
+  scene_graph_msg.root = scene_graph.getRoot();
+
+  for (const auto& link : scene_graph.getLinks())
+  {
+    tesseract_msgs::Link link_msg;
+    toMsg(link_msg, *link);
+    scene_graph_msg.links.push_back(link_msg);
+    if (!scene_graph.getLinkVisibility(link->getName()))
+      scene_graph_msg.invisible_links.push_back(link->getName());
+
+    if (!scene_graph.getLinkCollisionEnabled(link->getName()))
+      scene_graph_msg.disabled_collision_links.push_back(link->getName());
+  }
+
+  for (const auto& joint : scene_graph.getJoints())
+  {
+    tesseract_msgs::Joint joint_msg;
+    toMsg(joint_msg, *joint);
+    scene_graph_msg.joints.push_back(joint_msg);
+  }
+
+  toMsg(scene_graph_msg.acm, *scene_graph.getAllowedCollisionMatrix());
+}
+
+inline tesseract_scene_graph::SceneGraph fromMsg(const tesseract_msgs::SceneGraph& scene_graph_msg)
+{
+  tesseract_scene_graph::SceneGraph g(scene_graph_msg.id);
+
+  for (const auto& link_msg : scene_graph_msg.links)
+    g.addLink(fromMsg(link_msg));
+
+  for (const auto& joint_msg : scene_graph_msg.joints)
+    g.addJoint(fromMsg(joint_msg));
+
+  g.setRoot(scene_graph_msg.root);
+
+  for (const auto& link_name : scene_graph_msg.invisible_links)
+    g.setLinkVisibility(link_name, false);
+
+  for (const auto& link_name : scene_graph_msg.disabled_collision_links)
+    g.setLinkCollisionEnabled(link_name, false);
+
+  for (const auto& entry : scene_graph_msg.acm)
+    g.getAllowedCollisionMatrix()->addAllowedCollision(entry.link_1, entry.link_2, entry.reason);
+
+  return g;
+}
+
 inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state)
 {
   joint_state.header.stamp = ros::Time::now();
@@ -1111,6 +1183,18 @@ inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tessera
       command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK;
       const auto& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionLinkCommand&>(command);
       command_msg.remove_allowed_collision_link = cmd.getLinkName();
+      return true;
+    }
+    case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_SCENE_GRAPH;
+      const auto& cmd = static_cast<const tesseract_environment::AddSceneGraphCommand&>(command);
+
+      toMsg(command_msg.scene_graph, *cmd.getSceneGraph());
+      if (cmd.getJoint() != nullptr)
+        toMsg(command_msg.scene_graph_joint, *cmd.getJoint());
+
+      command_msg.scene_graph_prefix = cmd.getPrefix();
       return true;
     }
   }
@@ -1363,6 +1447,16 @@ inline bool processMsg(tesseract_environment::Environment& env,
         success &= processMsg(env, command.joint_state);
         break;
       }
+      case tesseract_msgs::EnvironmentCommand::ADD_SCENE_GRAPH:
+      {
+        tesseract_scene_graph::SceneGraph g = fromMsg(command.scene_graph);
+        if (command.scene_graph_joint.type == tesseract_msgs::Joint::UNKNOWN)
+          success &= env.addSceneGraph(g, command.scene_graph_prefix);
+        else
+          success &= env.addSceneGraph(g, fromMsg(command.scene_graph_joint), command.scene_graph_prefix);
+
+        break;
+      }
     }
   }
 
@@ -1601,27 +1695,6 @@ inline bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::
 
 //  return true;
 //}
-
-/**
- * @brief Convert allowed collision matrix to a vector of allowed collision entry messages
- * @param acm_msg Vector of allowed collision entries to populate
- * @param acm Allowed collision matrix to convert to message
- * @return True if successful, otherwise false
- */
-inline bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
-                  const tesseract_scene_graph::AllowedCollisionMatrix& acm)
-{
-  for (const auto& entry : acm.getAllAllowedCollisions())
-  {
-    tesseract_msgs::AllowedCollisionEntry entry_msg;
-    entry_msg.link_1 = entry.first.first;
-    entry_msg.link_2 = entry.first.second;
-    entry_msg.reason = entry.second;
-    acm_msg.push_back(entry_msg);
-  }
-
-  return true;
-}
 
 }  // namespace tesseract_rosutils
 
