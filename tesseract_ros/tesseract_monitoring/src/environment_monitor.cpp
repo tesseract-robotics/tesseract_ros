@@ -42,12 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_monitoring/EnvironmentMonitorDynamicReconfigureConfig.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
-#include <tesseract_kinematics/core/utils.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
 #include <tesseract_scene_graph/utils.h>
 
 class DynamicReconfigureImpl
