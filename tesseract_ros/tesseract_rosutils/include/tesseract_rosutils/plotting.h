@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_environment/core/environment.h>
+#include <tesseract_command_language/core/instruction.h>
 
 namespace tesseract_rosutils
 {
@@ -76,6 +77,11 @@ public:
     plotTrajectory(msg);
   }
 
+  bool init(tesseract::Tesseract::ConstPtr /*thor*/) override
+  {
+    // TODO
+  }
+
   void plotTrajectory(const tesseract_common::JointTrajectory& traj) override
   {
     tesseract_msgs::Trajectory msg;
@@ -84,6 +90,11 @@ public:
     toMsg(msg.joint_trajectory, traj);
 
     plotTrajectory(msg);
+  }
+
+  void plotTrajectory(const tesseract_planning::Instruction& /*instruction*/) override
+  {
+    // TODO
   }
 
   void plotTrajectory(const std::vector<std::string>& joint_names,
@@ -99,6 +110,11 @@ public:
     toMsg(msg.joint_trajectory, *(env->getCurrentState()), joint_names, traj);
 
     plotTrajectory(msg);
+  }
+
+  void plotToolPath(const tesseract_planning::Instruction& /*instruction*/) override
+  {
+    // TODO
   }
 
   //  /**
