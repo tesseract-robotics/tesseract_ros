@@ -5,7 +5,7 @@
   <arg name="plugin" default="tesseract_collision/BulletContactChecker"/>
   <arg name="joint_state_topic" default=""/>
   <arg name="environment_topic" default=""/>
-  <arg name="monitored_environment_topic" default=""/>
+  <arg name="published_environment_topic" default=""/>
   <arg name="rate" default="60"/>
   <arg name="use_gui" default="false"/>
 
@@ -19,7 +19,7 @@
     <param name="plugin" type="string" value="$(arg plugin)"/>
     <param name="joint_state_topic" type="string" value="$(arg joint_state_topic)"/>
     <param name="environment_topic" type="string" value="$(arg environment_topic)"/>
-    <param name="monitored_environment_topic" type="string" value="$(arg monitored_environment_topic)"/>
+    <param name="published_environment_topic" type="string" value="$(arg published_environment_topic)"/>
   </node>
 
 </launch>
