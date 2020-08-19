@@ -108,7 +108,8 @@ const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE = 
 const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE = "get_tesseract_information";
 const std::string EnvironmentMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
 const std::string EnvironmentMonitor::DEFAULT_SAVE_SCENE_GRAPH_SERVICE = "save_scene_graph";
-const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
+const std::string EnvironmentMonitor::DEFAULT_PUBLISH_ENVIRONMENT_TOPIC = "tesseract_published_environment";
+const std::string EnvironmentMonitor::DEFAULT_MONITOR_ENVIRONMENT_TOPIC = "tesseract_monitored_environment";
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
                                        std::string name,
@@ -341,7 +342,23 @@ void EnvironmentMonitor::environmentPublishingThread()
   } while (publish_environment_);
 }
 
-void EnvironmentMonitor::getMonitoredTopics(std::vector<std::string>& topics) const
+void EnvironmentMonitor::stopMonitoringEnvironment()
+{
+  environment_subscriber_.shutdown();
+  ROS_INFO_NAMED(LOGNAME, "Stopped monitoring environment.");
+}
+
+void EnvironmentMonitor::startMonitoringEnvironment(const std::string& monitor_environment_topic)
+{
+  if (tesseract_->isInitialized())
+  {
+    environment_subscriber_ =
+        nh_.subscribe(monitor_environment_topic, 1000, &EnvironmentMonitor::newStateCallback, this);
+    ROS_INFO_NAMED(LOGNAME, "Monitoring external environment on '%s'", monitor_environment_topic.c_str());
+  }
+}
+
+void EnvironmentMonitor::getStateMonitoredTopics(std::vector<std::string>& topics) const
 {
   topics.clear();
   if (current_state_monitor_)
