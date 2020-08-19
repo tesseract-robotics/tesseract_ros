@@ -119,7 +119,10 @@ public:
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
-  static const std::string MONITORED_ENVIRONMENT_TOPIC;  // "/monitored_tesseract"
+  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/tesseract_published_environment"
+
+  // The name of the topic this should listen to for updates
+  static const std::string DEFAULT_MONITOR_ENVIRONMENT_TOPIC;  // "/tesseract_monitored_environment
 
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
@@ -210,7 +213,7 @@ public:
      environment is always
      sent. */
   void startPublishingEnvironment(EnvironmentUpdateType update_type,
-                                  const std::string& environment_topic = MONITORED_ENVIRONMENT_TOPIC);
+                                  const std::string& environment_topic = DEFAULT_PUBLISH_ENVIRONMENT_TOPIC);
 
   /** \brief Stop publishing the maintained environment. */
   void stopPublishingEnvironment();
@@ -253,6 +256,15 @@ public:
     return 0.0;
   }
 
+  /**
+   * @brief Start the monitoring of an environment topic
+   * @param monitor_environment_topic The topic to listen to for updates to the environment
+   */
+  void startMonitoringEnvironment(const std::string& monitor_environment_topic = DEFAULT_MONITOR_ENVIRONMENT_TOPIC);
+
+  /** \brief Stop monitoring the external environment. */
+  void stopMonitoringEnvironment();
+
   /** @brief Add a function to be called when an update to the scene is received */
   void addUpdateCallback(const boost::function<void(EnvironmentUpdateType)>& fn);
 
@@ -288,7 +300,7 @@ public:
 
   void clearOctomap();
 
-  void getMonitoredTopics(std::vector<std::string>& topics) const;
+  void getStateMonitoredTopics(std::vector<std::string>& topics) const;
 
 protected:
   /** @brief Initialize the planning scene monitor
@@ -321,6 +333,9 @@ protected:
   EnvironmentUpdateType publish_update_types_;
   EnvironmentUpdateType new_environment_update_;
   boost::condition_variable_any new_environment_update_condition_;
+
+  // variables for environment subscriber
+  ros::Subscriber environment_subscriber_;
 
   // host a service for modifying the environment
   ros::ServiceServer modify_environment_server_;
