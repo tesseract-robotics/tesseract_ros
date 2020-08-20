@@ -1386,9 +1386,7 @@ inline bool processMsg(tesseract_environment::Environment& env, const tesseract_
   if (env.getRevision() < static_cast<int>(state_msg.revision))
   {
     std::vector<tesseract_msgs::EnvironmentCommand> new_commands;
-    new_commands.insert(new_commands.end(),
-                        state_msg.commands.begin() + (env.getRevision() == 0 ? 0 : env.getRevision() - 1),
-                        state_msg.commands.end());
+    new_commands.insert(new_commands.end(), state_msg.commands.begin() + env.getRevision(), state_msg.commands.end());
     if (!processMsg(env, new_commands))
       return false;
   }
