@@ -26,6 +26,8 @@
   <depend>roslib</depend>
   <depend>std_msgs</depend>
 
+  <test_depend>tesseract_support</test_depend>
+
   <export>
   </export>
 </package>
