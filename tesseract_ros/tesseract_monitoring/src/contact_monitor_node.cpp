@@ -53,12 +53,17 @@ int main(int argc, char** argv)
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
   tesseract_scene_graph::SRDFModel::Ptr srdf_model;
   std::string robot_description;
-  bool publish_environment;
-  bool publish_markers;
+  std::string joint_state_topic;
+  std::string publish_environment_topic;
+  std::string monitor_environment_topic;
+  std::string publish_markers_topic;
 
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
-  pnh.param<bool>("publish_environment", publish_environment, false);
-  pnh.param<bool>("publish_markers", publish_markers, false);
+  pnh.param<std::string>(
+      "joint_state_topic", joint_state_topic, contact_monitor::ContactMonitor::DEFAULT_JOINT_STATES_TOPIC);
+  pnh.param<std::string>("publish_environment_topic", publish_environment_topic, "");
+  pnh.param<std::string>("monitor_environment_topic", monitor_environment_topic, "");
+  pnh.param<std::string>("publish_markers_topic", publish_markers_topic, "");
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -107,8 +112,16 @@ int main(int argc, char** argv)
   }
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
-  contact_monitor::ContactMonitor cm(
-      tess, nh, pnh, monitored_link_names, type, contact_distance, publish_environment, publish_markers);
+  contact_monitor::ContactMonitor cm(tess, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
+
+  if (!publish_environment_topic.empty())
+    cm.startPublishingEnvironment(publish_environment_topic);
+
+  if (!monitor_environment_topic.empty())
+    cm.startMonitoringEnvironment(monitor_environment_topic);
+
+  if (!publish_markers_topic.empty())
+    cm.startPublishingMarkers(publish_markers_topic);
 
   boost::thread t(&contact_monitor::ContactMonitor::computeCollisionReportThread, &cm);
 
