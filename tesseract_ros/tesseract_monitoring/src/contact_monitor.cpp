@@ -38,20 +38,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace contact_monitor
 {
+const std::string ContactMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
+const std::string ContactMonitor::DEFAULT_PUBLISH_ENVIRONMENT_TOPIC = "tesseract_published_environment";
+const std::string ContactMonitor::DEFAULT_MONITOR_ENVIRONMENT_TOPIC = "tesseract_monitored_environment";
+const std::string ContactMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
+const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC = "contact_results";
+const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC = "contact_results_markers";
+const std::string ContactMonitor::DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE = "compute_contact_results";
+
 ContactMonitor::ContactMonitor(const tesseract::Tesseract::Ptr& tess,
                                ros::NodeHandle& nh,
                                ros::NodeHandle& pnh,
                                const std::vector<std::string>& monitored_link_names,
                                const tesseract_collision::ContactTestType& type,
                                double contact_distance,
-                               bool publish_environment,
-                               bool publish_markers)
+                               const std::string& joint_state_topic)
   : tess_(tess)
+  , nh_(nh)
+  , pnh_(pnh)
   , monitored_link_names_(monitored_link_names)
   , type_(type)
   , contact_distance_(contact_distance)
-  , publish_environment_(publish_environment)
-  , publish_markers_(publish_markers)
 {
   if (tess_ == nullptr)
   {
@@ -67,28 +74,32 @@ ContactMonitor::ContactMonitor(const tesseract::Tesseract::Ptr& tess,
   manager_->setActiveCollisionObjects(monitored_link_names);
   manager_->setContactDistanceThreshold(contact_distance);
 
-  joint_states_sub_ = nh.subscribe("joint_states", 1, &ContactMonitor::callbackJointState, this);
-  contact_results_pub_ = pnh.advertise<tesseract_msgs::ContactResultVector>("contact_results", 1, true);
-  modify_env_service_ = pnh.advertiseService("modify_environment", &ContactMonitor::callbackModifyTesseractEnv, this);
-
-  if (publish_environment_)
-    environment_pub_ = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);
-
-  if (publish_markers_)
-    contact_marker_pub_ = pnh.advertise<visualization_msgs::MarkerArray>("contact_results_markers", 1, true);
-
-  compute_contact_results_ =
-      pnh.advertiseService("compute_contact_results", &ContactMonitor::callbackComputeContactResultVector, this);
-
-  environment_diff_sub_ = pnh.subscribe("tesseract_diff", 100, &ContactMonitor::callbackTesseractEnvDiff, this);
-
-  return;
+  joint_states_sub_ = nh_.subscribe(joint_state_topic, 1, &ContactMonitor::callbackJointState, this);
+  contact_results_pub_ =
+      pnh_.advertise<tesseract_msgs::ContactResultVector>(DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC, 1, true);
+  modify_env_service_ =
+      pnh_.advertiseService(DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &ContactMonitor::callbackModifyTesseractEnv, this);
+  compute_contact_results_ = pnh_.advertiseService(
+      DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE, &ContactMonitor::callbackComputeContactResultVector, this);
 }
 
-ContactMonitor::~ContactMonitor()
+ContactMonitor::~ContactMonitor() { current_joint_states_evt_.notify_all(); }
+
+void ContactMonitor::startPublishingEnvironment(const std::string& topic)
 {
-  current_joint_states_evt_.notify_all();
-  return;
+  publish_environment_ = true;
+  environment_pub_ = pnh_.advertise<tesseract_msgs::TesseractState>(topic, 100, false);
+}
+
+void ContactMonitor::startMonitoringEnvironment(const std::string& topic)
+{
+  environment_diff_sub_ = nh_.subscribe(topic, 100, &ContactMonitor::callbackTesseractEnvDiff, this);
+}
+
+void ContactMonitor::startPublishingMarkers(const std::string& topic)
+{
+  publish_contact_markers_ = true;
+  contact_marker_pub_ = pnh_.advertise<visualization_msgs::MarkerArray>(topic, 1, true);
 }
 
 /**
@@ -147,7 +158,7 @@ void ContactMonitor::computeCollisionReportThread()
     }
     contact_results_pub_.publish(contacts_msg);
 
-    if (publish_markers_)
+    if (publish_contact_markers_)
     {
       int id_counter = 0;
       visualization_msgs::MarkerArray marker_msg = tesseract_rosutils::ROSPlotting::getContactResultsMarkerArrayMsg(
