@@ -3,7 +3,8 @@
   <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
   <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
-  <arg name="plugin" default="tesseract_collision/BulletDiscreteBVHManager"/>
+  <arg name="descrete_plugin" default="tesseract_collision/BulletDiscreteBVHManager"/>
+  <arg name="continuous_plugin" default="tesseract_collision/BulletCastBVHManager"/>
   <arg name="monitor_links" default=""/>
 
   <!--
@@ -14,18 +15,20 @@
   -->
   <arg name="contact_test_type" default="2"/>
   <arg name="contact_distance"/>
-  <arg name="publish_environment" default="false"/>
-  <arg name="publish_markers" default="false"/>
-
+  <arg name="publish_environment_topic" default=""/>
+  <arg name="publish_markers_topic" default=""/>
+  <arg name="monitor_environment_topic" default=""/>
 
   <node pkg="tesseract_monitoring" type="tesseract_monitoring_contacts_node" name="tesseract_monitoring_contacts">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
-    <param name="plugin" type="string" value="$(arg plugin)"/>
+    <param name="descrete_plugin" type="string" value="$(arg descrete_plugin)"/>
+    <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
     <param name="contact_distance" value="$(arg contact_distance)"/>
     <param name="monitor_links" value="$(arg monitor_links)"/>
     <param name="contact_test_type" value="$(arg contact_test_type)"/>
-    <param name="publish_environment" value="$(arg publish_environment)"/>
-    <param name="publish_markers" value="$(arg publish_markers)"/>
+    <param name="publish_environment_topic" value="$(arg publish_environment_topic)"/>
+    <param name="publish_markers_topic" value="$(arg publish_markers_topic)"/>
+    <param name="monitor_environment_topic" value="$(arg monitor_environment_topic)"/>
   </node>
 
 </launch>
