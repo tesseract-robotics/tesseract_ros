@@ -219,13 +219,13 @@ Visualization Manager:
         Display Mode: Trail
         Interrupt Display: false
         State Display Time: 0.05 s
-        Topic: /trajopt/display_tesseract_trajectory
+        Topic: /tesseract/display_tesseract_trajectory
         Trail Step Size: 1
         Value: ""
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /trajopt/display_collisions
+      Marker Topic: /tesseract/display_collisions
       Name: MarkerArray
       Namespaces:
         {}
