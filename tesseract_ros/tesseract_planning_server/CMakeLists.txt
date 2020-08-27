@@ -28,11 +28,11 @@ catkin_package(
 
 add_library(${PROJECT_NAME} SHARED
   src/tesseract_planning_server.cpp
-  src/taskflow/descartes_taskflow.cpp
-  src/taskflow/ompl_taskflow.cpp
-  src/taskflow/trajopt_taskflow.cpp
-  src/taskflow/simple_cartesian_taskflow.cpp
-  src/taskflow/simple_freespace_taskflow.cpp)
+  src/taskflows/descartes_taskflow.cpp
+  src/taskflows/ompl_taskflow.cpp
+  src/taskflows/trajopt_taskflow.cpp
+  src/taskflows/simple_cartesian_taskflow.cpp
+  src/taskflows/simple_freespace_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
