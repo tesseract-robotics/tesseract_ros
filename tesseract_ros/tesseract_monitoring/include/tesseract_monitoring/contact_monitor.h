@@ -48,14 +48,37 @@ namespace contact_monitor
 class ContactMonitor
 {
 public:
+  /// The name of the topic used by default for receiving joint states
+  static const std::string DEFAULT_JOINT_STATES_TOPIC;  // "/joint_states"
+
+  /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
+  /// the name, so the topic is prefixed by the node name)
+  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/tesseract_published_environment"
+
+  // The name of the topic this should listen to for updates
+  static const std::string DEFAULT_MONITOR_ENVIRONMENT_TOPIC;  // "/tesseract_monitored_environment
+
+  /// The name of the service used by default for setting the full tesseract environment state
+  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
+
+  /// The name of the topic used by default for publishing the monitored contact results (this is without "/" in
+  /// the name, so the topic is prefixed by the node name)
+  static const std::string DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;  // "/contact_results"
+
+  /// The name of the topic used by default for publishing the monitored contact results markers (this is without "/" in
+  /// the name, so the topic is prefixed by the node name)
+  static const std::string DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC;  // "/contact_results_markers"
+
+  /// The name of the service used by default for computing the contact results
+  static const std::string DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;  // "/compute_contact_results"
+
   ContactMonitor(const tesseract::Tesseract::Ptr& tess,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
                  const tesseract_collision::ContactTestType& type,
                  double contact_distance = 0.1,
-                 bool publish_environment = false,
-                 bool publish_markers = false);
+                 const std::string& joint_state_topic = DEFAULT_JOINT_STATES_TOPIC);
   ~ContactMonitor();
   /**
    * @brief Custom copy constructor, copy assignment, move constructor, and move
@@ -68,6 +91,24 @@ public:
   ContactMonitor& operator=(const ContactMonitor&) = delete;
   ContactMonitor(ContactMonitor&&) = delete;
   ContactMonitor& operator=(ContactMonitor&&) = delete;
+
+  /**
+   * @brief Start publishing the contact monitors environment
+   * @param topic The topic to publish the contact monitor environment on
+   */
+  void startPublishingEnvironment(const std::string& topic = DEFAULT_PUBLISH_ENVIRONMENT_TOPIC);
+
+  /**
+   * @brief Start monitoring an environment for applying changes to this environment
+   * @param topic The topic to monitor for environment changes
+   */
+  void startMonitoringEnvironment(const std::string& topic = DEFAULT_MONITOR_ENVIRONMENT_TOPIC);
+
+  /**
+   * @brief Start publishing the contact markers
+   * @param topic The topic topic to publish the contact results markers on
+   */
+  void startPublishingMarkers(const std::string& topic = DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC);
 
   /**
    * @brief Compute collision results and publish results.
@@ -88,12 +129,14 @@ public:
 
 private:
   tesseract::Tesseract::Ptr tess_;
+  ros::NodeHandle& nh_;
+  ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;
   tesseract_collision::ContactTestType type_;
   double contact_distance_;
-  bool publish_environment_;
-  bool publish_markers_;
   tesseract_collision::DiscreteContactManager::Ptr manager_;
+  bool publish_environment_{ false };
+  bool publish_contact_markers_{ false };
   ros::Subscriber joint_states_sub_;
   ros::Publisher contact_results_pub_;
   ros::Publisher environment_pub_;
