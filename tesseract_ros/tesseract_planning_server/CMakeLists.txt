@@ -10,8 +10,6 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_process_managers REQUIRED)
-find_package(tesseract_motion_planners REQUIRED)
-
 
 catkin_package(
   INCLUDE_DIRS
@@ -23,16 +21,10 @@ catkin_package(
   DEPENDS
     tesseract_command_language
     tesseract_process_managers
-    tesseract_motion_planners
 )
 
 add_library(${PROJECT_NAME} SHARED
-  src/tesseract_planning_server.cpp
-  src/taskflows/descartes_taskflow.cpp
-  src/taskflows/ompl_taskflow.cpp
-  src/taskflows/trajopt_taskflow.cpp
-  src/taskflows/simple_cartesian_taskflow.cpp
-  src/taskflows/simple_freespace_taskflow.cpp)
+  src/tesseract_planning_server.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
