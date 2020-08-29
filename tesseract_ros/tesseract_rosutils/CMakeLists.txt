@@ -23,7 +23,8 @@ catkin_package(
   INCLUDE_DIRS
     include
     ${EIGEN3_INCLUDE_DIRS}
-#  LIBRARIES
+  LIBRARIES
+    ${PROJECT_NAME}
   CATKIN_DEPENDS
     tesseract_msgs
     roscpp
