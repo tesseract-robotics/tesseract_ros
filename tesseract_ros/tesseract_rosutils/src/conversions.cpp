@@ -38,7 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rosutils
 {
-
 Eigen::VectorXd toEigen(const std::vector<double>& vector)
 {
   return Eigen::VectorXd::Map(vector.data(), static_cast<long>(vector.size()));
@@ -70,7 +69,7 @@ tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::JointT
 }
 
 bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                              const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
+                       const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -100,7 +99,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
 }
 
 bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                              const tesseract_msgs::ProcessPlan& process_plan)
+                       const tesseract_msgs::ProcessPlan& process_plan)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -146,9 +145,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
   return true;
 }
 
-bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
-                      const std::string& file_path,
-                      char separator = ',')
+bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path, char separator)
 {
   std::ofstream myfile;
   myfile.open(file_path);
@@ -167,7 +164,7 @@ bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
   return true;
 }
 
-trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator = ',')
+trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator)
 {
   trajectory_msgs::JointTrajectory joint_trajectory;
   std::ifstream csv_file(file_path);
@@ -302,8 +299,6 @@ trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& f
 
 //  return std::make_shared<tesseract_motion_planners::JointWaypoint>(joint_positions, joint_names);
 //}
-
-
 
 ///**
 // * @brief Convert a process plan segment to a process plan segment message

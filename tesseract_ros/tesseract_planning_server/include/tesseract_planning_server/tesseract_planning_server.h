@@ -74,8 +74,6 @@ protected:
   tesseract_planning::SimplePlannerCompositeProfileMap simple_composite_profiles_;
 
   void loadDefaultPlannerProfiles();
-
-  void loadDefaultPlanners();
 };
 }  // namespace tesseract_planning_server
 #endif  // TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H

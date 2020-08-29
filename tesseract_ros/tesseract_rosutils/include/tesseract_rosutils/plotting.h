@@ -29,6 +29,9 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/publisher.h>
+#include <tesseract_msgs/Trajectory.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
@@ -41,7 +44,7 @@ class ROSPlotting : public tesseract_visualization::Visualization
 public:
   ROSPlotting(std::string root_link = "world", std::string topic_namespace = "tesseract");
 
-  void plotTrajectory(const tesseract_msgs::Trajectory& traj) { trajectory_pub_.publish(traj); }
+  void plotTrajectory(const tesseract_msgs::Trajectory& traj);
 
   void plotTrajectory(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const tesseract_common::TrajArray>& traj) override;
@@ -73,6 +76,32 @@ public:
 
   void waitForInput() override;
 
+  static visualization_msgs::Marker getMarkerArrowMsg(int& id_counter,
+                                                      const std::string& frame_id,
+                                                      const std::string& ns,
+                                                      const ros::Time& time_stamp,
+                                                      const Eigen::Ref<const Eigen::Vector3d>& pt1,
+                                                      const Eigen::Ref<const Eigen::Vector3d>& pt2,
+                                                      const Eigen::Ref<const Eigen::Vector4d>& rgba,
+                                                      const double scale);
+
+  static visualization_msgs::Marker getMarkerCylinderMsg(int& id_counter,
+                                                         const std::string& frame_id,
+                                                         const std::string& ns,
+                                                         const ros::Time& time_stamp,
+                                                         const Eigen::Ref<const Eigen::Vector3d>& pt1,
+                                                         const Eigen::Ref<const Eigen::Vector3d>& pt2,
+                                                         const Eigen::Ref<const Eigen::Vector4d>& rgba,
+                                                         const double scale);
+
+  static visualization_msgs::MarkerArray
+  getContactResultsMarkerArrayMsg(int& id_counter,
+                                  const std::string& frame_id,
+                                  const std::string& ns,
+                                  const ros::Time& time_stamp,
+                                  const std::vector<std::string>& link_names,
+                                  const tesseract_collision::ContactResultVector& dist_results,
+                                  const Eigen::Ref<const Eigen::VectorXd>& safety_distances);
 
 private:
   std::string root_link_;         /**< Root link of markers */
