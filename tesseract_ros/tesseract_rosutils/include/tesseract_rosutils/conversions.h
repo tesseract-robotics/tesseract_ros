@@ -38,6 +38,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ProcessPlan.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/types.h>
+
 namespace tesseract_rosutils
 {
 /**
@@ -72,7 +74,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
  * @return True if successful, otherwise false
  */
 bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                              const tesseract_msgs::ProcessPlan& process_plan);
+                       const tesseract_msgs::ProcessPlan& process_plan);
 
 /**
  * @brief Convert a joint trajector to csv formate and write to file
@@ -81,7 +83,9 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
  * @param separator The separator to use
  * @return true if successful
  */
-bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path, char separator = ',');
+bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
+               const std::string& file_path,
+               char separator = ',');
 
 /**
  * @brief Convert CSVFile to JointTrajectory

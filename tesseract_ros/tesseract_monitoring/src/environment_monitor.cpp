@@ -45,6 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_rosutils/utils.h>
 
 class DynamicReconfigureImpl
 {
@@ -868,7 +869,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
     {
       res.link_transforms.names.push_back(link_pair.first);
       geometry_msgs::Pose pose;
-      tf::poseEigenToMsg(link_pair.second, pose);
+      tesseract_rosutils::toMsg(pose, link_pair.second);
       res.link_transforms.transforms.push_back(pose);
     }
   }
@@ -879,7 +880,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
     {
       res.joint_transforms.names.push_back(joint_pair.first);
       geometry_msgs::Pose pose;
-      tf::poseEigenToMsg(joint_pair.second, pose);
+      tesseract_rosutils::toMsg(pose, joint_pair.second);
       res.joint_transforms.transforms.push_back(pose);
     }
   }

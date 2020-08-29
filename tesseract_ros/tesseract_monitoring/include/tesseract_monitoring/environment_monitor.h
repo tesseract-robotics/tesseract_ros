@@ -41,8 +41,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <pluginlib/class_loader.hpp>
 #include <ros/ros.h>
-#include <tf/tf.h>
-#include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
