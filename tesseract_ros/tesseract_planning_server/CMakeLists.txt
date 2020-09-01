@@ -10,6 +10,8 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_process_managers REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
+find_package(tesseract_common REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -23,11 +25,16 @@ catkin_package(
     tesseract_process_managers
 )
 
+# Load clang tidy args and compiler options
+tesseract_clang_tidy_args()
+tesseract_compile_options()
+
 add_library(${PROJECT_NAME} SHARED
   src/tesseract_planning_server.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -37,8 +44,9 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 
 add_executable(${PROJECT_NAME}_node src/tesseract_planning_server_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${PROJECT_NAME} ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_node PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_node)
+target_compile_options(${PROJECT_NAME}_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_node PRIVATE VERSION 17)
 target_include_directories(${PROJECT_NAME}_node PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -47,8 +55,9 @@ target_include_directories(${PROJECT_NAME}_node SYSTEM PUBLIC
 
 add_executable(${PROJECT_NAME}_raster_example examples/server_raster_example.cpp)
 target_link_libraries(${PROJECT_NAME}_raster_example PRIVATE tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_raster_example PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_raster_example)
+target_compile_options(${PROJECT_NAME}_raster_example PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_raster_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_raster_example PRIVATE VERSION 17)
 target_include_directories(${PROJECT_NAME}_raster_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

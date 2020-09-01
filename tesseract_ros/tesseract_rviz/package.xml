@@ -8,6 +8,7 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_common_scripts</build_depend>
 
   <depend>tesseract_msgs</depend>
   <depend>tesseract</depend>

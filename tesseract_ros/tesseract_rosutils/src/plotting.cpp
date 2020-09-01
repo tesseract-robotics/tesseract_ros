@@ -66,10 +66,7 @@ void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
   plotTrajectory(msg);
 }
 
-bool ROSPlotting::init(tesseract::Tesseract::ConstPtr /*thor*/)
-{
-  // TODO
-}
+bool ROSPlotting::init(tesseract::Tesseract::ConstPtr /*thor*/) { return false; }
 
 void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj)
 {

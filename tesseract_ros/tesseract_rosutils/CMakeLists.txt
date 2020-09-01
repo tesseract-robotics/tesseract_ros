@@ -18,6 +18,7 @@ find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -43,10 +44,15 @@ catkin_package(
     tesseract_motion_planners
 )
 
+# Load clang tidy args and compiler options
+tesseract_clang_tidy_args()
+tesseract_compile_options()
+
 add_library(${PROJECT_NAME} SHARED src/plotting.cpp src/conversions.cpp src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${Boost_LIBRARIES} ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 14)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -74,8 +80,9 @@ if(CATKIN_ENABLE_TESTING)
   find_package(tesseract_support REQUIRED)
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
   target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
-  tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
-  tesseract_clang_tidy(${PROJECT_NAME}_unit)
+  target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_clang_tidy(${PROJECT_NAME}_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+  target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 14)
   target_include_directories(${PROJECT_NAME}_unit PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:include>")

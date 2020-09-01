@@ -194,7 +194,7 @@ trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& f
     for (std::size_t i = 0; i < column_names.size() - 1; ++i)
       joint_trajectory.joint_names.push_back(column_names[i]);
 
-    num_joints = column_names.size() - 1;
+    num_joints = static_cast<int>(column_names.size()) - 1;
   }
 
   // Read data, line by line
@@ -209,7 +209,7 @@ trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& f
     double tfs = 0;
     tesseract_common::toNumeric<double>(tokens.back(), tfs);
     point.time_from_start.fromSec(tfs);
-    for (std::size_t i = 0; i < num_joints; ++i)
+    for (std::size_t i = 0; i < static_cast<std::size_t>(num_joints); ++i)
     {
       double val = 0;
       tesseract_common::toNumeric<double>(tokens[i], val);

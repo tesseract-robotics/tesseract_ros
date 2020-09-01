@@ -16,6 +16,7 @@ find_package(Boost REQUIRED thread date_time system filesystem)
 find_package(tesseract REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
@@ -72,6 +73,10 @@ catkin_package(
     tesseract
     tesseract_common
 )
+
+# Load clang tidy args and compiler options
+tesseract_clang_tidy_args()
+tesseract_compile_options()
 
 include_directories(
   include
@@ -130,7 +135,8 @@ target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   ${Boost_LIBRARIES}
 )
 
-tesseract_target_compile_options(${PROJECT_NAME}_render_tools PUBLIC)
+target_compile_options(${PROJECT_NAME}_render_tools PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_render_tools PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_render_tools PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -160,7 +166,8 @@ target_link_libraries(${PROJECT_NAME}_state_plugin_core PUBLIC
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_state_plugin_core PUBLIC)
+target_compile_options(${PROJECT_NAME}_state_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_state_plugin_core PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_state_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -173,7 +180,8 @@ target_include_directories(${PROJECT_NAME}_state_plugin_core SYSTEM PUBLIC
 
 add_library(${PROJECT_NAME}_state_plugin SHARED src/tesseract_state_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_state_plugin PRIVATE ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_state_plugin PRIVATE)
+target_compile_options(${PROJECT_NAME}_state_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_state_plugin PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_state_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -193,7 +201,8 @@ target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_trajectory_plugin_core PUBLIC)
+target_compile_options(${PROJECT_NAME}_trajectory_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_trajectory_plugin_core PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -210,7 +219,8 @@ target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
     tesseract::tesseract
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_trajectory_plugin PRIVATE)
+target_compile_options(${PROJECT_NAME}_trajectory_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_trajectory_plugin PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_trajectory_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -231,7 +241,8 @@ target_link_libraries(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES}
     ${EIGEN3_INCLUDE_DIRS})
-tesseract_target_compile_options(${PROJECT_NAME}_manipulation_plugin_core PUBLIC)
+target_compile_options(${PROJECT_NAME}_manipulation_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_manipulation_plugin_core PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -247,7 +258,8 @@ target_link_libraries(${PROJECT_NAME}_manipulation_plugin PRIVATE
     tesseract::tesseract
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_manipulation_plugin PRIVATE)
+target_compile_options(${PROJECT_NAME}_manipulation_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_manipulation_plugin PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_manipulation_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -258,7 +270,8 @@ target_include_directories(${PROJECT_NAME}_manipulation_plugin SYSTEM PRIVATE
 
 add_executable(${PROJECT_NAME}_test src/test.cpp)
 target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_test PRIVATE)
+target_compile_options(${PROJECT_NAME}_test PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_test PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME}_test PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
