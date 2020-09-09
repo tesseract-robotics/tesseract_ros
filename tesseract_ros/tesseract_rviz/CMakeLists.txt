@@ -74,9 +74,8 @@ catkin_package(
     tesseract_common
 )
 
-# Load clang tidy args and compiler options
-tesseract_clang_tidy_args()
-tesseract_compile_options()
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
 
 include_directories(
   include

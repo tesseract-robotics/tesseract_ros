@@ -25,9 +25,8 @@ catkin_package(
     tesseract_process_managers
 )
 
-# Load clang tidy args and compiler options
-tesseract_clang_tidy_args()
-tesseract_compile_options()
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
 
 add_library(${PROJECT_NAME} SHARED
   src/tesseract_planning_server.cpp)

@@ -50,6 +50,28 @@ ROSPlotting::ROSPlotting(std::string root_link, std::string topic_namespace)
   axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_axes", 1, true);
 }
 
+bool ROSPlotting::init(tesseract::Tesseract::ConstPtr /*thor*/) { return true; }
+
+bool ROSPlotting::isConnected() const { return true; }
+
+void ROSPlotting::waitForConnection(long seconds) const
+{
+  if (seconds == 0)
+    seconds = std::numeric_limits<long>::max();
+
+  for (int i = 0; i < seconds; ++i)
+  {
+    if (!isConnected())
+      sleep(1);
+    else
+      break;
+  }
+}
+
+void ROSPlotting::plotEnvironment(tesseract_environment::Environment::ConstPtr /*env*/) {}
+
+void ROSPlotting::plotEnvironmentState(tesseract_environment::EnvState::ConstPtr /*state*/) {}
+
 void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj) { trajectory_pub_.publish(traj); }
 
 void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
@@ -65,8 +87,6 @@ void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
 
   plotTrajectory(msg);
 }
-
-bool ROSPlotting::init(tesseract::Tesseract::ConstPtr /*thor*/) { return false; }
 
 void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj)
 {
@@ -199,7 +219,7 @@ visualization_msgs::Marker ROSPlotting::getMarkerArrowMsg(int& id_counter,
                                                           const Eigen::Ref<const Eigen::Vector3d>& pt1,
                                                           const Eigen::Ref<const Eigen::Vector3d>& pt2,
                                                           const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                                          const double scale)
+                                                          double scale)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = frame_id;
@@ -247,7 +267,7 @@ visualization_msgs::Marker ROSPlotting::getMarkerCylinderMsg(int& id_counter,
                                                              const Eigen::Ref<const Eigen::Vector3d>& pt1,
                                                              const Eigen::Ref<const Eigen::Vector3d>& pt2,
                                                              const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                                             const double scale)
+                                                             double scale)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = frame_id;

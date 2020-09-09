@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_monitoring)
 
 find_package(tesseract REQUIRED)
+find_package(tesseract_environment REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -28,6 +29,7 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_environment
     ${PROJECT_NAME}_contacts
+    ${PROJECT_NAME}_tesseract_interface
   CATKIN_DEPENDS
     roscpp
     tesseract_msgs
@@ -42,6 +44,7 @@ catkin_package(
     tesseract
     orocos_kdl
     tesseract_common
+    tesseract_environment
 )
 
 include_directories(
@@ -49,9 +52,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-# Load clang tidy args and compiler options
-tesseract_clang_tidy_args()
-tesseract_compile_options()
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
 
 # Tesseract ROS Nodes
 add_library(${PROJECT_NAME}_contacts src/contact_monitor.cpp)
@@ -88,6 +90,14 @@ target_cxx_version(${PROJECT_NAME}_environment_node PRIVATE VERSION 17)
 target_include_directories(${PROJECT_NAME}_environment_node PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_environment_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
+add_library(${PROJECT_NAME}_tesseract_interface SHARED src/tesseract_monitor_interface.cpp)
+target_link_libraries(${PROJECT_NAME}_tesseract_interface PUBLIC tesseract::tesseract_environment_core ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_tesseract_interface PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_tesseract_interface ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_tesseract_interface PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_tesseract_interface PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+target_include_directories(${PROJECT_NAME}_tesseract_interface SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
+
 add_executable(demo_scene demos/demo_scene.cpp)
 target_link_libraries(demo_scene PRIVATE ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(demo_scene PRIVATE ${TESSERACT_COMPILE_OPTIONS})
@@ -97,7 +107,7 @@ target_include_directories(demo_scene PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_
 target_include_directories(demo_scene SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_environment ${PROJECT_NAME}_contacts ${PROJECT_NAME}_contacts_node ${PROJECT_NAME}_environment_node demo_scene
+install(TARGETS ${PROJECT_NAME}_environment ${PROJECT_NAME}_contacts ${PROJECT_NAME}_contacts_node ${PROJECT_NAME}_environment_node ${PROJECT_NAME}_tesseract_interface demo_scene
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

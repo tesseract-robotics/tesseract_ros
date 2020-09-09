@@ -47,7 +47,6 @@ public:
 
 protected:
   ros::NodeHandle nh_;
-  ros::NodeHandle root_nh_;
 
   /** @brief The environment monitor to keep the planning server updated with the latest */
   tesseract_monitoring::EnvironmentMonitor environment_;

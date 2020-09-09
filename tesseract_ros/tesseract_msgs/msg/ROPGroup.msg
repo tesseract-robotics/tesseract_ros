@@ -1,0 +1,7 @@
+string name
+string manipulator_group
+string manipulator_ik_solver
+float64 manipulator_reach
+string positioner_group
+string positioner_fk_solver
+tesseract_msgs/StringDoublePair[] positioner_sample_resolution
