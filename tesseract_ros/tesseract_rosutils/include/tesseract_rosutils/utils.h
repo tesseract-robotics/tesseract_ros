@@ -28,40 +28,55 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <trajectory_msgs/JointTrajectory.h>
-#include <tesseract_msgs/TesseractState.h>
-#include <tesseract_msgs/EnvironmentCommand.h>
-#include <tesseract_msgs/ContactResultVector.h>
-#include <tesseract_msgs/Mesh.h>
-#include <tesseract_msgs/Link.h>
-#include <tesseract_msgs/Geometry.h>
-#include <tesseract_msgs/Material.h>
-#include <tesseract_msgs/Inertial.h>
-#include <tesseract_msgs/VisualGeometry.h>
+#include <tesseract_msgs/AllowedCollisionEntry.h>
+#include <tesseract_msgs/ChainGroup.h>
 #include <tesseract_msgs/CollisionGeometry.h>
+#include <tesseract_msgs/ContactResultVector.h>
+#include <tesseract_msgs/EnvironmentCommand.h>
+#include <tesseract_msgs/Geometry.h>
+#include <tesseract_msgs/GroupsJointState.h>
+#include <tesseract_msgs/GroupsJointStates.h>
+#include <tesseract_msgs/GroupsOPWKinematics.h>
+#include <tesseract_msgs/GroupsTCP.h>
+#include <tesseract_msgs/GroupsTCPs.h>
+#include <tesseract_msgs/Inertial.h>
 #include <tesseract_msgs/Joint.h>
 #include <tesseract_msgs/JointCalibration.h>
 #include <tesseract_msgs/JointDynamics.h>
+#include <tesseract_msgs/JointGroup.h>
 #include <tesseract_msgs/JointLimits.h>
 #include <tesseract_msgs/JointMimic.h>
 #include <tesseract_msgs/JointSafety.h>
+#include <tesseract_msgs/KinematicsInformation.h>
+#include <tesseract_msgs/Link.h>
+#include <tesseract_msgs/LinkGroup.h>
+#include <tesseract_msgs/Material.h>
+#include <tesseract_msgs/Mesh.h>
+#include <tesseract_msgs/REPGroup.h>
+#include <tesseract_msgs/ROPGroup.h>
+#include <tesseract_msgs/SceneGraph.h>
+#include <tesseract_msgs/StringDoublePair.h>
+#include <tesseract_msgs/StringPair.h>
+#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/ProcessPlan.h>
-#include <tesseract_msgs/AllowedCollisionEntry.h>
+
+#include <trajectory_msgs/JointTrajectory.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_scene_graph/resource_locator.h>
-
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/manipulator_manager.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/srdf/types.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/types.h>
-#include <tesseract_scene_graph/resource_locator.h>
 
 namespace tesseract_rosutils
 {
@@ -158,9 +173,13 @@ void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::En
 
 bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command);
 
+tesseract_environment::Commands fromMsg(const std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg);
+
+tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCommand& command_msg);
+
 bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
            const tesseract_environment::Commands& commands,
-           const unsigned long past_revision);
+           unsigned long past_revision);
 
 void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state);
 
@@ -250,6 +269,64 @@ void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
  * @return True if successful, otherwise false
  */
 bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorIsometry3d& transforms);
+
+/**
+ * @brief Convert a chain group to message
+ * @param group Chain group
+ * @return Chain group message
+ */
+tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_reference group);
+
+/**
+ * @brief Convert a Robot on Positioner group to message
+ * @param group Robot on Positioner group
+ * @return Robot on Positioner group message
+ */
+tesseract_msgs::ROPGroup toMsg(tesseract_scene_graph::ROPGroups::const_reference group);
+
+/**
+ * @brief Convert a Robot with External Positioner group to message
+ * @param group  Robot with External Positioner group
+ * @return Robot with External Positioner group message
+ */
+tesseract_msgs::REPGroup toMsg(tesseract_scene_graph::REPGroups::const_reference group);
+
+/**
+ * @brief Convert a group's OPW kinematics to message
+ * @param group Group's OPW kinematics
+ * @return Group's OPW kinematics message
+ */
+tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_scene_graph::GroupOPWKinematics::const_reference group);
+
+/**
+ * @brief Convert a group's joint state to message
+ * @param group Group's joint states
+ * @return Group's joint states message
+ */
+tesseract_msgs::GroupsJointStates toMsg(tesseract_scene_graph::GroupJointStates::const_reference group);
+
+/**
+ * @brief Convert a group's tool center points to message
+ * @param group Group's tool center points
+ * @return Group's tool center points message
+ */
+tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_reference group);
+
+/**
+ * @brief Convert manipulator managers data to message
+ * @param kin_info Kinematics information message to populate
+ * @param manager The Manipulator manager to convert to message
+ * @return True if successful, otherwise false
+ */
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::ManipulatorManager& manager);
+
+/**
+ * @brief This will populate the manipulator manager with data from the kinematics information
+ * @param manager The manipulator manager
+ * @param kin_info The kinematics information message
+ * @return True if successful, otherwise false
+ */
+bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info);
 
 }  // namespace tesseract_rosutils
 

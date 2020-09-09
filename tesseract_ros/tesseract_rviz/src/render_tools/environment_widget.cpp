@@ -398,7 +398,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
       case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
         Eigen::Isometry3d pose;
-        tf::poseMsgToEigen(command.change_joint_origin_pose, pose);
+        tesseract_rosutils::fromMsg(pose, command.change_joint_origin_pose);
         tesseract_->getEnvironment()->changeJointOrigin(command.change_joint_origin_name, pose);
         break;
       }

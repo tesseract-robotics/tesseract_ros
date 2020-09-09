@@ -44,12 +44,20 @@ class ROSPlotting : public tesseract_visualization::Visualization
 public:
   ROSPlotting(std::string root_link = "world", std::string topic_namespace = "tesseract");
 
+  bool init(tesseract::Tesseract::ConstPtr thor) override;
+
   void plotTrajectory(const tesseract_msgs::Trajectory& traj);
 
   void plotTrajectory(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const tesseract_common::TrajArray>& traj) override;
 
-  bool init(tesseract::Tesseract::ConstPtr thor) override;
+  bool isConnected() const override;
+
+  void waitForConnection(long seconds = 0) const override;
+
+  void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) override;
+
+  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state = nullptr) override;
 
   void plotTrajectory(const tesseract_common::JointTrajectory& traj) override;
 
@@ -83,7 +91,7 @@ public:
                                                       const Eigen::Ref<const Eigen::Vector3d>& pt1,
                                                       const Eigen::Ref<const Eigen::Vector3d>& pt2,
                                                       const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                                      const double scale);
+                                                      double scale);
 
   static visualization_msgs::Marker getMarkerCylinderMsg(int& id_counter,
                                                          const std::string& frame_id,
@@ -92,7 +100,7 @@ public:
                                                          const Eigen::Ref<const Eigen::Vector3d>& pt1,
                                                          const Eigen::Ref<const Eigen::Vector3d>& pt2,
                                                          const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                                         const double scale);
+                                                         double scale);
 
   static visualization_msgs::MarkerArray
   getContactResultsMarkerArrayMsg(int& id_counter,

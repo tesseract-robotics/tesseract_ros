@@ -34,36 +34,49 @@ add_message_files(
   DIRECTORY msg
   FILES
     AllowedCollisionEntry.msg
+    ChainGroup.msg
     CollisionGeometry.msg
     ContactResult.msg
     ContactResultVector.msg
     EnvironmentCommand.msg
     Geometry.msg
+    GroupsJointState.msg
+    GroupsJointStates.msg
+    GroupsOPWKinematics.msg
+    GroupsTCP.msg
+    GroupsTCPs.msg
     Inertial.msg
     Joint.msg
     JointCalibration.msg
     JointDynamics.msg
+    JointGroup.msg
     JointLimits.msg
     JointMimic.msg
     JointSafety.msg
+    KinematicsInformation.msg
     Link.msg
+    LinkGroup.msg
     Material.msg
     Mesh.msg
     ObjectColor.msg
-    TesseractState.msg
-    Trajectory.msg
-    VisualGeometry.msg
-    TransformMap.msg
+    OctreeSubType.msg
+    PlannerProfileRemapping.msg
+    PlanningRequest.msg
+    PlanningResponse.msg
     ProcessPlan.msg
     ProcessPlanPath.msg
     ProcessPlanSegment.msg
     ProcessPlanTransitionPair.msg
-    OctreeSubType.msg
-    SceneGraph.msg
-    PlanningRequest.msg
-    PlanningResponse.msg
     ProfileMap.msg
-    PlannerProfileRemapping.msg
+    REPGroup.msg
+    ROPGroup.msg
+    SceneGraph.msg
+    StringDoublePair.msg
+    StringPair.msg
+    TesseractState.msg
+    Trajectory.msg
+    TransformMap.msg
+    VisualGeometry.msg
 )
 
 add_service_files(
