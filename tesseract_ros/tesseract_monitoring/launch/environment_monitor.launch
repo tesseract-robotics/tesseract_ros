@@ -1,17 +1,21 @@
+<?xml version="1.0"?>
 <launch>
-  <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
-  <!-- The name of the parameter under which the URDF is loaded -->
+
+  <arg name="monitor_namespace"/>
+  <arg name="monitored_namespace" default=""/>
   <arg name="robot_description" default="robot_description"/>
-  <arg name="descrete_plugin" default="tesseract_collision/BulletDiscreteBVHManager"/>
-  <arg name="continuous_plugin" default="tesseract_collision/BulletCastBVHManager"/>
+  <arg name="descrete_plugin" default="BulletDiscreteBVHManager"/>
+  <arg name="continuous_plugin" default="BulletCastBVHManager"/>
   <arg name="joint_state_topic" default=""/>
-  <arg name="published_environment_topic" default=""/>
+  <arg name="publish_environment" default="false"/>
 
   <node pkg="tesseract_monitoring" type="tesseract_monitoring_environment_node" name="tesseract_monitoring_environment">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
     <param name="descrete_plugin" type="string" value="$(arg descrete_plugin)"/>
     <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
     <param name="joint_state_topic" type="string" value="$(arg joint_state_topic)"/>
-    <param name="published_environment_topic" type="string" value="$(arg published_environment_topic)"/>
+    <param name="monitor_namespace" type="string" value="$(arg monitor_namespace)"/>
+    <param name="monitored_namespace" type="string" value="$(arg monitored_namespace)"/>
+    <param name="publish_environment" type="bool" value="$(arg publish_environment)"/>
   </node>
 </launch>

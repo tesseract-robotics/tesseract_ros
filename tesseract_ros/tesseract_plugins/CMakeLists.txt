@@ -28,9 +28,8 @@ catkin_package(
     tesseract_common
 )
 
-# Load clang tidy args and compiler options
-tesseract_clang_tidy_args()
-tesseract_compile_options()
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
 
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
 target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract::tesseract_collision_core tesseract::tesseract_collision_bullet ${catkin_LIBRARIES})

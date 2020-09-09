@@ -25,8 +25,8 @@
  * limitations under the License.
  */
 
-#ifndef CONTACT_MONITOR_H
-#define CONTACT_MONITOR_H
+#ifndef TESSERACT_MONITORING_CONTACT_MONITOR_H
+#define TESSERACT_MONITORING_CONTACT_MONITOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -35,15 +35,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ComputeContactResultVector.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/TesseractState.h>
+#include <mutex>
+#include <condition_variable>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>  // boost::thread and boost::condition_variable
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract/tesseract.h>
 
-namespace contact_monitor
+namespace tesseract_monitoring
 {
 class ContactMonitor
 {
@@ -53,26 +52,24 @@ public:
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/tesseract_published_environment"
-
-  // The name of the topic this should listen to for updates
-  static const std::string DEFAULT_MONITOR_ENVIRONMENT_TOPIC;  // "/tesseract_monitored_environment
+  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/monitor_namespace/tesseract_published_environment"
 
   /// The name of the service used by default for setting the full tesseract environment state
-  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
+  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/monitor_namespace/modify_tesseract"
 
   /// The name of the topic used by default for publishing the monitored contact results (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;  // "/contact_results"
+  static const std::string DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;  // "/monitor_namespace/contact_results"
 
   /// The name of the topic used by default for publishing the monitored contact results markers (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC;  // "/contact_results_markers"
+  static const std::string DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC;  // "/monitor_namespace/contact_results_markers"
 
   /// The name of the service used by default for computing the contact results
-  static const std::string DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;  // "/compute_contact_results"
+  static const std::string DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;  // "/monitor_namespace/compute_contact_results"
 
-  ContactMonitor(const tesseract::Tesseract::Ptr& tess,
+  ContactMonitor(std::string monitor_namespace,
+                 const tesseract::Tesseract::Ptr& tess,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
@@ -96,19 +93,19 @@ public:
    * @brief Start publishing the contact monitors environment
    * @param topic The topic to publish the contact monitor environment on
    */
-  void startPublishingEnvironment(const std::string& topic = DEFAULT_PUBLISH_ENVIRONMENT_TOPIC);
+  void startPublishingEnvironment();
 
   /**
    * @brief Start monitoring an environment for applying changes to this environment
    * @param topic The topic to monitor for environment changes
    */
-  void startMonitoringEnvironment(const std::string& topic = DEFAULT_MONITOR_ENVIRONMENT_TOPIC);
+  void startMonitoringEnvironment(const std::string& monitored_namepsace);
 
   /**
    * @brief Start publishing the contact markers
    * @param topic The topic topic to publish the contact results markers on
    */
-  void startPublishingMarkers(const std::string& topic = DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC);
+  void startPublishingMarkers();
 
   /**
    * @brief Compute collision results and publish results.
@@ -128,6 +125,8 @@ public:
   void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state);
 
 private:
+  std::string monitor_namespace_;
+  std::string monitored_namespace_;
   tesseract::Tesseract::Ptr tess_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
@@ -144,11 +143,11 @@ private:
   ros::Subscriber environment_diff_sub_;
   ros::ServiceServer modify_env_service_;
   ros::ServiceServer compute_contact_results_;
-  boost::mutex modify_mutex_;
+  std::mutex modify_mutex_;
   boost::shared_ptr<sensor_msgs::JointState> current_joint_states_;
-  boost::condition_variable current_joint_states_evt_;
+  std::condition_variable current_joint_states_evt_;
 };
 
-}  // end namespace contact_monitor
+}  // namespace tesseract_monitoring
 
-#endif  // CONTACT_MONITOR_H
+#endif  // TESSERACT_MONITORING_

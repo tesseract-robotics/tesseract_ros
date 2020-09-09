@@ -21,9 +21,8 @@ find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surfa
 
 catkin_package()
 
-# Load clang tidy args and compiler options
-tesseract_clang_tidy_args()
-tesseract_compile_options()
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
 
 add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.cpp)
 target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${PCL_LIBRARIES} ${catkin_LIBRARIES})

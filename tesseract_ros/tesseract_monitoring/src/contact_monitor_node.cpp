@@ -54,16 +54,23 @@ int main(int argc, char** argv)
   tesseract_scene_graph::SRDFModel::Ptr srdf_model;
   std::string robot_description;
   std::string joint_state_topic;
-  std::string publish_environment_topic;
-  std::string monitor_environment_topic;
-  std::string publish_markers_topic;
+  std::string monitor_namespace;
+  std::string monitored_namespace;
+  bool publish_environment{ false };
+  bool publish_markers{ false };
 
+  if (!pnh.getParam("monitor_namespace", monitor_namespace))
+  {
+    ROS_ERROR("Missing required parameter monitor_namespace!");
+    return 1;
+  }
+
+  pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<std::string>(
-      "joint_state_topic", joint_state_topic, contact_monitor::ContactMonitor::DEFAULT_JOINT_STATES_TOPIC);
-  pnh.param<std::string>("publish_environment_topic", publish_environment_topic, "");
-  pnh.param<std::string>("monitor_environment_topic", monitor_environment_topic, "");
-  pnh.param<std::string>("publish_markers_topic", publish_markers_topic, "");
+      "joint_state_topic", joint_state_topic, tesseract_monitoring::ContactMonitor::DEFAULT_JOINT_STATES_TOPIC);
+  pnh.param<bool>("publish_environment", publish_environment, publish_environment);
+  pnh.param<bool>("publish_markers", publish_markers, publish_markers);
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -112,18 +119,19 @@ int main(int argc, char** argv)
   }
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
-  contact_monitor::ContactMonitor cm(tess, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
+  tesseract_monitoring::ContactMonitor cm(
+      monitor_namespace, tess, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
 
-  if (!publish_environment_topic.empty())
-    cm.startPublishingEnvironment(publish_environment_topic);
+  if (publish_environment)
+    cm.startPublishingEnvironment();
 
-  if (!monitor_environment_topic.empty())
-    cm.startMonitoringEnvironment(monitor_environment_topic);
+  if (!monitored_namespace.empty())
+    cm.startMonitoringEnvironment(monitored_namespace);
 
-  if (!publish_markers_topic.empty())
-    cm.startPublishingMarkers(publish_markers_topic);
+  if (publish_markers)
+    cm.startPublishingMarkers();
 
-  boost::thread t(&contact_monitor::ContactMonitor::computeCollisionReportThread, &cm);
+  boost::thread t(&tesseract_monitoring::ContactMonitor::computeCollisionReportThread, &cm);
 
   ROS_INFO("Contact Monitor Running!");
 

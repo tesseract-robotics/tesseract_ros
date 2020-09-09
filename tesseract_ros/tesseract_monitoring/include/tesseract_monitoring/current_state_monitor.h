@@ -41,8 +41,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include <mutex>
+#include <condition_variable>
 #include <memory>
 #include <functional>
 #include <unordered_map>
@@ -52,7 +52,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract/forward_kinematics_manager.h>
+#include <tesseract/manipulator_manager.h>
 
 namespace tesseract_monitoring
 {
@@ -69,7 +69,7 @@ public:
    * @param tf A pointer to the tf transformer to use
    */
   CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager);
+                      tesseract::ManipulatorManager::ConstPtr manipulator_manager);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
@@ -77,7 +77,7 @@ public:
    *  @param nh A ros::NodeHandle to pass node specific options
    */
   CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager,
+                      tesseract::ManipulatorManager::ConstPtr manipulator_manager,
                       const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
@@ -186,7 +186,7 @@ private:
   tesseract_environment::Environment::ConstPtr env_;
   tesseract_environment::EnvState env_state_;
   int last_environment_revision_;
-  tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager_;
+  tesseract::ManipulatorManager::ConstPtr manipulator_manager_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state
@@ -197,8 +197,8 @@ private:
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
 
-  mutable boost::mutex state_update_lock_;
-  mutable boost::condition_variable state_update_condition_;
+  mutable std::mutex state_update_lock_;
+  mutable std::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
 using CurrentStateMonitorPtr = std::shared_ptr<CurrentStateMonitor>;

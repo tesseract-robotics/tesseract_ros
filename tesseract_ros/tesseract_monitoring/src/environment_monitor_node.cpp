@@ -1,6 +1,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
+#include <ros/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/environment.h>
@@ -18,21 +19,31 @@ int main(int argc, char** argv)
   std::string descrete_plugin;
   std::string continuous_plugin;
   std::string joint_state_topic;
-  std::string published_environment_topic;
+  std::string monitor_namespace;
+  std::string monitored_namespace;
+  bool publish_environment{ false };
 
+  if (!pnh.getParam("monitor_namespace", monitor_namespace))
+  {
+    ROS_ERROR("Missing required parameter monitor_namespace!");
+    return 1;
+  }
+
+  pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<std::string>("descrete_plugin", descrete_plugin, "");
   pnh.param<std::string>("continuous_plugin", continuous_plugin, "");
   pnh.param<std::string>("joint_state_topic", joint_state_topic, "");
-  pnh.param<std::string>("published_environment_topic", published_environment_topic, "");
+  pnh.param<bool>("publish_environment", publish_environment, publish_environment);
 
-  tesseract_monitoring::EnvironmentMonitor monitor(robot_description, "", descrete_plugin, continuous_plugin);
+  tesseract_monitoring::EnvironmentMonitor monitor(
+      robot_description, monitor_namespace, descrete_plugin, continuous_plugin);
 
-  if (published_environment_topic.empty())
+  if (publish_environment)
     monitor.startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
-  else
-    monitor.startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT,
-                                       published_environment_topic);
+
+  if (!monitored_namespace.empty())
+    monitor.startMonitoringEnvironment(monitored_namespace);
 
   if (joint_state_topic.empty())
     monitor.startStateMonitor();
