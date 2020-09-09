@@ -17,20 +17,31 @@ int main(int argc, char** argv)
   std::string robot_description;
   std::string descrete_plugin;
   std::string continuous_plugin;
-  std::string monitored_environment_topic;
+  std::string monitor_namespace;
+  std::string monitored_namespace;
+  bool publish_environment{ false };
 
+  if (!pnh.getParam("monitor_namespace", monitor_namespace))
+  {
+    ROS_ERROR("Missing required parameter monitor_namespace!");
+    return 1;
+  }
+
+  pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<std::string>("descrete_plugin", descrete_plugin, "");
   pnh.param<std::string>("continuous_plugin", continuous_plugin, "");
-  pnh.param<std::string>("monitored_environment_topic", monitored_environment_topic, "");
+  pnh.param<bool>("publish_environment", publish_environment, publish_environment);
 
   tesseract_planning_server::TesseractPlanningServer planning_server(
-      robot_description, "", descrete_plugin, continuous_plugin);
+      robot_description, monitor_namespace, descrete_plugin, continuous_plugin);
 
-  if (monitored_environment_topic.empty())
-    planning_server.getEnvironmentMonitor().startMonitoringEnvironment();
-  else
-    planning_server.getEnvironmentMonitor().startMonitoringEnvironment(monitored_environment_topic);
+  if (publish_environment)
+    planning_server.getEnvironmentMonitor().startPublishingEnvironment(
+        tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
+
+  if (!monitored_namespace.empty())
+    planning_server.getEnvironmentMonitor().startMonitoringEnvironment(monitored_namespace);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();

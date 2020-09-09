@@ -268,6 +268,18 @@ bool isIdentical(const tesseract_scene_graph::Link& link1, const tesseract_scene
   return true;
 }
 
+bool fromMsg(Eigen::Isometry3d& pose, const geometry_msgs::Pose& pose_msg)
+{
+  tf::poseMsgToEigen(pose_msg, pose);
+  return true;
+}
+
+bool toMsg(geometry_msgs::Pose& pose_msg, const Eigen::Isometry3d& pose)
+{
+  tf::poseEigenToMsg(pose, pose_msg);
+  return true;
+}
+
 /** \brief Construct the message that corresponds to the shape. Return false on failure. */
 bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Geometry& geometry)
 {
@@ -1084,6 +1096,7 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
     case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
     {
       assert(false);
+      return false;
     }
     case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
     {
@@ -1122,8 +1135,8 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
     {
       command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION;
       const auto& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionCommand&>(command);
-      command_msg.add_allowed_collision.link_1 = cmd.getLinkName1();
-      command_msg.add_allowed_collision.link_2 = cmd.getLinkName2();
+      command_msg.remove_allowed_collision.link_1 = cmd.getLinkName1();
+      command_msg.remove_allowed_collision.link_2 = cmd.getLinkName2();
       return true;
     }
     case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
@@ -1152,7 +1165,7 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
 
 bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
            const tesseract_environment::Commands& commands,
-           const unsigned long past_revision)
+           unsigned long past_revision)
 {
   for (unsigned long i = past_revision; i < commands.size(); ++i)
   {
@@ -1164,6 +1177,93 @@ bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
   }
 
   return true;
+}
+
+tesseract_environment::Commands fromMsg(const std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg)
+{
+  tesseract_environment::Commands commands;
+  commands.reserve(commands_msg.size());
+  for (const auto& command : commands_msg)
+    commands.push_back(fromMsg(command));
+
+  return commands;
+}
+
+tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCommand& command_msg)
+{
+  switch (command_msg.command)
+  {
+    case tesseract_msgs::EnvironmentCommand::ADD:
+    {
+      auto l = std::make_shared<tesseract_scene_graph::Link>(fromMsg(command_msg.add_link));
+      auto j = std::make_shared<tesseract_scene_graph::Joint>(fromMsg(command_msg.add_joint));
+      return std::make_shared<tesseract_environment::AddCommand>(l, j);
+    }
+    case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
+    {
+      auto j = std::make_shared<tesseract_scene_graph::Joint>(fromMsg(command_msg.move_link_joint));
+      return std::make_shared<tesseract_environment::MoveLinkCommand>(j);
+    }
+    case tesseract_msgs::EnvironmentCommand::MOVE_JOINT:
+    {
+      return std::make_shared<tesseract_environment::MoveJointCommand>(command_msg.move_joint_name,
+                                                                       command_msg.move_joint_parent_link);
+    }
+    case tesseract_msgs::EnvironmentCommand::REMOVE_LINK:
+    {
+      return std::make_shared<tesseract_environment::RemoveLinkCommand>(command_msg.remove_link);
+    }
+    case tesseract_msgs::EnvironmentCommand::REMOVE_JOINT:
+    {
+      return std::make_shared<tesseract_environment::RemoveJointCommand>(command_msg.remove_joint);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
+    {
+      Eigen::Isometry3d pose{ Eigen::Isometry3d::Identity() };
+      if (!fromMsg(pose, command_msg.change_joint_origin_pose))
+        throw std::runtime_error("Failed to convert pose message to eigen");
+
+      return std::make_shared<tesseract_environment::ChangeJointOriginCommand>(command_msg.change_joint_origin_name,
+                                                                               pose);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
+    {
+      return std::make_shared<tesseract_environment::ChangeLinkCollisionEnabledCommand>(
+          command_msg.change_link_collision_enabled_name, command_msg.change_link_collision_enabled_value);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
+    {
+      return std::make_shared<tesseract_environment::ChangeLinkCollisionEnabledCommand>(
+          command_msg.change_link_visibility_name, command_msg.change_link_visibility_value);
+    }
+    case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
+    {
+      return std::make_shared<tesseract_environment::AddAllowedCollisionCommand>(
+          command_msg.add_allowed_collision.link_1,
+          command_msg.add_allowed_collision.link_2,
+          command_msg.add_allowed_collision.reason);
+    }
+    case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION:
+    {
+      return std::make_shared<tesseract_environment::RemoveAllowedCollisionCommand>(
+          command_msg.remove_allowed_collision.link_1, command_msg.remove_allowed_collision.link_2);
+    }
+    case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK:
+    {
+      return std::make_shared<tesseract_environment::RemoveAllowedCollisionLinkCommand>(
+          command_msg.remove_allowed_collision_link);
+    }
+    case tesseract_msgs::EnvironmentCommand::ADD_SCENE_GRAPH:
+    {
+      auto j = std::make_shared<tesseract_scene_graph::Joint>(fromMsg(command_msg.scene_graph_joint));
+      return std::make_shared<tesseract_environment::AddSceneGraphCommand>(
+          fromMsg(command_msg.scene_graph), j, command_msg.scene_graph_prefix);
+    }
+    default:
+    {
+      throw std::runtime_error("Unsupported command type!");
+    }
+  }
 }
 
 void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state)
@@ -1416,18 +1516,6 @@ bool processMsg(const tesseract_environment::Environment::Ptr& env, const tesser
   return processMsg(*env, state_msg);
 }
 
-bool fromMsg(Eigen::Isometry3d& pose, const geometry_msgs::Pose& pose_msg)
-{
-  tf::poseMsgToEigen(pose_msg, pose);
-  return true;
-}
-
-bool toMsg(geometry_msgs::Pose& pose_msg, const Eigen::Isometry3d& pose)
-{
-  tf::poseEigenToMsg(pose, pose_msg);
-  return true;
-}
-
 void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
            const tesseract_collision::ContactResult& contact_result,
            const ros::Time& stamp)
@@ -1498,6 +1586,291 @@ bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorI
     tf::poseEigenToMsg(transform, pose);
     pose_array.poses.push_back(pose);
   }
+
+  return true;
+}
+
+tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_reference group)
+{
+  tesseract_msgs::ChainGroup g;
+  g.name = group.first;
+  g.chains.reserve(group.second.size());
+  for (const auto& pair : group.second)
+  {
+    tesseract_msgs::StringPair chain;
+    chain.first = pair.first;
+    chain.second = pair.second;
+    g.chains.push_back(chain);
+  }
+  return g;
+}
+
+tesseract_msgs::ROPGroup toMsg(tesseract_scene_graph::ROPGroups::const_reference group)
+{
+  tesseract_msgs::ROPGroup g;
+  g.name = group.first;
+  g.manipulator_group = group.second.manipulator_group;
+  g.manipulator_ik_solver = group.second.manipulator_ik_solver;
+  g.manipulator_reach = group.second.manipulator_reach;
+  g.positioner_group = group.second.positioner_group;
+  g.positioner_fk_solver = group.second.positioner_fk_solver;
+
+  g.positioner_sample_resolution.reserve(group.second.positioner_sample_resolution.size());
+  for (const auto& js : group.second.positioner_sample_resolution)
+  {
+    tesseract_msgs::StringDoublePair jp;
+    jp.first = js.first;
+    jp.second = js.second;
+    g.positioner_sample_resolution.push_back(jp);
+  }
+  return g;
+}
+
+tesseract_msgs::REPGroup toMsg(tesseract_scene_graph::REPGroups::const_reference group)
+{
+  tesseract_msgs::REPGroup g;
+  g.name = group.first;
+  g.manipulator_group = group.second.manipulator_group;
+  g.manipulator_ik_solver = group.second.manipulator_ik_solver;
+  g.manipulator_reach = group.second.manipulator_reach;
+  g.positioner_group = group.second.positioner_group;
+  g.positioner_fk_solver = group.second.positioner_fk_solver;
+
+  g.positioner_sample_resolution.reserve(group.second.positioner_sample_resolution.size());
+  for (const auto& js : group.second.positioner_sample_resolution)
+  {
+    tesseract_msgs::StringDoublePair jp;
+    jp.first = js.first;
+    jp.second = js.second;
+    g.positioner_sample_resolution.push_back(jp);
+  }
+  return g;
+}
+
+tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_scene_graph::GroupOPWKinematics::const_reference group)
+{
+  tesseract_msgs::GroupsOPWKinematics g;
+  g.name = group.first;
+  g.a1 = group.second.a1;
+  g.a2 = group.second.a2;
+  g.b = group.second.b;
+  g.c1 = group.second.c1;
+  g.c2 = group.second.c2;
+  g.c3 = group.second.c3;
+  g.c4 = group.second.c4;
+
+  for (std::size_t i = 0; i < 6; ++i)
+  {
+    g.offsets[i] = group.second.offsets[i];
+    g.sign_corrections[i] = group.second.sign_corrections[i];
+  }
+
+  return g;
+}
+
+tesseract_msgs::GroupsJointStates toMsg(tesseract_scene_graph::GroupJointStates::const_reference group)
+{
+  tesseract_msgs::GroupsJointStates g;
+  g.name = group.first;
+
+  g.joint_states.reserve(group.second.size());
+  for (const auto& gs : group.second)
+  {
+    tesseract_msgs::GroupsJointState gjs;
+    gjs.name = gs.first;
+    gjs.joint_state.reserve(gs.second.size());
+    for (const auto& s : gs.second)
+    {
+      tesseract_msgs::StringDoublePair js;
+      js.first = s.first;
+      js.second = s.second;
+      gjs.joint_state.push_back(js);
+    }
+    g.joint_states.push_back(gjs);
+  }
+
+  return g;
+}
+
+tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_reference group)
+{
+  tesseract_msgs::GroupsTCPs g;
+  g.name = group.first;
+
+  g.tcps.reserve(group.second.size());
+  for (const auto& gs : group.second)
+  {
+    tesseract_msgs::GroupsTCP gtcp;
+    gtcp.name = gs.first;
+    toMsg(gtcp.tcp, gs.second);
+  }
+  return g;
+}
+
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::ManipulatorManager& manager)
+{
+  for (const auto& group_name : kin_info.group_names)
+  {
+    auto fk_solver = manager.getFwdKinematicSolver(group_name);
+    if (fk_solver != nullptr)
+    {
+      tesseract_msgs::StringPair pair;
+      pair.first = group_name;
+      pair.second = fk_solver->getSolverName();
+      kin_info.default_fwd_kin.push_back(pair);
+    }
+
+    auto ik_solver = manager.getInvKinematicSolver(group_name);
+    if (ik_solver != nullptr)
+    {
+      tesseract_msgs::StringPair pair;
+      pair.first = group_name;
+      pair.second = ik_solver->getSolverName();
+      kin_info.default_inv_kin.push_back(pair);
+    }
+  }
+
+  kin_info.chain_groups.reserve(manager.getChainGroups().size());
+  for (const auto& group : manager.getChainGroups())
+    kin_info.chain_groups.push_back(toMsg(group));
+
+  kin_info.joint_groups.reserve(manager.getJointGroups().size());
+  for (const auto& group : manager.getJointGroups())
+  {
+    tesseract_msgs::JointGroup g;
+    g.name = group.first;
+    g.joints.reserve(group.second.size());
+    for (const auto& joint_name : group.second)
+      g.joints.push_back(joint_name);
+
+    kin_info.joint_groups.push_back(g);
+  }
+
+  kin_info.link_groups.reserve(manager.getLinkGroups().size());
+  for (const auto& group : manager.getLinkGroups())
+  {
+    tesseract_msgs::LinkGroup g;
+    g.name = group.first;
+    g.links.reserve(group.second.size());
+    for (const auto& link_name : group.second)
+      g.links.push_back(link_name);
+
+    kin_info.link_groups.push_back(g);
+  }
+
+  kin_info.rop_groups.reserve(manager.getROPGroups().size());
+  for (const auto& group : manager.getROPGroups())
+    kin_info.rop_groups.push_back(toMsg(group));
+
+  kin_info.rep_groups.reserve(manager.getREPGroups().size());
+  for (const auto& group : manager.getREPGroups())
+    kin_info.rep_groups.push_back(toMsg(group));
+
+  kin_info.group_opw.reserve(manager.getOPWKinematicsSolvers().size());
+  for (const auto& group : manager.getOPWKinematicsSolvers())
+    kin_info.group_opw.push_back(toMsg(group));
+
+  kin_info.group_joint_states.reserve(manager.getGroupJointStates().size());
+  for (const auto& group : manager.getGroupJointStates())
+    kin_info.group_joint_states.push_back(toMsg(group));
+
+  kin_info.group_tcps.reserve(manager.getGroupTCPs().size());
+  for (const auto& group : manager.getGroupTCPs())
+    kin_info.group_tcps.push_back(toMsg(group));
+
+  return true;
+}
+
+bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info)
+{
+  for (const auto& group : kin_info.chain_groups)
+  {
+    tesseract_scene_graph::ChainGroup chain_group;
+    for (const auto& pair : group.chains)
+      chain_group.emplace_back(pair.first, pair.second);
+    manager.addChainGroup(group.name, chain_group);
+  }
+
+  for (const auto& group : kin_info.joint_groups)
+    manager.addJointGroup(group.name, group.joints);
+
+  for (const auto& group : kin_info.link_groups)
+    manager.addLinkGroup(group.name, group.links);
+
+  for (const auto& group : kin_info.rop_groups)
+  {
+    tesseract_scene_graph::ROPKinematicParameters rop_group;
+    rop_group.manipulator_group = group.manipulator_group;
+    rop_group.manipulator_ik_solver = group.manipulator_ik_solver;
+    rop_group.manipulator_reach = group.manipulator_reach;
+    rop_group.positioner_group = group.positioner_group;
+    rop_group.positioner_fk_solver = group.positioner_fk_solver;
+    for (const auto& pair : group.positioner_sample_resolution)
+      rop_group.positioner_sample_resolution[pair.first] = pair.second;
+    manager.addROPGroup(group.name, rop_group);
+  }
+
+  for (const auto& group : kin_info.rep_groups)
+  {
+    tesseract_scene_graph::REPKinematicParameters rep_group;
+    rep_group.manipulator_group = group.manipulator_group;
+    rep_group.manipulator_ik_solver = group.manipulator_ik_solver;
+    rep_group.manipulator_reach = group.manipulator_reach;
+    rep_group.positioner_group = group.positioner_group;
+    rep_group.positioner_fk_solver = group.positioner_fk_solver;
+    for (const auto& pair : group.positioner_sample_resolution)
+      rep_group.positioner_sample_resolution[pair.first] = pair.second;
+    manager.addREPGroup(group.name, rep_group);
+  }
+
+  for (const auto& group : kin_info.group_opw)
+  {
+    tesseract_scene_graph::OPWKinematicParameters opw_group;
+    opw_group.a1 = group.a1;
+    opw_group.a2 = group.a2;
+    opw_group.b = group.b;
+    opw_group.c1 = group.c1;
+    opw_group.c2 = group.c2;
+    opw_group.c3 = group.c3;
+    opw_group.c4 = group.c4;
+    for (std::size_t i = 0; i < 6; ++i)
+    {
+      opw_group.offsets[i] = group.offsets[i];
+      opw_group.sign_corrections[i] = group.sign_corrections[i];
+    }
+
+    manager.addOPWKinematicsSolver(group.name, opw_group);
+  }
+
+  for (const auto& group : kin_info.group_joint_states)
+  {
+    for (const auto& state : group.joint_states)
+    {
+      tesseract_scene_graph::GroupsJointState joint_state;
+      joint_state.reserve(state.joint_state.size());
+      for (const auto& js : state.joint_state)
+        joint_state[js.first] = js.second;
+
+      manager.addGroupJointState(group.name, state.name, joint_state);
+    }
+  }
+
+  for (const auto& group : kin_info.group_tcps)
+  {
+    for (const auto& pose : group.tcps)
+    {
+      Eigen::Isometry3d tcp{ Eigen::Isometry3d::Identity() };
+      fromMsg(tcp, pose.tcp);
+
+      manager.addGroupTCP(group.name, pose.name, tcp);
+    }
+  }
+
+  for (const auto& d : kin_info.default_fwd_kin)
+    manager.setDefaultFwdKinematicSolver(d.first, d.second);
+
+  for (const auto& d : kin_info.default_inv_kin)
+    manager.setDefaultInvKinematicSolver(d.first, d.second);
 
   return true;
 }

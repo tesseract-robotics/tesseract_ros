@@ -38,7 +38,7 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
                                                  std::string continuous_plugin)
   : nh_("~")
   , environment_(robot_description, name, discrete_plugin, continuous_plugin)
-  , motion_plan_server_(root_nh_,
+  , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
                         true)
