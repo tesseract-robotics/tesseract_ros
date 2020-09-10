@@ -44,6 +44,20 @@ namespace tesseract_monitoring
 class TesseractMonitorInterface
 {
 public:
+  /**
+   * @brief The name of the service used by default for requesting tesseract environment information
+   *
+   * The full name is "/monitor_namespace/get_tesseract_information"
+   */
+  static const std::string DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;
+
+  /**
+   * @brief The name of the service used by default for setting the full tesseract environment state
+   *
+   * The full name is "/monitor_namespace/modify_tesseract"
+   */
+  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;
+
   TesseractMonitorInterface() = default;
   virtual ~TesseractMonitorInterface() = default;
   TesseractMonitorInterface(const TesseractMonitorInterface&) = default;
@@ -94,7 +108,7 @@ public:
     tesseract_msgs::GetEnvironmentInformation res;
     res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
 
-    bool status = ros::service::call(R"(/)" + monitor_namespace + "/get_tesseract_information", res);
+    bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
     if (!status || !res.response.success)
     {
       ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
@@ -130,7 +144,7 @@ public:
     res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY |
                         tesseract_msgs::GetEnvironmentInformationRequest::KINEMATICS_INFORMATION;
 
-    bool status = ros::service::call(R"(/)" + monitor_namespace + "/get_tesseract_information", res);
+    bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
     if (!status || !res.response.success)
     {
       ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
@@ -178,6 +192,8 @@ public:
 protected:
   ros::NodeHandle nh_;
   std::vector<std::string> ns_;
+
+  bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const;
 };
 }  // namespace tesseract_monitoring
 #endif  // TESSERACT_MONITORING_TESSERACT_MONITOR_INTERFACE_H

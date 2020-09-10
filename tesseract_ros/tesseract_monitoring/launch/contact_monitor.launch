@@ -3,7 +3,7 @@
   <arg name="monitor_namespace"/>
   <arg name="monitored_namespace" default=""/>
   <arg name="robot_description" default="robot_description"/>
-  <arg name="descrete_plugin" default="BulletDiscreteBVHManager"/>
+  <arg name="discrete_plugin" default="BulletDiscreteBVHManager"/>
   <arg name="continuous_plugin" default="BulletCastBVHManager"/>
   <arg name="monitor_links" default=""/>
   <arg name="publish_environment" default="false"/>
@@ -20,7 +20,7 @@
 
   <node pkg="tesseract_monitoring" type="tesseract_monitoring_contacts_node" name="tesseract_monitoring_contacts">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
-    <param name="descrete_plugin" type="string" value="$(arg descrete_plugin)"/>
+    <param name="discrete_plugin" type="string" value="$(arg discrete_plugin)"/>
     <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
     <param name="contact_distance" value="$(arg contact_distance)"/>
     <param name="monitor_links" value="$(arg monitor_links)"/>

@@ -258,8 +258,9 @@ public:
 
   /** @brief Get the stored instance of the stored current state monitor
    *  @return An instance of the stored current state monitor*/
-  const CurrentStateMonitorPtr& getStateMonitor() const;
-  CurrentStateMonitorPtr& getStateMonitorNonConst();
+  CurrentStateMonitor::ConstPtr getStateMonitor() const;
+  CurrentStateMonitor::Ptr getStateMonitor();
+
   /** @brief Start the current state monitor
       @param joint_states_topic the topic to listen to for joint states
       @param attached_objects_topic the topic to listen to for attached collision objects */
@@ -374,7 +375,7 @@ protected:
   ros::ServiceServer save_scene_graph_server_;
 
   // include a current state monitor
-  CurrentStateMonitorPtr current_state_monitor_;
+  CurrentStateMonitor::Ptr current_state_monitor_;
 
   /// lock access to update_callbacks_
   std::recursive_mutex update_lock_;

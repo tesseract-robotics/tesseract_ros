@@ -69,7 +69,7 @@ public:
   static const std::string DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;  // "/monitor_namespace/compute_contact_results"
 
   ContactMonitor(std::string monitor_namespace,
-                 const tesseract::Tesseract::Ptr& tess,
+                 const tesseract::Tesseract::Ptr& tesseract,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
@@ -127,7 +127,7 @@ public:
 private:
   std::string monitor_namespace_;
   std::string monitored_namespace_;
-  tesseract::Tesseract::Ptr tess_;
+  tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;

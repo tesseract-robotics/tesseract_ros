@@ -114,10 +114,15 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
 
   tesseract_msgs::GetMotionPlanResult result;
+  tesseract_planning::ManipulatorInfo mi = composite_program->getManipulatorInfo();
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
   if (task != nullptr)
   {
-    tesseract_planning::SimpleProcessManager sm(std::move(task));
-    sm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, &seed));
+    tesseract_planning::SimpleProcessManager sm(std::move(task), nt);
+    sm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
     result.response.successful = sm.execute();
     result.response.results = tesseract_planning::toXMLString(seed);
@@ -156,56 +161,64 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
     if (goal->request.name == goal->RASTER_FT_PLANNER_NAME)
     {
-      tesseract_planning::RasterProcessManager rm(std::move(task), std::move(ftask1), std::move(task2));
+      tesseract_planning::RasterProcessManager rm(std::move(task), std::move(ftask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_FT_DT_PLANNER_NAME)
     {
-      tesseract_planning::RasterDTProcessManager rm(std::move(task), std::move(ftask1), std::move(task2));
+      tesseract_planning::RasterDTProcessManager rm(std::move(task), std::move(ftask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_FT_WAAD_PLANNER_NAME)
     {
-      tesseract_planning::RasterWAADProcessManager rm(std::move(task), std::move(ftask1), std::move(task2));
+      tesseract_planning::RasterWAADProcessManager rm(std::move(task), std::move(ftask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_FT_WAAD_DT_PLANNER_NAME)
     {
-      tesseract_planning::RasterWAADDTProcessManager rm(std::move(task), std::move(ftask1), std::move(task2));
+      tesseract_planning::RasterWAADDTProcessManager rm(std::move(task), std::move(ftask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_CT_PLANNER_NAME)
     {
-      tesseract_planning::RasterProcessManager rm(std::move(task), std::move(ctask1), std::move(task2));
+      tesseract_planning::RasterProcessManager rm(std::move(task), std::move(ctask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_CT_DT_PLANNER_NAME)
     {
-      tesseract_planning::RasterDTProcessManager rm(std::move(task), std::move(ctask1), std::move(task2));
+      tesseract_planning::RasterDTProcessManager rm(std::move(task), std::move(ctask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_CT_WAAD_PLANNER_NAME)
     {
-      tesseract_planning::RasterWAADProcessManager rm(std::move(task), std::move(ctask1), std::move(task2));
+      tesseract_planning::RasterWAADProcessManager rm(std::move(task), std::move(ctask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);
     }
     else if (goal->request.name == goal->RASTER_CT_WAAD_DT_PLANNER_NAME)
     {
-      tesseract_planning::RasterWAADDTProcessManager rm(std::move(task), std::move(ctask1), std::move(task2));
+      tesseract_planning::RasterWAADDTProcessManager rm(std::move(task), std::move(ctask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
       result.response.results = tesseract_planning::toXMLString(seed);

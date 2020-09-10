@@ -198,7 +198,7 @@ void EnvironmentMonitor::initialize()
     {
       if (!discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
       {
-        std::string msg = "\nFailed to set default descrete contact checker plugin: ";
+        std::string msg = "\nFailed to set default discrete contact checker plugin: ";
         msg += discrete_plugin_name_ + '\n';
         msg += "  Available Plugins:\n";
 
@@ -393,9 +393,9 @@ void EnvironmentMonitor::stopMonitoringEnvironment()
   ROS_INFO_NAMED(monitor_namespace_, "Stopped monitoring environment.");
 }
 
-const CurrentStateMonitorPtr& EnvironmentMonitor::getStateMonitor() const { return current_state_monitor_; }
+CurrentStateMonitor::ConstPtr EnvironmentMonitor::getStateMonitor() const { return current_state_monitor_; }
 
-CurrentStateMonitorPtr& EnvironmentMonitor::getStateMonitorNonConst() { return current_state_monitor_; }
+CurrentStateMonitor::Ptr EnvironmentMonitor::getStateMonitor() { return current_state_monitor_; }
 
 void EnvironmentMonitor::startMonitoringEnvironment(const std::string& monitored_namespace,
                                                     MonitoredEnvironmentMode mode)

@@ -34,6 +34,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
+const std::string TesseractMonitorInterface::DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE =
+    R"(/get_tesseract_information)";
+const std::string TesseractMonitorInterface::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = R"(/modify_tesseract)";
+
 void TesseractMonitorInterface::addNamespace(std::string monitor_namespace)
 {
   if (std::find(ns_.begin(), ns_.end(), monitor_namespace) == ns_.end())
@@ -45,23 +49,6 @@ void TesseractMonitorInterface::removeNamespace(const std::string& monitor_names
   auto it = std::remove_if(
       ns_.begin(), ns_.end(), [monitor_namespace](const std::string& ns) { return (ns == monitor_namespace); });
   ns_.erase(it, ns_.end());
-}
-
-bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
-{
-  tesseract_msgs::ModifyEnvironment res;
-  res.request.id = ns;
-  res.request.append = true;
-  res.request.commands = commands;
-
-  bool status = ros::service::call(R"(/)" + ns + "/modify_tesseract", res);
-  if (!status || !res.response.success)
-  {
-    ROS_ERROR_STREAM_NAMED(ns, "Failed to update monitored environment!");
-    return false;
-  }
-
-  return true;
 }
 
 std::vector<std::string> TesseractMonitorInterface::applyCommand(const tesseract_environment::Command& command) const
@@ -151,5 +138,23 @@ bool TesseractMonitorInterface::applyCommands(const std::string& monitor_namespa
   }
 
   return sendCommands(monitor_namespace, commands_msg);
+}
+
+bool TesseractMonitorInterface::sendCommands(const std::string& ns,
+                                             const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const
+{
+  tesseract_msgs::ModifyEnvironment res;
+  res.request.id = ns;
+  res.request.append = true;
+  res.request.commands = commands;
+
+  bool status = ros::service::call(R"(/)" + ns + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, res);
+  if (!status || !res.response.success)
+  {
+    ROS_ERROR_STREAM_NAMED(ns, "Failed to update monitored environment!");
+    return false;
+  }
+
+  return true;
 }
 }  // namespace tesseract_monitoring
