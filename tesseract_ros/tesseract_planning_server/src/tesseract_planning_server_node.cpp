@@ -1,3 +1,28 @@
+/**
+ * @file tesseract_planning_server_node.cpp
+ * @brief The Tesseract planning server node
+ *
+ * @author Levi Armstrong
+ * @date August 18, 2020
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2020, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
@@ -15,7 +40,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "tesseract_planning_server");
   ros::NodeHandle pnh("~");
   std::string robot_description;
-  std::string descrete_plugin;
+  std::string discrete_plugin;
   std::string continuous_plugin;
   std::string monitor_namespace;
   std::string monitored_namespace;
@@ -29,12 +54,12 @@ int main(int argc, char** argv)
 
   pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
-  pnh.param<std::string>("descrete_plugin", descrete_plugin, "");
+  pnh.param<std::string>("discrete_plugin", discrete_plugin, "");
   pnh.param<std::string>("continuous_plugin", continuous_plugin, "");
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
 
   tesseract_planning_server::TesseractPlanningServer planning_server(
-      robot_description, monitor_namespace, descrete_plugin, continuous_plugin);
+      robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
 
   if (publish_environment)
     planning_server.getEnvironmentMonitor().startPublishingEnvironment(

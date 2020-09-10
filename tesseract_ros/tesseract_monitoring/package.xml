@@ -18,7 +18,7 @@
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_msgs</depend>
   <depend>tesseract_common</depend>
-  <exec_depend>tesseract_plugin</exec_depend>
+  <exec_depend>tesseract_plugins</exec_depend>
 
   <build_depend>cmake_common_scripts</build_depend>
 
