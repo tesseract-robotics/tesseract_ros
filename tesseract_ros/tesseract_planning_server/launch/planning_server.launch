@@ -3,13 +3,13 @@
   <arg name="monitor_namespace"/>
   <arg name="monitored_namespace" default=""/>
   <arg name="robot_description" default="robot_description"/>
-  <arg name="descrete_plugin" default="BulletDiscreteBVHManager"/>
+  <arg name="discrete_plugin" default="BulletDiscreteBVHManager"/>
   <arg name="continuous_plugin" default="BulletCastBVHManager"/>
   <arg name="publish_environment" default="false"/>
 
   <node pkg="tesseract_planning_server" type="tesseract_planning_server_node" name="tesseract_planning_server">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
-    <param name="descrete_plugin" type="string" value="$(arg descrete_plugin)"/>
+    <param name="discrete_plugin" type="string" value="$(arg discrete_plugin)"/>
     <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
     <param name="monitor_namespace" type="string" value="$(arg monitor_namespace)"/>
     <param name="monitored_namespace" type="string" value="$(arg monitored_namespace)"/>

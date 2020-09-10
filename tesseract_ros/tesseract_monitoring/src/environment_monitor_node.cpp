@@ -16,7 +16,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "tesseract_environment_monitor");
   ros::NodeHandle pnh("~");
   std::string robot_description;
-  std::string descrete_plugin;
+  std::string discrete_plugin;
   std::string continuous_plugin;
   std::string joint_state_topic;
   std::string monitor_namespace;
@@ -31,13 +31,13 @@ int main(int argc, char** argv)
 
   pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
-  pnh.param<std::string>("descrete_plugin", descrete_plugin, "");
+  pnh.param<std::string>("discrete_plugin", discrete_plugin, "");
   pnh.param<std::string>("continuous_plugin", continuous_plugin, "");
   pnh.param<std::string>("joint_state_topic", joint_state_topic, "");
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
 
   tesseract_monitoring::EnvironmentMonitor monitor(
-      robot_description, monitor_namespace, descrete_plugin, continuous_plugin);
+      robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
 
   if (publish_environment)
     monitor.startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
