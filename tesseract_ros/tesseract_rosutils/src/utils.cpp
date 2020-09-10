@@ -521,7 +521,8 @@ bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::
           faces,
           std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
                                                                          geometry_msg.mesh.file_path),
-          Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2]));
+          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
+              .cast<double>());
     else
       geometry = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
   }
@@ -543,7 +544,8 @@ bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::
           faces,
           std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
                                                                          geometry_msg.mesh.file_path),
-          Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2]));
+          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
+              .cast<double>());
     else
       geometry = std::make_shared<tesseract_geometry::ConvexMesh>(vertices, faces);
   }
@@ -565,7 +567,8 @@ bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::
           faces,
           std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
                                                                          geometry_msg.mesh.file_path),
-          Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2]));
+          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
+              .cast<double>());
     else
       geometry = std::make_shared<tesseract_geometry::SDFMesh>(vertices, faces);
   }
@@ -612,10 +615,10 @@ bool fromMsg(tesseract_scene_graph::Material::Ptr& material, const tesseract_msg
 
   material = std::make_shared<tesseract_scene_graph::Material>(material_msg.name);
   material->texture_filename = material_msg.texture_filename;
-  material->color(0) = material_msg.color.r;
-  material->color(1) = material_msg.color.g;
-  material->color(2) = material_msg.color.b;
-  material->color(3) = material_msg.color.a;
+  material->color(0) = static_cast<double>(material_msg.color.r);
+  material->color(1) = static_cast<double>(material_msg.color.g);
+  material->color(2) = static_cast<double>(material_msg.color.b);
+  material->color(3) = static_cast<double>(material_msg.color.a);
   return true;
 }
 

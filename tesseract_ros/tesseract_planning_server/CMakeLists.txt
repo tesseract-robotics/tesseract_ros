@@ -80,17 +80,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
-#if(CATKIN_ENABLE_TESTING)
-#  find_package(GTest REQUIRED)
-#  catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
-#  target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
-#  tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
-#  tesseract_clang_tidy(${PROJECT_NAME}_unit)
-#  target_include_directories(${PROJECT_NAME}_unit PRIVATE
-#      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#      "$<INSTALL_INTERFACE:include>")
-#  target_include_directories(${PROJECT_NAME}_unit SYSTEM PRIVATE
-#      ${catkin_INCLUDE_DIRS}
-#      ${EIGEN3_INCLUDE_DIRS})
-#endif()

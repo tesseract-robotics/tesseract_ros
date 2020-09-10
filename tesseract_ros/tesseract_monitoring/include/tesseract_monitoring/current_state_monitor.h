@@ -63,6 +63,9 @@ using JointStateUpdateCallback = std::function<void(const sensor_msgs::JointStat
 class CurrentStateMonitor
 {
 public:
+  using Ptr = std::shared_ptr<CurrentStateMonitor>;
+  using ConstPtr = std::shared_ptr<const CurrentStateMonitor>;
+
   /**
    * @brief Constructor.
    * @param robot_model The current kinematic model to build on
@@ -201,8 +204,7 @@ private:
   mutable std::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
-using CurrentStateMonitorPtr = std::shared_ptr<CurrentStateMonitor>;
-using CurrentStateMonitorConstPtr = std::shared_ptr<const CurrentStateMonitor>;
+
 }  // namespace tesseract_monitoring
 
 #endif
