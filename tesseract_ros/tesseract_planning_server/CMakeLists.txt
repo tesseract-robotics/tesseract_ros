@@ -16,7 +16,8 @@ find_package(tesseract_common REQUIRED)
 catkin_package(
   INCLUDE_DIRS
     include
-#  LIBRARIES
+  LIBRARIES
+    ${PROJECT_NAME}
   CATKIN_DEPENDS
     tesseract_msgs
     tesseract_monitoring
