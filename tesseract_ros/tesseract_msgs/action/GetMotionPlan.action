@@ -28,6 +28,12 @@ string RASTER_CT_WAAD_PLANNER_NAME = "RasterCTWAADPlanner"
 # Raster planner with approach and departure using cartesian planner for transitions providing dual transitions
 string RASTER_CT_WAAD_DT_PLANNER_NAME = "RasterCTWAADDTPlanner"
 
+# Raster planner performs global plan first then macro planning using freespace planner for transitions
+string RASTER_G_FT_PLANNER_NAME = "RasterGFTPlanner"
+
+# Raster planner performs global plan first then macro planning using cartesian planner for transitions
+string RASTER_G_CT_PLANNER_NAME = "RasterGCTPlanner"
+
 tesseract_msgs/PlanningRequest request
 ---
 tesseract_msgs/PlanningResponse response
