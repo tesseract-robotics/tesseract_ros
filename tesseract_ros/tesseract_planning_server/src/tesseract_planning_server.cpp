@@ -1,4 +1,28 @@
-
+/**
+ * @file tesseract_planning_server.cpp
+ * @brief A planning server with a default set of motion planners
+ *
+ * @author Levi Armstrong
+ * @date August 18, 2020
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2020, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
@@ -78,11 +102,11 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   tesseract_planning::GraphTaskflow::UPtr task = nullptr;
   if (goal->request.name == goal->TRAJOPT_PLANNER_NAME)
   {
-    task = createTrajOptTaskflow(goal->request.seed.empty(),
-                                 simple_plan_profiles_,
-                                 simple_composite_profiles_,
-                                 trajopt_plan_profiles_,
-                                 trajopt_composite_profiles_);
+    task = tesseract_planning::createTrajOptTaskflow(goal->request.seed.empty(),
+                                                     simple_plan_profiles_,
+                                                     simple_composite_profiles_,
+                                                     trajopt_plan_profiles_,
+                                                     trajopt_composite_profiles_);
   }
   else if (goal->request.name == goal->OMPL_PLANNER_NAME)
   {
@@ -91,8 +115,12 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
   else if (goal->request.name == goal->DESCARTES_PLANNER_NAME)
   {
-    task = tesseract_planning::createDescartesTaskflow(
-        goal->request.seed.empty(), simple_plan_profiles_, simple_composite_profiles_, descartes_plan_profiles_);
+    tesseract_planning::DescartesTaskflowParams params;
+    params.enable_simple_planner = goal->request.seed.empty();
+    params.simple_plan_profiles = simple_plan_profiles_;
+    params.simple_composite_profiles = simple_composite_profiles_;
+    params.descartes_plan_profiles = descartes_plan_profiles_;
+    task = tesseract_planning::createDescartesTaskflow(params);
   }
   else if (goal->request.name == goal->CARTESIAN_PLANNER_NAME)
   {
@@ -129,9 +157,11 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
   else
   {
+    tesseract_planning::GraphTaskflow::UPtr gtask = nullptr;
     tesseract_planning::GraphTaskflow::UPtr ctask1 = nullptr;
     tesseract_planning::GraphTaskflow::UPtr ftask1 = nullptr;
     tesseract_planning::GraphTaskflow::UPtr task2 = nullptr;
+    tesseract_planning::GraphTaskflow::UPtr trajopt_task = nullptr;
 
     task = tesseract_planning::createFreespaceTaskflow(goal->request.seed.empty(),
                                                        simple_plan_profiles_,
@@ -158,6 +188,22 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
                                                         descartes_plan_profiles_,
                                                         trajopt_plan_profiles_,
                                                         trajopt_composite_profiles_);
+
+    tesseract_planning::DescartesTaskflowParams params;
+    params.enable_simple_planner = goal->request.seed.empty();
+    params.enable_post_contact_discrete_check = false;
+    params.enable_post_contact_continuous_check = false;
+    params.enable_time_parameterization = false;
+    params.simple_plan_profiles = simple_plan_profiles_;
+    params.simple_composite_profiles = simple_composite_profiles_;
+    params.descartes_plan_profiles = descartes_plan_profiles_;
+    gtask = tesseract_planning::createDescartesTaskflow(params);
+
+    trajopt_task = tesseract_planning::createTrajOptTaskflow(goal->request.seed.empty(),
+                                                             simple_plan_profiles_,
+                                                             simple_composite_profiles_,
+                                                             trajopt_plan_profiles_,
+                                                             trajopt_composite_profiles_);
 
     if (goal->request.name == goal->RASTER_FT_PLANNER_NAME)
     {
@@ -218,6 +264,24 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     else if (goal->request.name == goal->RASTER_CT_WAAD_DT_PLANNER_NAME)
     {
       tesseract_planning::RasterWAADDTProcessManager rm(std::move(task), std::move(ctask1), std::move(task2), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
+
+      result.response.successful = rm.execute();
+      result.response.results = tesseract_planning::toXMLString(seed);
+    }
+    else if (goal->request.name == goal->RASTER_G_FT_PLANNER_NAME)
+    {
+      tesseract_planning::RasterProcessManager rm(
+          std::move(gtask), std::move(task), std::move(ftask1), std::move(trajopt_task), nt);
+      rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
+
+      result.response.successful = rm.execute();
+      result.response.results = tesseract_planning::toXMLString(seed);
+    }
+    else if (goal->request.name == goal->RASTER_G_CT_PLANNER_NAME)
+    {
+      tesseract_planning::RasterProcessManager rm(
+          std::move(gtask), std::move(task), std::move(ctask1), std::move(trajopt_task), nt);
       rm.init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
 
       result.response.successful = rm.execute();
