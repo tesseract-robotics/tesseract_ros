@@ -17,7 +17,9 @@ uint16 JOINT_TRANSFORMS=256          # Get the current list of joint transforms
 
 uint16 ALLOWED_COLLISION_MATRIX=512  # Get the current allowed collision matrix
 
-uint16 KINEMATICS_INFORMATION=1024  # Get the current kinematics information
+uint16 KINEMATICS_INFORMATION=1024   # Get the current kinematics information
+
+uint16 JOINT_STATES=2048              # Get the current kinematics information
 
 uint16 flags # The flags indicating what information should be returned.
 ---
@@ -36,3 +38,4 @@ tesseract_msgs/TransformMap link_transforms
 tesseract_msgs/TransformMap joint_transforms
 tesseract_msgs/AllowedCollisionEntry[] allowed_collision_matrix
 tesseract_msgs/KinematicsInformation kinematics_information
+sensor_msgs/JointState joint_states

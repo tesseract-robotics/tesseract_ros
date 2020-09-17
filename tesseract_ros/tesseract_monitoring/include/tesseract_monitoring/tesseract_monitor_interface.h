@@ -98,6 +98,13 @@ public:
                      const std::vector<tesseract_environment::Command>& commands) const;
 
   /**
+   * @brief Pull current environment state from the environment in the provided namespace
+   * @param monitor_namespace The namespace to extract the environment from.
+   * @return Environment Shared Pointer, if nullptr it failed
+   */
+  tesseract_environment::EnvState::Ptr getEnvironmentState(const std::string& monitor_namespace);
+
+  /**
    * @brief Pull information from the environment in the provided namespace and create a Environment Object
    * @param monitor_namespace The namespace to extract the environment from.
    * @return Environment Shared Pointer, if nullptr it failed
