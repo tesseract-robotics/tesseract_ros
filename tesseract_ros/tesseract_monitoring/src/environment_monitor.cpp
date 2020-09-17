@@ -859,6 +859,8 @@ bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnviro
 bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEnvironmentInformationRequest& req,
                                                            tesseract_msgs::GetEnvironmentInformationResponse& res)
 {
+  auto lock_read = lockEnvironmentRead();
+
   auto env = tesseract_->getEnvironment();
   res.id = env->getName();
   res.revision = static_cast<unsigned long>(env->getRevision());
@@ -967,6 +969,15 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
   {
     auto manipulator_manager = tesseract_->getManipulatorManager();
     if (!tesseract_rosutils::toMsg(res.kinematics_information, *manipulator_manager))
+    {
+      res.success = false;
+      return false;
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_STATES)
+  {
+    if (!tesseract_rosutils::toMsg(res.joint_states, env->getCurrentState()->joints))
     {
       res.success = false;
       return false;

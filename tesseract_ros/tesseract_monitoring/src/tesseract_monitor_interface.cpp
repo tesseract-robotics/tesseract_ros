@@ -157,4 +157,37 @@ bool TesseractMonitorInterface::sendCommands(const std::string& ns,
 
   return true;
 }
+
+tesseract_environment::EnvState::Ptr
+TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namespace)
+{
+  tesseract_msgs::GetEnvironmentInformation res;
+  res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::JOINT_STATES |
+                      tesseract_msgs::GetEnvironmentInformationRequest::LINK_TRANSFORMS |
+                      tesseract_msgs::GetEnvironmentInformationRequest::JOINT_TRANSFORMS;
+
+  bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
+  if (!status || !res.response.success)
+  {
+    ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
+    return nullptr;
+  }
+
+  auto env_state = std::make_shared<tesseract_environment::EnvState>();
+  tesseract_rosutils::fromMsg(env_state->joints, res.response.joint_states);
+  tesseract_rosutils::fromMsg(env_state->link_transforms, res.response.link_transforms);
+  tesseract_rosutils::fromMsg(env_state->joint_transforms, res.response.joint_transforms);
+  //  tesseract_environment::Commands commands;
+  //  try
+  //  {
+  //    commands = tesseract_rosutils::fromMsg(res.response.command_history);
+  //  }
+  //  catch (...)
+  //  {
+  //    ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to convert command history message!");
+  //    return nullptr;
+  //  }
+
+  return env_state;
+}
 }  // namespace tesseract_monitoring

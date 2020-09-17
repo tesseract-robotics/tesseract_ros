@@ -43,6 +43,8 @@ add_message_files(
     GroupsJointState.msg
     GroupsJointStates.msg
     GroupsOPWKinematics.msg
+    GroupsREPKinematics.msg
+    GroupsROPKinematics.msg
     GroupsTCP.msg
     GroupsTCPs.msg
     Inertial.msg
@@ -68,8 +70,6 @@ add_message_files(
     ProcessPlanSegment.msg
     ProcessPlanTransitionPair.msg
     ProfileMap.msg
-    REPGroup.msg
-    ROPGroup.msg
     SceneGraph.msg
     StringDoublePair.msg
     StringPair.msg

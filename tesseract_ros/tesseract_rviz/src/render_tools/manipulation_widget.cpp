@@ -805,7 +805,7 @@ void ManipulationWidget::udpateJointMarkerVisualization()
 void ManipulationWidget::publishJointStates()
 {
   sensor_msgs::JointState joint_state;
-  tesseract_rosutils::toMsg(joint_state, *env_state_);
+  tesseract_rosutils::toMsg(joint_state, env_state_->joints);
   joint_state_pub_.publish(joint_state);
 }
 

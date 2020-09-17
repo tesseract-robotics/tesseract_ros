@@ -1045,16 +1045,6 @@ tesseract_scene_graph::SceneGraph fromMsg(const tesseract_msgs::SceneGraph& scen
   return g;
 }
 
-void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state)
-{
-  joint_state.header.stamp = ros::Time::now();
-  for (const auto& joint : state.joints)
-  {
-    joint_state.name.push_back(joint.first);
-    joint_state.position.push_back(joint.second);
-  }
-}
-
 bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command)
 {
   switch (command.getType())
@@ -1269,19 +1259,13 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
   }
 }
 
-void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state)
-{
-  toMsg(*joint_state, state);
-}
-
 void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
 {
   state_msg.id = env.getName();
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
   toMsg(state_msg.commands, env.getCommandHistory(), 0);
 
-  tesseract_environment::EnvState::ConstPtr state = env.getCurrentState();
-  toMsg(state_msg.joint_state, *state);
+  toMsg(state_msg.joint_state, env.getCurrentState()->joints);
 }
 
 void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env)
@@ -1608,9 +1592,9 @@ tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_refer
   return g;
 }
 
-tesseract_msgs::ROPGroup toMsg(tesseract_scene_graph::ROPGroups::const_reference group)
+tesseract_msgs::GroupsROPKinematics toMsg(tesseract_scene_graph::GroupROPKinematics::const_reference group)
 {
-  tesseract_msgs::ROPGroup g;
+  tesseract_msgs::GroupsROPKinematics g;
   g.name = group.first;
   g.manipulator_group = group.second.manipulator_group;
   g.manipulator_ik_solver = group.second.manipulator_ik_solver;
@@ -1629,9 +1613,9 @@ tesseract_msgs::ROPGroup toMsg(tesseract_scene_graph::ROPGroups::const_reference
   return g;
 }
 
-tesseract_msgs::REPGroup toMsg(tesseract_scene_graph::REPGroups::const_reference group)
+tesseract_msgs::GroupsREPKinematics toMsg(tesseract_scene_graph::GroupREPKinematics::const_reference group)
 {
-  tesseract_msgs::REPGroup g;
+  tesseract_msgs::GroupsREPKinematics g;
   g.name = group.first;
   g.manipulator_group = group.second.manipulator_group;
   g.manipulator_ik_solver = group.second.manipulator_ik_solver;
@@ -1761,13 +1745,13 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::Man
     kin_info.link_groups.push_back(g);
   }
 
-  kin_info.rop_groups.reserve(manager.getROPGroups().size());
-  for (const auto& group : manager.getROPGroups())
-    kin_info.rop_groups.push_back(toMsg(group));
+  kin_info.group_rop.reserve(manager.getROPKinematicsSolvers().size());
+  for (const auto& group : manager.getROPKinematicsSolvers())
+    kin_info.group_rop.push_back(toMsg(group));
 
-  kin_info.rep_groups.reserve(manager.getREPGroups().size());
-  for (const auto& group : manager.getREPGroups())
-    kin_info.rep_groups.push_back(toMsg(group));
+  kin_info.group_rep.reserve(manager.getREPKinematicsSolvers().size());
+  for (const auto& group : manager.getREPKinematicsSolvers())
+    kin_info.group_rep.push_back(toMsg(group));
 
   kin_info.group_opw.reserve(manager.getOPWKinematicsSolvers().size());
   for (const auto& group : manager.getOPWKinematicsSolvers())
@@ -1800,7 +1784,7 @@ bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::Kinem
   for (const auto& group : kin_info.link_groups)
     manager.addLinkGroup(group.name, group.links);
 
-  for (const auto& group : kin_info.rop_groups)
+  for (const auto& group : kin_info.group_rop)
   {
     tesseract_scene_graph::ROPKinematicParameters rop_group;
     rop_group.manipulator_group = group.manipulator_group;
@@ -1810,10 +1794,10 @@ bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::Kinem
     rop_group.positioner_fk_solver = group.positioner_fk_solver;
     for (const auto& pair : group.positioner_sample_resolution)
       rop_group.positioner_sample_resolution[pair.first] = pair.second;
-    manager.addROPGroup(group.name, rop_group);
+    manager.addROPKinematicsSolver(group.name, rop_group);
   }
 
-  for (const auto& group : kin_info.rep_groups)
+  for (const auto& group : kin_info.group_rep)
   {
     tesseract_scene_graph::REPKinematicParameters rep_group;
     rep_group.manipulator_group = group.manipulator_group;
@@ -1823,7 +1807,7 @@ bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::Kinem
     rep_group.positioner_fk_solver = group.positioner_fk_solver;
     for (const auto& pair : group.positioner_sample_resolution)
       rep_group.positioner_sample_resolution[pair.first] = pair.second;
-    manager.addREPGroup(group.name, rep_group);
+    manager.addREPKinematicsSolver(group.name, rep_group);
   }
 
   for (const auto& group : kin_info.group_opw)
@@ -1874,6 +1858,63 @@ bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::Kinem
 
   for (const auto& d : kin_info.default_inv_kin)
     manager.setDefaultInvKinematicSolver(d.first, d.second);
+
+  return true;
+}
+
+bool toMsg(tesseract_msgs::TransformMap& transform_map_msg, const tesseract_common::TransformMap& transform_map)
+{
+  transform_map_msg.names.reserve(transform_map.size());
+  transform_map_msg.transforms.reserve(transform_map.size());
+  for (const auto& pair : transform_map)
+  {
+    transform_map_msg.names.push_back(pair.first);
+    geometry_msgs::Pose pose;
+    if (!toMsg(pose, pair.second))
+      return false;
+
+    transform_map_msg.transforms.push_back(pose);
+  }
+  return true;
+}
+
+bool fromMsg(tesseract_common::TransformMap& transform_map, const tesseract_msgs::TransformMap& transform_map_msg)
+{
+  if (transform_map_msg.names.size() != transform_map_msg.transforms.size())
+    return false;
+
+  for (std::size_t i = 0; i < transform_map_msg.names.size(); ++i)
+  {
+    Eigen::Isometry3d pose;
+    if (fromMsg(pose, transform_map_msg.transforms.at(i)))
+      return false;
+
+    transform_map[transform_map_msg.names.at(i)] = pose;
+  }
+
+  return true;
+}
+
+bool toMsg(sensor_msgs::JointState& joint_state_msg, const std::unordered_map<std::string, double>& joint_state)
+{
+  joint_state_msg.header.stamp = ros::Time::now();
+  joint_state_msg.name.reserve(joint_state.size());
+  joint_state_msg.position.reserve(joint_state.size());
+  for (const auto& pair : joint_state)
+  {
+    joint_state_msg.name.push_back(pair.first);
+    joint_state_msg.position.push_back(pair.second);
+  }
+  return true;
+}
+
+bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_msgs::JointState& joint_state_msg)
+{
+  if (joint_state_msg.name.size() != joint_state_msg.position.size())
+    return false;
+
+  for (std::size_t i = 0; i < joint_state_msg.name.size(); ++i)
+    joint_state[joint_state_msg.name.at(i)] = joint_state_msg.position.at(i);
 
   return true;
 }
