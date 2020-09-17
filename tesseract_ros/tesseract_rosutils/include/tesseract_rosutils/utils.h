@@ -37,6 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/GroupsJointState.h>
 #include <tesseract_msgs/GroupsJointStates.h>
 #include <tesseract_msgs/GroupsOPWKinematics.h>
+#include <tesseract_msgs/GroupsREPKinematics.h>
+#include <tesseract_msgs/GroupsROPKinematics.h>
 #include <tesseract_msgs/GroupsTCP.h>
 #include <tesseract_msgs/GroupsTCPs.h>
 #include <tesseract_msgs/Inertial.h>
@@ -52,12 +54,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/LinkGroup.h>
 #include <tesseract_msgs/Material.h>
 #include <tesseract_msgs/Mesh.h>
-#include <tesseract_msgs/REPGroup.h>
-#include <tesseract_msgs/ROPGroup.h>
 #include <tesseract_msgs/SceneGraph.h>
 #include <tesseract_msgs/StringDoublePair.h>
 #include <tesseract_msgs/StringPair.h>
 #include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/ProcessPlan.h>
 
@@ -169,8 +170,6 @@ void toMsg(tesseract_msgs::SceneGraph& scene_graph_msg, const tesseract_scene_gr
 
 tesseract_scene_graph::SceneGraph fromMsg(const tesseract_msgs::SceneGraph& scene_graph_msg);
 
-void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state);
-
 bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command);
 
 tesseract_environment::Commands fromMsg(const std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg);
@@ -180,8 +179,6 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
 bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
            const tesseract_environment::Commands& commands,
            unsigned long past_revision);
-
-void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state);
 
 void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env);
 
@@ -282,14 +279,14 @@ tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_refer
  * @param group Robot on Positioner group
  * @return Robot on Positioner group message
  */
-tesseract_msgs::ROPGroup toMsg(tesseract_scene_graph::ROPGroups::const_reference group);
+tesseract_msgs::GroupsROPKinematics toMsg(tesseract_scene_graph::GroupROPKinematics::const_reference group);
 
 /**
  * @brief Convert a Robot with External Positioner group to message
  * @param group  Robot with External Positioner group
  * @return Robot with External Positioner group message
  */
-tesseract_msgs::REPGroup toMsg(tesseract_scene_graph::REPGroups::const_reference group);
+tesseract_msgs::GroupsREPKinematics toMsg(tesseract_scene_graph::GroupREPKinematics::const_reference group);
 
 /**
  * @brief Convert a group's OPW kinematics to message
@@ -327,6 +324,38 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::Man
  * @return True if successful, otherwise false
  */
 bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info);
+
+/**
+ * @brief This will populate a transfrom map message
+ * @param transform_map_msg The transfrom map message
+ * @param transform_map The transform map
+ * @return True if successful, otherwise false
+ */
+bool toMsg(tesseract_msgs::TransformMap& transform_map_msg, const tesseract_common::TransformMap& transform_map);
+
+/**
+ * @brief This will populate a transfrom map given a message
+ * @param transform_map The transform map
+ * @param transform_map_msg The transfrom map message
+ * @return True if successful, otherwise false
+ */
+bool fromMsg(tesseract_common::TransformMap& transform_map, const tesseract_msgs::TransformMap& transform_map_msg);
+
+/**
+ * @brief This will populate a joint states map message
+ * @param joint_state_msg The joint states map message
+ * @param joint_state The joint state map
+ * @return True if successful, otherwise false
+ */
+bool toMsg(sensor_msgs::JointState& joint_state_msg, const std::unordered_map<std::string, double>& joint_state);
+
+/**
+ * @brief This will populate a joint states from message
+ * @param joint_state The joint state map
+ * @param joint_state_msg The joint states map message
+ * @return True if successful, otherwise false
+ */
+bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_msgs::JointState& joint_state_msg);
 
 }  // namespace tesseract_rosutils
 
