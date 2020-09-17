@@ -6,6 +6,6 @@ tesseract_msgs/GroupsTCPs[] group_tcps
 tesseract_msgs/ChainGroup[] chain_groups
 tesseract_msgs/JointGroup[] joint_groups
 tesseract_msgs/LinkGroup[] link_groups
-tesseract_msgs/ROPGroup[] rop_groups
-tesseract_msgs/REPGroup[] rep_groups
 tesseract_msgs/GroupsOPWKinematics[] group_opw
+tesseract_msgs/GroupsROPKinematics[] group_rop
+tesseract_msgs/GroupsREPKinematics[] group_rep
