@@ -54,9 +54,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/LinkGroup.h>
 #include <tesseract_msgs/Material.h>
 #include <tesseract_msgs/Mesh.h>
+#include <tesseract_msgs/PlanningRequestArchive.h>
 #include <tesseract_msgs/SceneGraph.h>
 #include <tesseract_msgs/StringDoublePair.h>
 #include <tesseract_msgs/StringPair.h>
+#include <tesseract_msgs/Tesseract.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
@@ -70,8 +72,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract/tesseract.h>
 #include <tesseract/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/srdf/types.h>
@@ -356,6 +360,21 @@ bool toMsg(sensor_msgs::JointState& joint_state_msg, const std::unordered_map<st
  * @return True if successful, otherwise false
  */
 bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_msgs::JointState& joint_state_msg);
+
+/**
+ * @brief Converts a Tesseract object to a Tesseract msg
+ * @param tesseract_msg Resulting Message
+ * @param tesseract Input Tesseract object
+ * @return True if successful, otherwise false
+ */
+bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract& tesseract);
+
+/**
+ * @brief Converts a Tesseract msg to a Tesseract object
+ * @param tesseract_msg Input Tesseract msg
+ * @return Resulting Tesseract Object if successful, nullptr otherwise
+ */
+tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg);
 
 }  // namespace tesseract_rosutils
 

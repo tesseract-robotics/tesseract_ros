@@ -64,6 +64,7 @@ add_message_files(
     OctreeSubType.msg
     PlannerProfileRemapping.msg
     PlanningRequest.msg
+    PlanningRequestArchive.msg
     PlanningResponse.msg
     ProcessPlan.msg
     ProcessPlanPath.msg
@@ -74,6 +75,7 @@ add_message_files(
     StringDoublePair.msg
     StringPair.msg
     TesseractState.msg
+    Tesseract.msg
     Trajectory.msg
     TransformMap.msg
     VisualGeometry.msg
