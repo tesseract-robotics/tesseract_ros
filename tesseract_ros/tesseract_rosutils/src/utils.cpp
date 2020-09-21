@@ -233,12 +233,14 @@ bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geo
 bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/, const tesseract_scene_graph::Visual& /*visual2*/)
 {
   assert(false);
+  return false;
 }
 
 bool isIdentical(const tesseract_scene_graph::Collision& /*collision1*/,
                  const tesseract_scene_graph::Collision& /*collision2*/)
 {
   assert(false);
+  return false;
 }
 
 bool isIdentical(const tesseract_scene_graph::Link& link1, const tesseract_scene_graph::Link& link2)
@@ -1917,6 +1919,75 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
     joint_state[joint_state_msg.name.at(i)] = joint_state_msg.position.at(i);
 
   return true;
+}
+
+bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract& tesseract)
+{
+  if (!tesseract_rosutils::toMsg(tesseract_msg.command_history, tesseract.getEnvironment()->getCommandHistory(), 0))
+  {
+    return false;
+  }
+
+  auto manipulator_manager = tesseract.getManipulatorManager();
+  if (!tesseract_rosutils::toMsg(tesseract_msg.kinematics_information, *manipulator_manager))
+  {
+    return false;
+  }
+
+  if (!tesseract_rosutils::toMsg(tesseract_msg.joint_states, tesseract.getEnvironment()->getCurrentState()->joints))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg)
+{
+  tesseract_environment::Commands commands;
+  try
+  {
+    commands = tesseract_rosutils::fromMsg(tesseract_msg.command_history);
+  }
+  catch (...)
+  {
+    ROS_ERROR_STREAM("Failed to convert command history message!");
+    return nullptr;
+  }
+
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  if (!env->init<tesseract_environment::OFKTStateSolver>(commands))  // TODO: Get state solver
+  {
+    ROS_ERROR_STREAM("Failed to initialize environment!");
+    return nullptr;
+  }
+
+  auto env_state = std::make_shared<tesseract_environment::EnvState>();
+  if (!tesseract_rosutils::fromMsg(env_state->joints, tesseract_msg.joint_states))
+  {
+    ROS_ERROR_STREAM("Failed to get joint states");
+    return nullptr;
+  }
+  env->setState(env_state->joints);
+
+  auto manip_manager = std::make_shared<tesseract::ManipulatorManager>();
+  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  manip_manager->init(env, srdf);
+
+  if (!tesseract_rosutils::fromMsg(*manip_manager, tesseract_msg.kinematics_information))
+  {
+    ROS_ERROR_STREAM("Failed to populate manipulator manager from kinematics information!");
+    return nullptr;
+  }
+
+  auto thor = std::make_shared<tesseract::Tesseract>();
+  if (!thor->init(*env, *manip_manager))
+  {
+    ROS_ERROR_STREAM("Failed to initialize tesseract!");
+    return nullptr;
+  }
+
+  return thor;
 }
 
 }  // namespace tesseract_rosutils

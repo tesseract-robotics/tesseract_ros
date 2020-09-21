@@ -75,6 +75,15 @@ TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
   EXPECT_EQ(tesseract_state_msg.commands.size(), env->getCommandHistory().size());
 }
 
+TEST_F(TesseractROSUtilsUnit, toFromMsgTesseract)  // NOLINT
+{
+  tesseract_msgs::Tesseract tesseract_msg;
+  EXPECT_TRUE(toMsg(tesseract_msg, *tesseract_ptr_));
+
+  auto new_tesseract = fromMsg(tesseract_msg);
+  EXPECT_TRUE(new_tesseract);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
