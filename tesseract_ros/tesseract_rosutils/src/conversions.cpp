@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/conversions.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/utils/flatten_utils.h>
 
 namespace tesseract_rosutils
 {
@@ -66,6 +68,68 @@ tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::JointT
   if (joint_trajectory.trajectory.size() != 0)
     tesseract_rosutils::toMsg(path.trajectory, joint_trajectory);
   return path;
+}
+
+bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
+                       const tesseract_planning::Instruction& instruction)
+{
+  if (tesseract_planning::isCompositeInstruction(instruction))
+  {
+    const auto* ci = instruction.cast_const<tesseract_planning::CompositeInstruction>();
+    auto fi = tesseract_planning::flatten(*ci, tesseract_planning::moveFilter);
+
+    double t = 0;
+    if (!joint_trajectory.points.empty())
+      t = joint_trajectory.points.back().time_from_start.toSec();
+
+    double last_time = 0;
+    double current_time = 0;
+    for (const auto& i : fi)
+    {
+      if (tesseract_planning::isMoveInstruction(i))
+      {
+        auto mi = i.get().cast_const<tesseract_planning::MoveInstruction>();
+
+        if (isStateWaypoint(mi->getWaypoint()))
+        {
+          trajectory_msgs::JointTrajectoryPoint point;
+          const auto* swp = mi->getWaypoint().cast_const<tesseract_planning::StateWaypoint>();
+          assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
+          if (joint_trajectory.joint_names.empty())
+            joint_trajectory.joint_names = swp->joint_names;
+
+          /** @todo should check order for every point */
+
+          point.positions.reserve(swp->joint_names.size());
+          for (long j = 0; j < swp->position.size(); ++j)
+            point.positions.push_back(swp->position(j));
+
+          current_time = swp->time;
+          // It is possible for sub composites to start back from zero, this accounts for it
+          if (current_time < last_time)
+            last_time = 0;
+
+          t += (current_time - last_time);
+          point.time_from_start = ros::Duration(t);
+          last_time = current_time;
+          joint_trajectory.points.push_back(point);
+          joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+        }
+        else
+        {
+          CONSOLE_BRIDGE_logError("toJointTrajectory: Move Instruction waypoint is not a State Waypoint!");
+          continue;
+        }
+      }
+    }
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logError("toJointTrajectory: Instruction is not a Composite Instruction!");
+    return false;
+  }
+
+  return true;
 }
 
 bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,

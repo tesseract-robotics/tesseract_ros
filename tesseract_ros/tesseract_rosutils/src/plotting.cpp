@@ -33,6 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_rosutils/conversions.h>
+
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_command_language/core/instruction.h>
 
@@ -50,7 +52,11 @@ ROSPlotting::ROSPlotting(std::string root_link, std::string topic_namespace)
   axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_axes", 1, true);
 }
 
-bool ROSPlotting::init(tesseract::Tesseract::ConstPtr /*thor*/) { return true; }
+bool ROSPlotting::init(tesseract::Tesseract::ConstPtr thor)
+{
+  tesseract_ = thor;
+  return true;
+}
 
 bool ROSPlotting::isConnected() const { return true; }
 
@@ -98,9 +104,18 @@ void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj)
   plotTrajectory(msg);
 }
 
-void ROSPlotting::plotTrajectory(const tesseract_planning::Instruction& /*instruction*/)
+void ROSPlotting::plotTrajectory(const tesseract_planning::Instruction& instruction)
 {
-  // TODO
+  tesseract_msgs::Trajectory msg;
+
+  // Set tesseract state information
+  if (tesseract_ != nullptr)
+    toMsg(msg.tesseract_state, *(tesseract_->getEnvironment()));
+
+  // Set the joint trajectory message
+  toJointTrajectory(msg.joint_trajectory, instruction);
+
+  plotTrajectory(msg);
 }
 
 void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
