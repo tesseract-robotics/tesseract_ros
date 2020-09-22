@@ -112,14 +112,15 @@ public:
                                   const Eigen::Ref<const Eigen::VectorXd>& safety_distances);
 
 private:
-  std::string root_link_;         /**< Root link of markers */
-  std::string topic_namespace_;   /**< Namespace used when publishing markers */
-  int marker_counter_;            /**< Counter when plotting */
-  ros::Publisher scene_pub_;      /**< Scene publisher */
-  ros::Publisher trajectory_pub_; /**< Trajectory publisher */
-  ros::Publisher collisions_pub_; /**< Collision Data publisher */
-  ros::Publisher arrows_pub_;     /**< Used for publishing arrow markers */
-  ros::Publisher axes_pub_;       /**< Used for publishing axis markers */
+  tesseract::Tesseract::ConstPtr tesseract_; /**< The tesseract object */
+  std::string root_link_;                    /**< Root link of markers */
+  std::string topic_namespace_;              /**< Namespace used when publishing markers */
+  int marker_counter_;                       /**< Counter when plotting */
+  ros::Publisher scene_pub_;                 /**< Scene publisher */
+  ros::Publisher trajectory_pub_;            /**< Trajectory publisher */
+  ros::Publisher collisions_pub_;            /**< Collision Data publisher */
+  ros::Publisher arrows_pub_;                /**< Used for publishing arrow markers */
+  ros::Publisher axes_pub_;                  /**< Used for publishing axis markers */
 };
 using ROSPlottingPtr = std::shared_ptr<ROSPlotting>;
 using ROSPlottingConstPtr = std::shared_ptr<const ROSPlotting>;
