@@ -91,8 +91,10 @@ public:
 
   /** @brief Start monitoring joint states on a particular topic
    *  @param joint_states_topic The topic name for joint states (defaults to "joint_states")
+   *  @param publish_tf If true, TFs will be published for each joint (similar to robot description publisher). Default:
+   * true
    */
-  void startStateMonitor(const std::string& joint_states_topic = "joint_states");
+  void startStateMonitor(const std::string& joint_states_topic = "joint_states", bool publish_tf = true);
 
   /** @brief Stop monitoring the "joint_states" topic
    */
@@ -199,8 +201,9 @@ private:
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
+  bool publish_tf_
 
-  mutable std::mutex state_update_lock_;
+      mutable std::mutex state_update_lock_;
   mutable std::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
