@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajectory_msgs/JointTrajectory.h>
 #include <tesseract_msgs/ProcessPlanSegment.h>
 #include <tesseract_msgs/ProcessPlan.h>
+#include <tesseract_command_language/core/instruction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
@@ -56,6 +57,15 @@ Eigen::VectorXd toEigen(const std::vector<double>& vector);
  * @return Eigen::VectorXd in the same order as joint_names
  */
 Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const std::vector<std::string>& joint_names);
+
+/**
+ * @brief Append a Move Instruction to an existing joint_trajectory
+ * @param joint_trajectory Trajectory to add the process segment
+ * @param instruction Process instruction
+ * @return
+ */
+bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
+                       const tesseract_planning::Instruction& instruction);
 
 /**
  * @brief Append a process segment to an existing joint_trajectory
