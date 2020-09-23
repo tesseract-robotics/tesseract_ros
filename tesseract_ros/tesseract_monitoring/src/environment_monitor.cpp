@@ -655,7 +655,7 @@ std::unique_lock<std::shared_mutex> EnvironmentMonitor::lockEnvironmentWrite()
   return std::unique_lock(scene_update_mutex_);
 }
 
-void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic)
+void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic, bool publish_tf)
 {
   stopStateMonitor();
   if (tesseract_->getEnvironment())
@@ -665,7 +665,7 @@ void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic
           new CurrentStateMonitor(tesseract_->getEnvironment(), tesseract_->getManipulatorManager(), root_nh_));
 
     current_state_monitor_->addUpdateCallback(boost::bind(&EnvironmentMonitor::onJointStateUpdate, this, _1));
-    current_state_monitor_->startStateMonitor(joint_states_topic);
+    current_state_monitor_->startStateMonitor(joint_states_topic, publish_tf);
 
     {
       std::scoped_lock lock(state_pending_mutex_);
