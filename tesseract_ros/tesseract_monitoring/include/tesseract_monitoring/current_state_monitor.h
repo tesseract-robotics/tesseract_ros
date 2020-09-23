@@ -201,7 +201,7 @@ private:
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
-  bool publish_tf_
+  bool publish_tf_;
 
   mutable std::mutex state_update_lock_;
   mutable std::condition_variable state_update_condition_;
