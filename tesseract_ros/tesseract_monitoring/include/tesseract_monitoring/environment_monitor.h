@@ -263,8 +263,9 @@ public:
 
   /** @brief Start the current state monitor
       @param joint_states_topic the topic to listen to for joint states
-      @param attached_objects_topic the topic to listen to for attached collision objects */
-  void startStateMonitor(const std::string& joint_states_topic = DEFAULT_JOINT_STATES_TOPIC);
+      @param publish_tf If true, TFs will be published for each joint (similar to robot description publisher). Default:
+     true  */
+  void startStateMonitor(const std::string& joint_states_topic = DEFAULT_JOINT_STATES_TOPIC, bool publish_tf = true);
 
   /** @brief Stop the state monitor*/
   void stopStateMonitor();
