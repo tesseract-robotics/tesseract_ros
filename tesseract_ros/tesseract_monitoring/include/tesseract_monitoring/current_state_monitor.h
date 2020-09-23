@@ -203,7 +203,7 @@ private:
   ros::Time last_tf_update_;
   bool publish_tf_
 
-      mutable std::mutex state_update_lock_;
+  mutable std::mutex state_update_lock_;
   mutable std::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
