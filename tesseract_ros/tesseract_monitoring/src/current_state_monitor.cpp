@@ -98,8 +98,9 @@ void CurrentStateMonitor::addUpdateCallback(const JointStateUpdateCallback& fn)
 }
 
 void CurrentStateMonitor::clearUpdateCallbacks() { update_callbacks_.clear(); }
-void CurrentStateMonitor::startStateMonitor(const std::string& joint_states_topic)
+void CurrentStateMonitor::startStateMonitor(const std::string& joint_states_topic, bool publish_tf)
 {
+  publish_tf_ = publish_tf;
   if (!state_monitor_started_ && env_)
   {
     joint_time_.clear();
@@ -347,21 +348,24 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     if (update)
       env_state_ = tesseract_environment::EnvState(*(env_->getState(env_state_.joints)));
 
-    std::string base_link = env_->getRootLinkName();
-    std::vector<geometry_msgs::TransformStamped> transforms;
-    transforms.reserve(env_state_.joints.size());
-    for (const auto& pose : env_state_.link_transforms)
+    if (publish_tf_)
     {
-      if (pose.first != base_link)
+      std::string base_link = env_->getRootLinkName();
+      std::vector<geometry_msgs::TransformStamped> transforms;
+      transforms.reserve(env_state_.joints.size());
+      for (const auto& pose : env_state_.link_transforms)
       {
-        geometry_msgs::TransformStamped tf = tf2::eigenToTransform(pose.second);
-        tf.header.stamp = current_state_time_;
-        tf.header.frame_id = base_link;
-        tf.child_frame_id = pose.first;
-        transforms.push_back(tf);
+        if (pose.first != base_link)
+        {
+          geometry_msgs::TransformStamped tf = tf2::eigenToTransform(pose.second);
+          tf.header.stamp = current_state_time_;
+          tf.header.frame_id = base_link;
+          tf.child_frame_id = pose.first;
+          transforms.push_back(tf);
+        }
       }
+      tf_broadcaster_.sendTransform(transforms);
     }
-    tf_broadcaster_.sendTransform(transforms);
   }
 
   // callbacks, if needed
