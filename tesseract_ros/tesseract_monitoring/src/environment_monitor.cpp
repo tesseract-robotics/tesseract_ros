@@ -206,7 +206,7 @@ void EnvironmentMonitor::initialize()
         for (const auto& plugin : available_plugins)
           msg += "    " + plugin + '\n';
 
-        ROS_ERROR(msg.c_str());
+        ROS_ERROR("%s", msg.c_str());
       }
       else
       {
@@ -240,7 +240,7 @@ void EnvironmentMonitor::initialize()
         for (const auto& plugin : available_plugins)
           msg += "    " + plugin + '\n';
 
-        ROS_ERROR(msg.c_str());
+        ROS_ERROR("%s", msg.c_str());
       }
       else
       {

@@ -49,6 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract/tesseract.h>
+#include <tesseract_visualization/trajectory_player.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #endif
 
@@ -104,12 +105,11 @@ private Q_SLOTS:
   void changedDisplayMode();
   void changedTrailStepSize();
   void changedTrajectoryTopic();
-  void changedStateDisplayTime();
+  void changedTimeScale();
   void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
   void incomingDisplayTrajectory(const tesseract_msgs::Trajectory::ConstPtr& msg);
-  float getStateDisplayTime();
   void clearTrajectoryTrail();
   void createTrajectoryTrail();
 
@@ -121,8 +121,9 @@ protected:
   ros::NodeHandle nh_;
   bool cached_visible_; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 
-  tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;
-  tesseract_msgs::TrajectoryPtr trajectory_message_to_display_;
+  tesseract_visualization::TrajectoryPlayer trajectory_player_;
+  tesseract_planning::Instruction displaying_instruction_{ tesseract_planning::NullInstruction() };
+  tesseract_planning::Instruction trajectory_to_display_instruction_{ tesseract_planning::NullInstruction() };
 
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;
@@ -130,16 +131,15 @@ protected:
   // Pointers from parent display taht we save
   bool animating_path_;
   bool drop_displaying_trajectory_;
-  int current_state_;
-  float current_state_time_;
   TrajectoryPanel* trajectory_slider_panel_;
   rviz::PanelDockWidget* trajectory_slider_dock_panel_;
   int previous_display_mode_;
-  size_t num_trajectory_waypoints_;
+  std::size_t num_trail_waypoints_;
+  int slider_count_;
 
   // Properties
   rviz::Property* main_property_;
-  rviz::EditableEnumProperty* state_display_time_property_;
+  rviz::FloatProperty* time_scale_property_;
   rviz::RosTopicProperty* trajectory_topic_property_;
   rviz::EnumProperty* display_mode_property_;
   rviz::BoolProperty* interrupt_display_property_;
