@@ -51,6 +51,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/properties/string_property.h>
 #include <rviz/window_manager_interface.h>
 
+#include <tesseract_command_language/utils/utils.h>
+#include <tesseract_command_language/deserialize.h>
 #include <tesseract_rosutils/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -60,6 +62,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
+const double SLIDER_RESOLUTION = 0.001;
+
 TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::Display* display)
   : widget_(widget)
   , display_(display)
@@ -68,7 +72,6 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   , cached_visible_(false)
   , animating_path_(false)
   , drop_displaying_trajectory_(false)
-  , current_state_(-1)
   , trajectory_slider_panel_(nullptr)
   , trajectory_slider_dock_panel_(nullptr)
 {
@@ -90,17 +93,13 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   display_mode_property_->addOptionStd("Loop", 1);
   display_mode_property_->addOptionStd("Trail", 2);
 
-  state_display_time_property_ = new rviz::EditableEnumProperty("State Display Time",
-                                                                "0.05 s",
-                                                                "The amount of wall-time to wait in between displaying "
-                                                                "states along a received trajectory path",
-                                                                main_property_,
-                                                                SLOT(changedStateDisplayTime()),
-                                                                this);
-  state_display_time_property_->addOptionStd("REALTIME");
-  state_display_time_property_->addOptionStd("0.05 s");
-  state_display_time_property_->addOptionStd("0.1 s");
-  state_display_time_property_->addOptionStd("0.5 s");
+  time_scale_property_ = new rviz::FloatProperty("Time Scale",
+                                                 1,
+                                                 "A time scale factor applied during play back of trajectory",
+                                                 main_property_,
+                                                 SLOT(changedTimeScale()),
+                                                 this);
+  time_scale_property_->setMin(1e-8f);
 
   trail_step_size_property_ = new rviz::IntProperty("Trail Step Size",
                                                     1,
@@ -121,8 +120,8 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
 TrajectoryMonitorWidget::~TrajectoryMonitorWidget()
 {
   clearTrajectoryTrail();
-  trajectory_message_to_display_.reset();
-  displaying_trajectory_message_.reset();
+  displaying_instruction_ = tesseract_planning::NullInstruction();
+  trajectory_to_display_instruction_ = tesseract_planning::NullInstruction();
 
   delete trajectory_slider_dock_panel_;
 }
@@ -165,7 +164,7 @@ void TrajectoryMonitorWidget::onDisable()
 {
   cached_visible_ = visualization_->isTrajectoryVisible();
   visualization_->setTrajectoryVisible(false);
-  displaying_trajectory_message_.reset();
+  displaying_instruction_ = tesseract_planning::NullInstruction();
   animating_path_ = false;
 
   if (trajectory_slider_panel_)
@@ -175,8 +174,8 @@ void TrajectoryMonitorWidget::onDisable()
 void TrajectoryMonitorWidget::onReset()
 {
   clearTrajectoryTrail();
-  trajectory_message_to_display_.reset();
-  displaying_trajectory_message_.reset();
+  displaying_instruction_ = tesseract_planning::NullInstruction();
+  trajectory_to_display_instruction_ = tesseract_planning::NullInstruction();
   animating_path_ = false;
 }
 
@@ -196,32 +195,22 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
 {
   clearTrajectoryTrail();
 
-  tesseract_msgs::TrajectoryPtr t = trajectory_message_to_display_;
-  if (!t)
-    t = displaying_trajectory_message_;
-
-  if (!t)
-    return;
-
-  auto stepsize = static_cast<size_t>(trail_step_size_property_->getInt());
+  long stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
-  size_t num_waypoints = t->joint_trajectory.points.size();
-  num_trajectory_waypoints_ =
+  long num_waypoints = trajectory_player_.size();
+  num_trail_waypoints_ =
       static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
   std::vector<tesseract_environment::EnvState::Ptr> states_data;
-  states_data.reserve(num_trajectory_waypoints_);
-  for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
+  states_data.reserve(num_trail_waypoints_);
+  for (std::size_t i = 0; i < num_trail_waypoints_; i++)
   {
-    unsigned waypoint_i =
-        static_cast<unsigned>(std::min(i * stepsize, num_waypoints - 1));  // limit to last trajectory point
-
+    // limit to last trajectory point
+    auto waypoint_i = static_cast<long>(std::min(static_cast<long>(i) * stepsize, num_waypoints - 1));
     std::unordered_map<std::string, double> joints;
-    for (unsigned j = 0; j < t->joint_trajectory.joint_names.size(); ++j)
-    {
-      joints[t->joint_trajectory.joint_names[j]] = t->joint_trajectory.points[waypoint_i].positions[j];
-    }
-
-    states_data.push_back(tesseract_->getEnvironment()->getState(joints));
+    tesseract_planning::MoveInstruction mi = trajectory_player_.getByIndex(waypoint_i);
+    const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
+    const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
+    states_data.push_back(tesseract_->getEnvironment()->getState(joint_names, joint_values));
   }
 
   // If current state is not visible must set trajectory for all links for a single state so static
@@ -231,7 +220,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     LinkWidget* lw = visualization_->getLink(tf.first);
     lw->clearTrajectory();
 
-    if (!visualization_->isCurrentStateVisible())
+    if (!visualization_->isCurrentStateVisible() && !visualization_->isStartStateVisible())
       lw->setTrajectory({ tf.second });
   }
 
@@ -252,8 +241,12 @@ void TrajectoryMonitorWidget::changedDisplayMode()
 {
   if (display_mode_property_->getOptionInt() != 2)
   {
-    if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
+    if (display_->isEnabled() && !tesseract_planning::isNullInstruction(displaying_instruction_) && animating_path_)
       return;
+
+    visualization_->setStartStateVisible(true);
+    visualization_->setTrajectoryVisible(false);
+    trajectory_player_.enableLoop(display_mode_property_->getOptionInt() == 1);
 
     clearTrajectoryTrail();
 
@@ -262,6 +255,8 @@ void TrajectoryMonitorWidget::changedDisplayMode()
   }
   else
   {
+    visualization_->setStartStateVisible(false);
+    visualization_->setTrajectoryVisible(true);
     if (trajectory_slider_panel_)
       trajectory_slider_panel_->pauseButton(true);
   }
@@ -270,11 +265,7 @@ void TrajectoryMonitorWidget::changedDisplayMode()
 void TrajectoryMonitorWidget::changedTrailStepSize()
 {
   if (display_mode_property_->getOptionInt() == 2)
-  {
     createTrajectoryTrail();
-    if (trajectory_slider_panel_)
-      trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
-  }
 }
 
 void TrajectoryMonitorWidget::changedTrajectoryTopic()
@@ -287,39 +278,22 @@ void TrajectoryMonitorWidget::changedTrajectoryTopic()
   }
 }
 
-void TrajectoryMonitorWidget::changedStateDisplayTime() {}
+void TrajectoryMonitorWidget::changedTimeScale()
+{
+  trajectory_player_.setScale(static_cast<double>(time_scale_property_->getFloat()));
+}
 
 void TrajectoryMonitorWidget::interruptCurrentDisplay()
 {
   // update() starts a new trajectory as soon as it is available
   // interrupting may cause the newly received trajectory to interrupt
   // hence, only interrupt when current_state_ already advanced past first
-  if (current_state_ > 0)
+  if (trajectory_player_.currentDuration() > 0)
     animating_path_ = false;
 }
 
-float TrajectoryMonitorWidget::getStateDisplayTime()
-{
-  std::string tm = state_display_time_property_->getStdString();
-  if (tm == "REALTIME")
-    return -1.0;
-
-  boost::replace_all(tm, "s", "");
-  boost::trim(tm);
-  float t = 0.05f;
-  try
-  {
-    t = boost::lexical_cast<float>(tm);
-  }
-  catch (const boost::bad_lexical_cast& /*ex*/)
-  {
-    state_display_time_property_->setStdString("0.05 s");
-  }
-  return t;
-}
-
 void TrajectoryMonitorWidget::dropTrajectory() { drop_displaying_trajectory_ = true; }
-void TrajectoryMonitorWidget::onUpdate(float wall_dt)
+void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 {
   if (!tesseract_->isInitialized() || !visualization_)
     return;
@@ -327,9 +301,10 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
   if (drop_displaying_trajectory_)
   {
     animating_path_ = false;
-    displaying_trajectory_message_.reset();
+    displaying_instruction_ = tesseract_planning::NullInstruction();
     trajectory_slider_panel_->update(0);
     drop_displaying_trajectory_ = false;
+    trajectory_player_.reset();
   }
 
   if (!animating_path_)
@@ -337,19 +312,21 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
 
     boost::mutex::scoped_lock lock(update_trajectory_message_);
     // new trajectory available to display?
-    if (trajectory_message_to_display_ && !trajectory_message_to_display_->joint_trajectory.points.empty())
+    if (tesseract_planning::isCompositeInstruction(trajectory_to_display_instruction_))
     {
       animating_path_ = true;
 
       if (display_mode_property_->getOptionInt() == 2)
         animating_path_ = false;
 
-      displaying_trajectory_message_ = trajectory_message_to_display_;
+      trajectory_player_.setProgram(
+          *trajectory_to_display_instruction_.cast_const<tesseract_planning::CompositeInstruction>());
+      slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION));
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
-        trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
+        trajectory_slider_panel_->update(slider_count_);
     }
-    else if (displaying_trajectory_message_)
+    else if (tesseract_planning::isCompositeInstruction(displaying_instruction_))
     {
       if (display_mode_property_->getOptionInt() == 1)
       {
@@ -363,7 +340,7 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
         }
         else
         {
-          if (static_cast<unsigned>(trajectory_slider_panel_->getSliderPosition()) == (num_trajectory_waypoints_ - 1))
+          if (trajectory_slider_panel_->getSliderPosition() == (slider_count_ - 1))
             animating_path_ = false;
           else
             animating_path_ = true;
@@ -375,22 +352,22 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
         {
           createTrajectoryTrail();
           if (trajectory_slider_panel_)
-            trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
+            trajectory_slider_panel_->update(slider_count_);
         }
 
         animating_path_ = false;
       }
       previous_display_mode_ = display_mode_property_->getOptionInt();
     }
-    trajectory_message_to_display_.reset();
+    trajectory_to_display_instruction_ = tesseract_planning::NullInstruction();
 
     if (animating_path_)
     {
-      current_state_ = -1;
-      current_state_time_ = std::numeric_limits<float>::infinity();
-
-      for (const auto& link_name : tesseract_->getEnvironment()->getActiveLinkNames())
-        visualization_->getLink(link_name)->showTrajectoryWaypointOnly(0);
+      tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(0);
+      const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
+      const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
+      tesseract_environment::EnvState::Ptr state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+      visualization_->setStartState(state->link_transforms);
 
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->setSliderPosition(0);
@@ -399,44 +376,33 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
 
   if (animating_path_)
   {
-    float tm = getStateDisplayTime();
-    if (tm < 0.0f)  // if we should use realtime
+    tesseract_environment::EnvState::Ptr state;
+    if (trajectory_slider_panel_ != nullptr && trajectory_slider_panel_->isPaused())
     {
-      ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_) + 1]
-                            .time_from_start;
-      if (d.isZero())
-        tm = 0;
-      else
-        tm = static_cast<float>(
-            (d - displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)]
-                     .time_from_start)
-                .toSec());
+      double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) /
+                        static_cast<double>(trajectory_slider_panel_->getSliderPosition());
+      tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(duration);
+      const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
+      const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
+      state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+    }
+    else
+    {
+      tesseract_planning::MoveInstruction mi = trajectory_player_.getNext();
+      const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
+      const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
+      state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+
+      if (trajectory_slider_panel_ != nullptr)
+      {
+        int slider_index = static_cast<int>(
+            std::ceil((trajectory_player_.currentDuration() / trajectory_player_.trajectoryDuration()) *
+                      static_cast<double>(slider_count_)));
+        trajectory_slider_panel_->setSliderPosition(slider_index);
+      }
     }
 
-    if (current_state_time_ > tm)
-    {
-      if (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible() && trajectory_slider_panel_->isPaused())
-        current_state_ = trajectory_slider_panel_->getSliderPosition();
-      else
-        ++current_state_;
-
-      if (current_state_ < static_cast<int>(num_trajectory_waypoints_))
-      {
-        if (trajectory_slider_panel_)
-          trajectory_slider_panel_->setSliderPosition(current_state_);
-
-        for (const auto& link_name : tesseract_->getEnvironment()->getActiveLinkNames())
-          visualization_->getLink(link_name)->showTrajectoryWaypointOnly(current_state_);
-      }
-      else
-      {
-        animating_path_ = false;  // animation finished
-        if ((display_mode_property_->getOptionInt() != 1) && trajectory_slider_panel_)
-          trajectory_slider_panel_->pauseButton(true);
-      }
-      current_state_time_ = 0.0f;
-    }
-    current_state_time_ += wall_dt;
+    visualization_->setStartState(state->link_transforms);
   }
 }
 
@@ -449,8 +415,15 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
     return;
   }
 
-  if (visualization_ && !visualization_->isTrajectoryVisible())
-    visualization_->setTrajectoryVisible(true);
+  if (visualization_)
+  {
+    //    if (!visualization_->isTrajectoryVisible())
+    //      visualization_->setTrajectoryVisible(true);
+    visualization_->setTrajectoryVisible(false);
+
+    if (!visualization_->isStartStateVisible())
+      visualization_->setStartStateVisible(true);
+  }
 
   if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != tesseract_->getEnvironment()->getName())
     ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
@@ -458,43 +431,38 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
              msg->tesseract_state.id.c_str(),
              tesseract_->getEnvironment()->getName().c_str());
 
-  if (!msg->joint_trajectory.points.empty())
+  if (!msg->instructions.empty())
   {
-    bool joints_equal = true;
-    if (trajectory_message_to_display_)
+    tesseract_planning::Instruction program = tesseract_planning::fromXMLString(msg->instructions);
+    boost::mutex::scoped_lock lock(update_trajectory_message_);
+    trajectory_to_display_instruction_ = program;
+    if (interrupt_display_property_->getBool())
+      interruptCurrentDisplay();
+  }
+  else if (!msg->joint_trajectory.points.empty())
+  {
+    tesseract_planning::CompositeInstruction composite;
+    for (unsigned i = 0; i < msg->joint_trajectory.points.size(); ++i)
     {
-      if ((trajectory_message_to_display_->joint_trajectory.points.size() == msg->joint_trajectory.points.size()) &&
-          (trajectory_message_to_display_->joint_trajectory.joint_names.size() ==
-           msg->joint_trajectory.joint_names.size()))
-      {
-        for (unsigned i = 0; i < msg->joint_trajectory.points.size(); ++i)
-        {
-          for (unsigned j = 0; j < msg->joint_trajectory.joint_names.size(); ++j)
-          {
-            double delta = msg->joint_trajectory.points[i].positions[j] -
-                           trajectory_message_to_display_->joint_trajectory.points[i].positions[j];
-            joints_equal &= (std::abs(delta) < std::numeric_limits<double>::epsilon());
-          }
-        }
-      }
-      else
-      {
-        joints_equal = false;
-      }
+      tesseract_planning::StateWaypoint swp;
+      const trajectory_msgs::JointTrajectoryPoint& p = msg->joint_trajectory.points[i];
+      swp.joint_names = msg->joint_trajectory.joint_names;
+      swp.position = Eigen::Map<const Eigen::VectorXd>(p.positions.data(), static_cast<long>(p.positions.size()));
+      swp.velocity = Eigen::Map<const Eigen::VectorXd>(p.velocities.data(), static_cast<long>(p.velocities.size()));
+      swp.acceleration =
+          Eigen::Map<const Eigen::VectorXd>(p.accelerations.data(), static_cast<long>(p.accelerations.size()));
+      swp.time = p.time_from_start.toSec();
+      composite.push_back(tesseract_planning::MoveInstruction(swp, tesseract_planning::MoveInstructionType::FREESPACE));
     }
 
-    trajectory_message_to_display_.reset();
-    if (!msg->joint_trajectory.points.empty() || !joints_equal)
-    {
-      boost::mutex::scoped_lock lock(update_trajectory_message_);
-      trajectory_message_to_display_.reset(new tesseract_msgs::Trajectory(*msg));
-      if (interrupt_display_property_->getBool())
-        interruptCurrentDisplay();
-    }
+    boost::mutex::scoped_lock lock(update_trajectory_message_);
+    trajectory_to_display_instruction_ = composite;
+    if (interrupt_display_property_->getBool())
+      interruptCurrentDisplay();
   }
   else
   {
-    trajectory_message_to_display_.reset();
+    trajectory_to_display_instruction_ = tesseract_planning::NullInstruction();
   }
 }
 

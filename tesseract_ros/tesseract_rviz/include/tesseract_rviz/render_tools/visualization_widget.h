@@ -217,12 +217,40 @@ public:
    */
   void setCollisionVisible(bool visible);
 
+  /**
+   * @brief Set the current state visibility
+   * @param visible True/False
+   */
   void setCurrentStateVisible(bool visible);
 
+  /**
+   * @brief Set the start state visibility
+   * @param visible True/False
+   */
   void setStartStateVisible(bool visible);
 
+  /**
+   * @brief Set the start states transforms
+   * @param transforms The transforms of the start state
+   */
+  void setStartState(const TransformMap& transforms);
+
+  /**
+   * @brief Set the end state visibility
+   * @param visible True/False
+   */
   void setEndStateVisible(bool visible);
 
+  /**
+   * @brief Set the end states transforms
+   * @param transforms The transforms of the start state
+   */
+  void setEndState(const TransformMap& transforms);
+
+  /**
+   * @brief Set the trajectory visibility
+   * @param visible True/False
+   */
   void setTrajectoryVisible(bool visible);
 
   /**
