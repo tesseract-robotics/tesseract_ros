@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED thread date_time system filesystem)
 find_package(tesseract REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
@@ -72,6 +73,7 @@ catkin_package(
     QT
     tesseract
     tesseract_common
+    tesseract_visualization
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
@@ -128,6 +130,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract::tesseract
+  tesseract::tesseract_visualization
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}

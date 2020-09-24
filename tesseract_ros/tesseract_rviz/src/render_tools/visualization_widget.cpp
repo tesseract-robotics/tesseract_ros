@@ -913,43 +913,6 @@ void VisualizationWidget::update(const TransformMap& transforms)
     auto it = transforms.find(link->getName());
     if (it != transforms.end())
     {
-      //      // Check if visual_orientation, visual_position, collision_orientation,
-      //      // and collision_position are NaN.
-      //      if (visual_orientation.isNaN())
-      //      {
-      //        ROS_ERROR_THROTTLE(1.0,
-      //                           "visual orientation of %s contains NaNs. "
-      //                           "Skipping render as long as the orientation is "
-      //                           "invalid.",
-      //                           link->getName().c_str());
-      //        continue;
-      //      }
-      //      if (visual_position.isNaN())
-      //      {
-      //        ROS_ERROR_THROTTLE(1.0,
-      //                           "visual position of %s contains NaNs. Skipping "
-      //                           "render as long as the position is invalid.",
-      //                           link->getName().c_str());
-      //        continue;
-      //      }
-      //      if (collision_orientation.isNaN())
-      //      {
-      //        ROS_ERROR_THROTTLE(1.0,
-      //                           "collision orientation of %s contains NaNs. "
-      //                           "Skipping render as long as the orientation is "
-      //                           "invalid.",
-      //                           link->getName().c_str());
-      //        continue;
-      //      }
-      //      if (collision_position.isNaN())
-      //      {
-      //        ROS_ERROR_THROTTLE(1.0,
-      //                           "collision position of %s contains NaNs. "
-      //                           "Skipping render as long as the position is "
-      //                           "invalid.",
-      //                           link->getName().c_str());
-      //        continue;
-      //      }
       link->setCurrentTransform(it->second);
     }
     else
@@ -965,6 +928,44 @@ void VisualizationWidget::update(const TransformMap& transforms)
 
     LinkWidget* p_link = links_[joint->getParentLinkName()];
     joint->setTransforms(p_link->getPosition(), p_link->getOrientation());
+  }
+}
+
+void VisualizationWidget::setStartState(const TransformMap& transforms)
+{
+  for (auto& link_pair : links_)
+  {
+    LinkWidget* link = link_pair.second;
+
+    link->setToNormalMaterial();
+    auto it = transforms.find(link->getName());
+    if (it != transforms.end())
+    {
+      link->setStartTransform(it->second);
+    }
+    else
+    {
+      link->setToErrorMaterial();
+    }
+  }
+}
+
+void VisualizationWidget::setEndState(const TransformMap& transforms)
+{
+  for (auto& link_pair : links_)
+  {
+    LinkWidget* link = link_pair.second;
+
+    link->setToNormalMaterial();
+    auto it = transforms.find(link->getName());
+    if (it != transforms.end())
+    {
+      link->setEndTransform(it->second);
+    }
+    else
+    {
+      link->setToErrorMaterial();
+    }
   }
 }
 
