@@ -58,7 +58,7 @@ public:
    */
   static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;
 
-  TesseractMonitorInterface() = default;
+  TesseractMonitorInterface(const std::string& env_name);
   virtual ~TesseractMonitorInterface() = default;
   TesseractMonitorInterface(const TesseractMonitorInterface&) = default;
   TesseractMonitorInterface& operator=(const TesseractMonitorInterface&) = default;
@@ -199,6 +199,7 @@ public:
 protected:
   ros::NodeHandle nh_;
   std::vector<std::string> ns_;
+  std::string env_name_;
 
   bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const;
 };
