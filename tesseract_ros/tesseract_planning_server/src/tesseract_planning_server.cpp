@@ -92,6 +92,7 @@ const tesseract_monitoring::EnvironmentMonitor& TesseractPlanningServer::getEnvi
 
 void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
 {
+  ROS_INFO("Tesseract Planning Server Recieved Request!");
   tesseract_planning::Instruction program = tesseract_planning::fromXMLString(goal->request.instructions);
   const auto* composite_program = program.cast_const<tesseract_planning::CompositeInstruction>();
 
@@ -312,6 +313,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     }
   }
 
+  ROS_INFO("Tesseract Planning Server Finished Request!");
   motion_plan_server_.setSucceeded(result);
 }
 

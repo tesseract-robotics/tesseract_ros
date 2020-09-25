@@ -38,6 +38,8 @@ const std::string TesseractMonitorInterface::DEFAULT_GET_ENVIRONMENT_INFORMATION
     R"(/get_tesseract_information)";
 const std::string TesseractMonitorInterface::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = R"(/modify_tesseract)";
 
+TesseractMonitorInterface::TesseractMonitorInterface(const std::string& env_name) : env_name_(env_name) {}
+
 void TesseractMonitorInterface::addNamespace(std::string monitor_namespace)
 {
   if (std::find(ns_.begin(), ns_.end(), monitor_namespace) == ns_.end())
@@ -144,7 +146,7 @@ bool TesseractMonitorInterface::sendCommands(const std::string& ns,
                                              const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const
 {
   tesseract_msgs::ModifyEnvironment res;
-  res.request.id = ns;
+  res.request.id = env_name_;
   res.request.append = true;
   res.request.commands = commands;
 
@@ -177,16 +179,6 @@ TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namesp
   tesseract_rosutils::fromMsg(env_state->joints, res.response.joint_states);
   tesseract_rosutils::fromMsg(env_state->link_transforms, res.response.link_transforms);
   tesseract_rosutils::fromMsg(env_state->joint_transforms, res.response.joint_transforms);
-  //  tesseract_environment::Commands commands;
-  //  try
-  //  {
-  //    commands = tesseract_rosutils::fromMsg(res.response.command_history);
-  //  }
-  //  catch (...)
-  //  {
-  //    ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to convert command history message!");
-  //    return nullptr;
-  //  }
 
   return env_state;
 }
