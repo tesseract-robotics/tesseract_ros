@@ -473,7 +473,7 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
       res.request.revision = static_cast<unsigned long>(environment->getRevision());
       if (get_monitored_environment_changes_client_.call(res))
       {
-        if (!applyEnvironmentCommandsMessage(res.response.id, environment->getRevision(), res.response.commands))
+        if (!tesseract_rosutils::processMsg(*(tesseract_->getEnvironment()), res.response.commands))
         {
           ROS_ERROR_STREAM_NAMED(monitor_namespace_, "Failed to apply monitored environments changes.");
         }
@@ -497,7 +497,7 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
             res.request.revision = static_cast<unsigned long>(environment->getRevision());
             if (get_monitored_environment_changes_client_.call(res))
             {
-              if (!applyEnvironmentCommandsMessage(res.response.id, environment->getRevision(), res.response.commands))
+              if (!tesseract_rosutils::processMsg(*(tesseract_->getEnvironment()), res.response.commands))
               {
                 ROS_ERROR_STREAM_NAMED(monitor_namespace_, "Failed to apply monitored environments changes.");
               }
