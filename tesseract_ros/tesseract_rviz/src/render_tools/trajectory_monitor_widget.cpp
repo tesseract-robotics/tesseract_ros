@@ -138,6 +138,7 @@ void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualizatio
   nh_ = update_nh;
 
   previous_display_mode_ = display_mode_property_->getOptionInt();
+  trajectory_player_.enableLoop(display_mode_property_->getOptionInt() == 1);
 
   rviz::WindowManagerInterface* window_context = context_->getWindowManager();
   if (window_context)
@@ -321,7 +322,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 
       trajectory_player_.setProgram(
           *trajectory_to_display_instruction_.cast_const<tesseract_planning::CompositeInstruction>());
-      slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION));
+      slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->update(slider_count_);
@@ -340,7 +341,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
         }
         else
         {
-          if (trajectory_slider_panel_->getSliderPosition() == (slider_count_ - 1))
+          if (trajectory_player_.isFinished())
             animating_path_ = false;
           else
             animating_path_ = true;
@@ -379,8 +380,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
     tesseract_environment::EnvState::Ptr state;
     if (trajectory_slider_panel_ != nullptr && trajectory_slider_panel_->isPaused())
     {
-      double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) /
-                        static_cast<double>(trajectory_slider_panel_->getSliderPosition());
+      double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) * SLIDER_RESOLUTION;
       tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(duration);
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
@@ -395,9 +395,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 
       if (trajectory_slider_panel_ != nullptr)
       {
-        int slider_index = static_cast<int>(
-            std::ceil((trajectory_player_.currentDuration() / trajectory_player_.trajectoryDuration()) *
-                      static_cast<double>(slider_count_)));
+        int slider_index = static_cast<int>(std::ceil(trajectory_player_.currentDuration() / SLIDER_RESOLUTION));
         trajectory_slider_panel_->setSliderPosition(slider_index);
       }
     }
