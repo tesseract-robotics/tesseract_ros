@@ -43,22 +43,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
+const double SLIDER_RESOLUTION = 0.001;
+
 TrajectoryPanel::TrajectoryPanel(QWidget* parent) : Panel(parent) {}
 TrajectoryPanel::~TrajectoryPanel() = default;
 void TrajectoryPanel::onInitialize()
 {
   slider_ = new QSlider(Qt::Horizontal);
-  slider_->setTickInterval(1);
   slider_->setMinimum(0);
   slider_->setMaximum(0);
-  slider_->setTickPosition(QSlider::TicksBelow);
+  slider_->setTickPosition(QSlider::NoTicks);
   slider_->setPageStep(1);
   slider_->setEnabled(false);
   connect(slider_, SIGNAL(valueChanged(int)), this, SLOT(sliderValueChanged(int)));
 
-  maximum_label_ = new QLabel(QString::number(slider_->maximum()), nullptr);
-  minimum_label_ = new QLabel(QString::number(slider_->minimum()), nullptr);
-  minimum_label_->setFixedWidth(20);
+  maximum_label_ = new QLabel(QString().sprintf("%0.3f", slider_->maximum() * SLIDER_RESOLUTION), nullptr);
+  minimum_label_ = new QLabel(QString().sprintf("%0.3f", static_cast<double>(slider_->minimum())), nullptr);
+  minimum_label_->setFixedWidth(50);
+  minimum_label_->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  minimum_label_->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
   button_ = new QPushButton();
   button_->setText("Pause");
@@ -66,7 +69,7 @@ void TrajectoryPanel::onInitialize()
   connect(button_, SIGNAL(clicked()), this, SLOT(buttonClicked()));
 
   auto* layout = new QHBoxLayout;
-  layout->addWidget(new QLabel("Waypoint:", nullptr));
+  layout->addWidget(new QLabel("Duration:", nullptr));
   layout->addWidget(minimum_label_);
   layout->addWidget(slider_);
   layout->addWidget(maximum_label_);
@@ -101,7 +104,7 @@ void TrajectoryPanel::update(int way_point_count)
   paused_ = false;
   slider_->setSliderPosition(0);
   slider_->setMaximum(max_way_point);
-  maximum_label_->setText(QString::number(max_way_point));
+  maximum_label_->setText(QString().sprintf("%0.3f", max_way_point * SLIDER_RESOLUTION));
 }
 
 void TrajectoryPanel::pauseButton(bool pause)
@@ -121,7 +124,10 @@ void TrajectoryPanel::pauseButton(bool pause)
 }
 
 void TrajectoryPanel::setSliderPosition(int position) { slider_->setSliderPosition(position); }
-void TrajectoryPanel::sliderValueChanged(int value) { minimum_label_->setText(QString::number(value)); }
+void TrajectoryPanel::sliderValueChanged(int value)
+{
+  minimum_label_->setText(QString().sprintf("%0.3f", value * SLIDER_RESOLUTION));
+}
 void TrajectoryPanel::buttonClicked()
 {
   if (paused_)
