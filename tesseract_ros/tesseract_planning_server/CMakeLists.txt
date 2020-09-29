@@ -4,6 +4,8 @@ project(tesseract_planning_server)
 find_package(catkin REQUIRED COMPONENTS
   tesseract_monitoring
   tesseract_msgs
+  tf2_ros
+  tf2_eigen
 )
 
 find_package(Boost REQUIRED)
@@ -21,6 +23,8 @@ catkin_package(
   CATKIN_DEPENDS
     tesseract_msgs
     tesseract_monitoring
+    tf2_ros
+    tf2_eigen
   DEPENDS
     tesseract_command_language
     tesseract_process_managers
