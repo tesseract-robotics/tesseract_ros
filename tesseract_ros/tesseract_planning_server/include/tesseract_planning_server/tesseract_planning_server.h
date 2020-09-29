@@ -29,12 +29,14 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
+#include <actionlib/server/simple_action_server.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <tesseract_msgs/GetMotionPlanAction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <actionlib/server/simple_action_server.h>
-#include <tesseract_msgs/GetMotionPlanAction.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
@@ -97,7 +99,17 @@ protected:
   /** @brief The Simple Planner available composite profiles */
   tesseract_planning::SimplePlannerCompositeProfileMap simple_composite_profiles_;
 
+  /** @brief TF buffer to track TCP transforms */
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+
+  /** @brief TF listener to lookup TCP transforms */
+  tf2_ros::TransformListener tf_listener_;
+
+  void ctor();
+
   void loadDefaultPlannerProfiles();
+
+  Eigen::Isometry3d tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info);
 };
 }  // namespace tesseract_planning_server
 #endif  // TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
