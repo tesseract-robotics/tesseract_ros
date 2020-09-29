@@ -26,6 +26,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
+#include <tf2_eigen/tf2_eigen.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning_server/tesseract_planning_server.h>
@@ -66,8 +67,10 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
                         true)
+  , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
+  , tf_listener_(*tf_buffer_)
 {
-  loadDefaultPlannerProfiles();
+  ctor();
 }
 
 TesseractPlanningServer::TesseractPlanningServer(std::shared_ptr<tesseract::Tesseract> tesseract,
@@ -80,8 +83,18 @@ TesseractPlanningServer::TesseractPlanningServer(std::shared_ptr<tesseract::Tess
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
                         true)
+  , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
+  , tf_listener_(*tf_buffer_)
+{
+  ctor();
+}
+
+void TesseractPlanningServer::ctor()
 {
   loadDefaultPlannerProfiles();
+  auto lock = environment_.lockEnvironmentWrite();
+  environment_.getTesseract()->addFindTCPCallback(
+      std::bind(&TesseractPlanningServer::tfFindTCP, this, std::placeholders::_1));
 }
 
 tesseract_monitoring::EnvironmentMonitor& TesseractPlanningServer::getEnvironmentMonitor() { return environment_; }
@@ -299,6 +312,23 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
   descartes_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>();
   ompl_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>();
   simple_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::SimplePlannerDefaultPlanProfile>();
+}
+
+Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info)
+{
+  if (!manip_info.tcp.isString())
+    throw std::runtime_error("tfFindTCP: TCP is not a string!");
+
+  auto composite_mi_fwd_kin =
+      environment_.getTesseract()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+  if (composite_mi_fwd_kin == nullptr)
+    throw std::runtime_error("tfFindTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
+
+  const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+  const std::string& tcp_name = manip_info.tcp.getString();
+
+  auto tcp_msg = tf_buffer_->lookupTransform(tip_link, tcp_name, ros::Time(0), ros::Duration(2));
+  return tf2::transformToEigen(tcp_msg.transform);
 }
 
 }  // namespace tesseract_planning_server
