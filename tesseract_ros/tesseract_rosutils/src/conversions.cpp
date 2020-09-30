@@ -82,7 +82,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
     if (!joint_trajectory.points.empty())
       t = joint_trajectory.points.back().time_from_start.toSec();
 
-    double last_time = 0;
+    double last_time = t;
     double current_time = 0;
     for (const auto& i : fi)
     {
@@ -113,7 +113,6 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
           point.time_from_start = ros::Duration(t);
           last_time = current_time;
           joint_trajectory.points.push_back(point);
-          joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
         }
         else
         {
