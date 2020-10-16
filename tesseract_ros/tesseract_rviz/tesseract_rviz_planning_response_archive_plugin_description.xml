@@ -1,0 +1,7 @@
+<library path="libtesseract_rviz_planning_response_archive_plugin">
+  <class name="tesseract_rviz/PlanningResponseArchiveDisplay" type="tesseract_rviz::PlanningResponseArchiveDisplay" base_class_type="rviz::Display">
+    <description>
+      Displays a Tesseract planning response archive message
+    </description>
+  </class>
+</library>
