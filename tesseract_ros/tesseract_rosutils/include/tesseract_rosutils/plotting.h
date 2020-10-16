@@ -84,6 +84,8 @@ public:
 
   void waitForInput() override;
 
+  const std::string& getRootLink() const;
+
   static visualization_msgs::Marker getMarkerArrowMsg(int& id_counter,
                                                       const std::string& frame_id,
                                                       const std::string& ns,

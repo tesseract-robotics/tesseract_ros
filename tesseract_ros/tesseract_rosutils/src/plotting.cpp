@@ -391,6 +391,8 @@ void ROSPlotting::waitForInput()
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
+const std::string& ROSPlotting::getRootLink() const { return root_link_; }
+
 visualization_msgs::Marker ROSPlotting::getMarkerArrowMsg(int& id_counter,
                                                           const std::string& frame_id,
                                                           const std::string& ns,
