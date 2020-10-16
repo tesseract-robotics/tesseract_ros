@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="path"/>
+  <arg name="rviz" default="true"/>
+
+  <node pkg="tesseract_planning_server" type="tesseract_planning_server_archive_viewer_node" name="archive_viewer_node"  output="screen">
+    <param name="path" type="string" value="$(arg path)"/>
+  </node>
+
+  <!-- Launch visualization -->
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="archive_viewer_rviz" output="screen"
+       args="-d $(find tesseract_planning_server)/config/archive_viewer.rviz" />
+
+</launch>
