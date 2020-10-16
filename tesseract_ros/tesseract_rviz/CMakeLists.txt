@@ -231,6 +231,47 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin SYSTEM PRIVATE
     ${Boost_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS})
 
+## Planning Response Archive Display
+qt_wrap_cpp(${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS include/tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h)
+
+add_library(${PROJECT_NAME}_planning_response_archive_plugin_core SHARED src/planning_response_archive_plugin/planning_response_archive_display.cpp ${${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS})
+target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
+    ${PROJECT_NAME}_render_tools
+    ${PROJECT_NAME}_state_plugin_core
+    tesseract::tesseract
+    ${catkin_LIBRARIES}
+    ${OGRE_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_planning_response_archive_plugin SHARED src/planning_response_archive_plugin/plugin_init.cpp)
+target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
+    ${PROJECT_NAME}_planning_response_archive_plugin_core
+    tesseract::tesseract
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+
+
 ## Manipulation Display
 qt_wrap_cpp(${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS include/tesseract_rviz/tesseract_manipulation_plugin/tesseract_manipulation_display.h)
 
@@ -295,7 +336,15 @@ target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
 
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_render_tools ${PROJECT_NAME}_state_plugin_core ${PROJECT_NAME}_state_plugin ${PROJECT_NAME}_trajectory_plugin_core ${PROJECT_NAME}_trajectory_plugin ${PROJECT_NAME}_manipulation_plugin_core ${PROJECT_NAME}_manipulation_plugin
+install(TARGETS ${PROJECT_NAME}_render_tools
+    ${PROJECT_NAME}_state_plugin_core
+    ${PROJECT_NAME}_state_plugin
+    ${PROJECT_NAME}_trajectory_plugin_core
+    ${PROJECT_NAME}_trajectory_plugin
+    ${PROJECT_NAME}_planning_response_archive_plugin_core
+    ${PROJECT_NAME}_planning_response_archive_plugin
+    ${PROJECT_NAME}_manipulation_plugin_core
+    ${PROJECT_NAME}_manipulation_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -309,7 +358,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Mark plugin XML files for installation
-install(FILES tesseract_rviz_state_plugin_description.xml tesseract_rviz_trajectory_plugin_description.xml tesseract_rviz_manipulation_plugin_description.xml
+install(FILES tesseract_rviz_state_plugin_description.xml
+    tesseract_rviz_trajectory_plugin_description.xml
+    tesseract_rviz_planning_response_archive_plugin_description.xml
+    tesseract_rviz_manipulation_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

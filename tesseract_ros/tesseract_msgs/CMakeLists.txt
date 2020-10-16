@@ -66,6 +66,7 @@ add_message_files(
     PlanningRequest.msg
     PlanningRequestArchive.msg
     PlanningResponse.msg
+    PlanningResponseArchive.msg
     ProcessPlan.msg
     ProcessPlanPath.msg
     ProcessPlanSegment.msg
