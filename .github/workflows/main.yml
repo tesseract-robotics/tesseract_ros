@@ -24,7 +24,7 @@ jobs:
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master',
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master',
              ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts fcl iwyu taskflow",
              DOCKER_IMAGE: "rosindustrial/tesseract:melodic",
              CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Clang-Tidy/.ccache",
@@ -36,25 +36,13 @@ jobs:
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master',
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master',
              ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts fcl iwyu taskflow",
              DOCKER_IMAGE: "rosindustrial/tesseract:melodic",
              PARALLEL_TESTS: false,
              CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Bionic-Build/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"}
-          - {CI_NAME: Xenial-Build,
-             OS_NAME: ubuntu,
-             OS_CODE_NAME: xenial,
-             ROS_DISTRO: kinetic,
-             ROS_REPO: main,
-             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master',
-             ROSDEP_SKIP_KEYS: "benchmark bullet3 cmake_common_scripts fcl iwyu taskflow",
-             DOCKER_IMAGE: "rosindustrial/tesseract:kinetic",
-             PARALLEL_TESTS: false,
-             CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Xenial-Build/.ccache",
-             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=14"}
     steps:
       - uses: actions/checkout@v1
 

@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract/tesseract.h>
+#include <tesseract_monitoring/environment_monitor.h>
 
 namespace tesseract_monitoring
 {
@@ -127,6 +128,8 @@ public:
 private:
   std::string monitor_namespace_;
   std::string monitored_namespace_;
+  int env_revision_{ 0 };
+  tesseract_monitoring::EnvironmentMonitor::Ptr monitor_;
   tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
@@ -134,14 +137,10 @@ private:
   tesseract_collision::ContactTestType type_;
   double contact_distance_;
   tesseract_collision::DiscreteContactManager::Ptr manager_;
-  bool publish_environment_{ false };
   bool publish_contact_markers_{ false };
   ros::Subscriber joint_states_sub_;
   ros::Publisher contact_results_pub_;
-  ros::Publisher environment_pub_;
   ros::Publisher contact_marker_pub_;
-  ros::Subscriber environment_diff_sub_;
-  ros::ServiceServer modify_env_service_;
   ros::ServiceServer compute_contact_results_;
   std::mutex modify_mutex_;
   boost::shared_ptr<sensor_msgs::JointState> current_joint_states_;
