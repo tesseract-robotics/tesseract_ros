@@ -185,6 +185,7 @@ public:
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
+  void setVisibleEnabled(bool enabled);
   void setCollisionEnabled(bool enabled);
   void addAllowedCollision(const std::string& link_name, const std::string& reason);
   void removeAllowedCollision(const std::string& link_name);

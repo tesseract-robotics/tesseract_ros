@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tesseract_msgs
   tesseract_rosutils
+  tesseract_monitoring
   rviz
   pluginlib
   interactive_markers
@@ -18,8 +19,6 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
-
-list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Ogre
 find_package(PkgConfig REQUIRED)
@@ -64,6 +63,7 @@ catkin_package(
     message_generation
     tesseract_msgs
     tesseract_rosutils
+    tesseract_monitoring
     rviz
     pluginlib
     interactive_markers

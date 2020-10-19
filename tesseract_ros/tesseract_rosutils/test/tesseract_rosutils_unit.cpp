@@ -50,7 +50,6 @@ TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
 
   EXPECT_EQ(tesseract_state_msg.id, env->getName());
   EXPECT_EQ(tesseract_state_msg.revision, env->getRevision());
-  EXPECT_EQ(tesseract_state_msg.commands.size(), env->getCommandHistory().size());
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
@@ -61,18 +60,19 @@ TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
   joint_1->parent_link_name = "base_link";
   joint_1->child_link_name = link_name1;
   joint_1->type = JointType::FIXED;
-  AddCommand cmd(link_1, joint_1);
+  auto cmd = std::make_shared<AddCommand>(link_1, joint_1);
 
-  tesseract_msgs::EnvironmentCommand cmd_msg;
-  toMsg(cmd_msg, cmd);
+  Commands commands;
+  commands.push_back(cmd);
 
-  tesseract_state_msg.commands.push_back(cmd_msg);
-  tesseract_state_msg.revision += 1;
+  env->applyCommands(commands);
 
-  EXPECT_TRUE(processMsg(*env, tesseract_state_msg));
-  EXPECT_EQ(tesseract_state_msg.id, env->getName());
-  EXPECT_EQ(tesseract_state_msg.revision, env->getRevision());
-  EXPECT_EQ(tesseract_state_msg.commands.size(), env->getCommandHistory().size());
+  tesseract_msgs::TesseractState tesseract_state_msg2;
+  toMsg(tesseract_state_msg2, *env);
+
+  EXPECT_EQ(tesseract_state_msg2.id, env->getName());
+  EXPECT_EQ(tesseract_state_msg2.revision, env->getRevision());
+  EXPECT_EQ(tesseract_state_msg.revision + 1, tesseract_state_msg2.revision);
 }
 
 TEST_F(TesseractROSUtilsUnit, toFromMsgTesseract)  // NOLINT

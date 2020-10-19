@@ -1261,13 +1261,15 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
   }
 }
 
-void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
+void toMsg(tesseract_msgs::TesseractState& state_msg,
+           const tesseract_environment::Environment& env,
+           bool include_joint_states)
 {
   state_msg.id = env.getName();
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
-  toMsg(state_msg.commands, env.getCommandHistory(), 0);
 
-  toMsg(state_msg.joint_state, env.getCurrentState()->joints);
+  if (include_joint_states)
+    toMsg(state_msg.joint_state, env.getCurrentState()->joints);
 }
 
 void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env)
@@ -1477,32 +1479,6 @@ bool processMsg(tesseract_environment::Environment& env,
 bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg)
 {
   return processMsg(*env, joint_state_msg);
-}
-
-bool processMsg(tesseract_environment::Environment& env, const tesseract_msgs::TesseractState& state_msg)
-{
-  if (state_msg.id != env.getName() || static_cast<unsigned long>(env.getRevision()) > state_msg.revision)
-    return false;
-
-  // Only add new commands to environment
-  if (env.getRevision() < static_cast<int>(state_msg.revision))
-  {
-    std::vector<tesseract_msgs::EnvironmentCommand> new_commands;
-    new_commands.insert(new_commands.end(), state_msg.commands.begin() + env.getRevision(), state_msg.commands.end());
-
-    if (!processMsg(env, new_commands))
-      return false;
-  }
-
-  if (!processMsg(env, state_msg.joint_state))
-    return false;
-
-  return true;
-}
-
-bool processMsg(const tesseract_environment::Environment::Ptr& env, const tesseract_msgs::TesseractState& state_msg)
-{
-  return processMsg(*env, state_msg);
 }
 
 void toMsg(tesseract_msgs::ContactResult& contact_result_msg,

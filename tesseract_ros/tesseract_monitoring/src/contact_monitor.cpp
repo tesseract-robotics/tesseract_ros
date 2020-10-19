@@ -39,8 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_monitoring
 {
 const std::string ContactMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
-const std::string ContactMonitor::DEFAULT_PUBLISH_ENVIRONMENT_TOPIC = R"(/tesseract_published_environment)";
-const std::string ContactMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = R"(/modify_tesseract)";
 const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC = R"(/contact_results)";
 const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC = R"(/contact_results_markers)";
 const std::string ContactMonitor::DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE = R"(/compute_contact_results)";
@@ -66,6 +64,10 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
     ROS_ERROR("Null pointer passed for tesseract object.  Not setting up contact monitor.");
     return;
   }
+
+  // Create Environment Monitor
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, monitor_namespace_);
+
   manager_ = tesseract->getEnvironment()->getDiscreteContactManager();
   if (manager_ == nullptr)
   {
@@ -77,11 +79,9 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
 
   joint_states_sub_ = nh_.subscribe(joint_state_topic, 1, &ContactMonitor::callbackJointState, this);
   std::string contact_results_topic = R"(/)" + monitor_namespace_ + DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;
-  std::string modify_env_service = R"(/)" + monitor_namespace_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE;
   std::string compute_contact_results = R"(/)" + monitor_namespace_ + DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;
 
   contact_results_pub_ = pnh_.advertise<tesseract_msgs::ContactResultVector>(contact_results_topic, 1, true);
-  modify_env_service_ = pnh_.advertiseService(modify_env_service, &ContactMonitor::callbackModifyTesseractEnv, this);
   compute_contact_results_ =
       pnh_.advertiseService(compute_contact_results, &ContactMonitor::callbackComputeContactResultVector, this);
 }
@@ -90,15 +90,12 @@ ContactMonitor::~ContactMonitor() { current_joint_states_evt_.notify_all(); }
 
 void ContactMonitor::startPublishingEnvironment()
 {
-  publish_environment_ = true;
-  std::string environment_topic = R"(/)" + monitor_namespace_ + DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;
-  environment_pub_ = pnh_.advertise<tesseract_msgs::TesseractState>(environment_topic, 100, false);
+  monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 }
 
 void ContactMonitor::startMonitoringEnvironment(const std::string& monitored_namepsace)
 {
-  std::string monitored_topic = R"(/)" + monitored_namepsace + DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;
-  environment_diff_sub_ = nh_.subscribe(monitored_topic, 100, &ContactMonitor::callbackTesseractEnvDiff, this);
+  monitor_->startMonitoringEnvironment(monitored_namepsace);
 }
 
 void ContactMonitor::startPublishingMarkers()
@@ -123,6 +120,21 @@ void ContactMonitor::computeCollisionReportThread()
     // Limit the lock
     {
       std::unique_lock lock(modify_mutex_);
+      if (env_revision_ != tesseract_->getEnvironment()->getRevision())
+      {
+        env_revision_ = tesseract_->getEnvironment()->getRevision();
+
+        // Create a new manager
+        std::vector<std::string> active = manager_->getActiveCollisionObjects();
+        double contact_distance = manager_->getContactDistanceThreshold();
+        tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
+
+        manager_ = tesseract_->getEnvironment()->getDiscreteContactManager();
+        manager_->setActiveCollisionObjects(active);
+        manager_->setContactDistanceThreshold(contact_distance);
+        manager_->setIsContactAllowedFn(fn);
+      }
+
       if (!current_joint_states_)
       {
         current_joint_states_evt_.wait(lock);
@@ -142,13 +154,6 @@ void ContactMonitor::computeCollisionReportThread()
 
       manager_->setCollisionObjectsTransform(state->link_transforms);
       manager_->contactTest(contacts, type_);
-    }
-
-    if (publish_environment_)
-    {
-      tesseract_msgs::TesseractState state_msg;
-      tesseract_rosutils::toMsg(state_msg, *(tesseract_->getEnvironment()));
-      environment_pub_.publish(state_msg);
     }
 
     tesseract_collision::ContactResultVector contacts_vector;
@@ -247,24 +252,4 @@ bool ContactMonitor::callbackComputeContactResultVector(tesseract_msgs::ComputeC
   return true;
 }
 
-void ContactMonitor::callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
-{
-  std::scoped_lock lock(modify_mutex_);
-  if (!tesseract_rosutils::processMsg(*(tesseract_->getEnvironment()), *state))
-  {
-    ROS_ERROR("Invalid TesseractState diff message");
-  }
-
-  // Create a new manager
-  std::vector<std::string> active = manager_->getActiveCollisionObjects();
-  double contact_distance = manager_->getContactDistanceThreshold();
-  tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
-
-  manager_ = tesseract_->getEnvironment()->getDiscreteContactManager();
-  manager_->setActiveCollisionObjects(active);
-  manager_->setContactDistanceThreshold(contact_distance);
-  manager_->setIsContactAllowedFn(fn);
-
-  return;
-}
 }  // namespace tesseract_monitoring
