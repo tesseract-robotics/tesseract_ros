@@ -67,8 +67,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-class DynamicReconfigureImpl;
-
 namespace tesseract_monitoring
 {
 using DiscreteContactManagerPluginLoader = pluginlib::ClassLoader<tesseract_collision::DiscreteContactManager>;
@@ -109,6 +107,9 @@ enum class MonitoredEnvironmentMode : int
 class EnvironmentMonitor
 {
 public:
+  using Ptr = std::shared_ptr<EnvironmentMonitor>;
+  using ConstPtr = std::shared_ptr<const EnvironmentMonitor>;
+
   enum EnvironmentUpdateType
   {
     /** \brief No update */
@@ -325,6 +326,9 @@ public:
 
   void getStateMonitoredTopics(std::vector<std::string>& topics) const;
 
+  /** @brief Shutdown advertised services */
+  void shutdown();
+
 protected:
   /** @brief Initialize the planning scene monitor
    *  @param scene The scene instance to fill with data (an instance is allocated if the one passed in is not allocated)
@@ -361,6 +365,7 @@ protected:
   MonitoredEnvironmentMode monitored_environment_mode_;
   ros::Subscriber monitored_environment_subscriber_;
   ros::ServiceClient get_monitored_environment_changes_client_;
+  ros::ServiceClient get_monitored_environment_information_client_;
   ros::ServiceClient modify_monitored_environment_client_;
 
   // host a service for modifying the environment
@@ -443,11 +448,8 @@ private:
   /// Last time the state was updated from current_state_monitor_
   // Only access this from callback functions (and constructor)
   ros::WallTime last_robot_state_update_wall_time_;
-
-  DynamicReconfigureImpl* reconfigure_impl_;
 };
-using EnvironmentMonitorPtr = std::shared_ptr<EnvironmentMonitor>;
-using EnvironmentMonitorConstPtr = std::shared_ptr<const EnvironmentMonitor>;
+
 }  // namespace tesseract_monitoring
 
 #endif
