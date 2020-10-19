@@ -185,7 +185,9 @@ bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
            const tesseract_environment::Commands& commands,
            unsigned long past_revision);
 
-void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env);
+void toMsg(tesseract_msgs::TesseractState& state_msg,
+           const tesseract_environment::Environment& env,
+           bool include_joint_states = true);
 
 void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env);
 
@@ -235,10 +237,6 @@ bool processMsg(tesseract_environment::Environment& env,
                 const std::vector<tesseract_msgs::EnvironmentCommand>& env_command_msg);
 
 bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg);
-
-bool processMsg(tesseract_environment::Environment& env, const tesseract_msgs::TesseractState& state_msg);
-
-bool processMsg(const tesseract_environment::Environment::Ptr& env, const tesseract_msgs::TesseractState& state_msg);
 
 /**
  * @brief Convert Geometry Pose Message to Eigen

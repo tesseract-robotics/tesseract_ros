@@ -488,6 +488,8 @@ bool LinkWidget::getEnabled() const
   return link_property_->getValue().toBool();
 }
 
+void LinkWidget::setVisibleEnabled(bool enabled) { link_property_->setValue(enabled); }
+
 void LinkWidget::setAlpha(float a)
 {
   alpha_ = a;

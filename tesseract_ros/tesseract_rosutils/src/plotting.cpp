@@ -26,7 +26,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
-#include <tesseract_msgs/TesseractState.h>
 #include <Eigen/Geometry>
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP

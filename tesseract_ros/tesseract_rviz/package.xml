@@ -14,6 +14,7 @@
   <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract_monitoring</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
