@@ -28,14 +28,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <Eigen/Geometry>
 #include <ros/ros.h>
+#include <geometry_msgs/PoseArray.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/conversions.h>
 
+#include <tesseract_command_language/utils/flatten_utils.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/command_language.h>
 
 namespace tesseract_rosutils
 {
@@ -49,6 +51,7 @@ ROSPlotting::ROSPlotting(std::string root_link, std::string topic_namespace)
   collisions_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_collisions", 1, true);
   arrows_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_arrows", 1, true);
   axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_axes", 1, true);
+  tool_path_pub_ = nh.advertise<geometry_msgs::PoseArray>(topic_namespace + "/display_tool_path", 1, true);
 }
 
 bool ROSPlotting::init(tesseract::Tesseract::ConstPtr thor)
@@ -132,9 +135,163 @@ void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
   plotTrajectory(msg);
 }
 
-void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& /*instruction*/)
+void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instruction)
 {
-  // TODO
+  using namespace tesseract_planning;
+
+  geometry_msgs::PoseArray tool_path;
+  tool_path.header.frame_id = tesseract_->getEnvironment()->getRootLinkName();
+  tesseract_environment::StateSolver::Ptr state_solver = tesseract_->getEnvironment()->getStateSolver();
+  if (isCompositeInstruction(instruction))
+  {
+    const auto* ci = instruction.cast_const<CompositeInstruction>();
+
+    // Assume all the plan instructions have the same manipulator as the composite
+    assert(!ci->getManipulatorInfo().empty());
+    const ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
+
+    auto composite_mi_fwd_kin = tesseract_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+    if (composite_mi_fwd_kin == nullptr)
+    {
+      ROS_ERROR_STREAM("plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!");
+      return;
+    }
+    const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+
+    std::vector<std::reference_wrapper<const Instruction>> fi = tesseract_planning::flatten(*ci, planFilter);
+    if (fi.empty())
+      fi = tesseract_planning::flatten(*ci, moveFilter);
+
+    for (const auto& i : fi)
+    {
+      ManipulatorInfo manip_info;
+
+      // Check for updated manipulator information and get waypoint
+      Waypoint wp = NullWaypoint();
+      if (isPlanInstruction(i.get()))
+      {
+        const auto* pi = i.get().cast_const<PlanInstruction>();
+        manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
+        wp = pi->getWaypoint();
+      }
+      else if (isMoveInstruction(i.get()))
+      {
+        const auto* mi = i.get().cast_const<MoveInstruction>();
+        manip_info = composite_mi.getCombined(mi->getManipulatorInfo());
+        wp = mi->getWaypoint();
+      }
+
+      // Extract TCP
+      Eigen::Isometry3d tcp = tesseract_->findTCP(manip_info);
+
+      if (isStateWaypoint(wp))
+      {
+        const auto* swp = wp.cast_const<StateWaypoint>();
+        assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
+        tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
+        geometry_msgs::Pose p;
+        tesseract_rosutils::toMsg(p, state->link_transforms[tip_link] * tcp);
+        tool_path.poses.push_back(p);
+      }
+      else if (isJointWaypoint(wp))
+      {
+        const auto* jwp = wp.cast_const<JointWaypoint>();
+        assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
+        tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
+        geometry_msgs::Pose p;
+        tesseract_rosutils::toMsg(p, state->link_transforms[tip_link] * tcp);
+        tool_path.poses.push_back(p);
+      }
+      else if (isCartesianWaypoint(wp))
+      {
+        const auto* cwp = wp.cast_const<CartesianWaypoint>();
+        if (manip_info.working_frame.empty())
+        {
+          geometry_msgs::Pose p;
+          tesseract_rosutils::toMsg(p, (*cwp));
+          tool_path.poses.push_back(p);
+        }
+        else
+        {
+          tesseract_environment::EnvState::ConstPtr state = tesseract_->getEnvironment()->getCurrentState();
+          geometry_msgs::Pose p;
+          tesseract_rosutils::toMsg(p, state->link_transforms.at(manip_info.working_frame) * (*cwp));
+          tool_path.poses.push_back(p);
+        }
+      }
+      else
+      {
+        ROS_ERROR("plotTrajectoy: Unsupported Waypoint Type!");
+      }
+    }
+  }
+  else if (isPlanInstruction(instruction))
+  {
+    assert(isPlanInstruction(instruction));
+    const auto* pi = instruction.cast_const<PlanInstruction>();
+
+    // Assume all the plan instructions have the same manipulator as the composite
+    assert(!pi->getManipulatorInfo().empty());
+    const ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
+    ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
+
+    auto composite_mi_fwd_kin = tesseract_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+    if (composite_mi_fwd_kin == nullptr)
+    {
+      ROS_ERROR_STREAM("plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!");
+      return;
+    }
+    const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+
+    // Extract TCP
+    Eigen::Isometry3d tcp = tesseract_->findTCP(manip_info);
+
+    if (isStateWaypoint(pi->getWaypoint()))
+    {
+      const auto* swp = pi->getWaypoint().cast_const<StateWaypoint>();
+      assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
+      tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
+      geometry_msgs::Pose p;
+      tesseract_rosutils::toMsg(p, state->link_transforms[tip_link] * tcp);
+      tool_path.poses.push_back(p);
+    }
+    else if (isJointWaypoint(pi->getWaypoint()))
+    {
+      const auto* jwp = pi->getWaypoint().cast_const<JointWaypoint>();
+      assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
+      tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
+      geometry_msgs::Pose p;
+      tesseract_rosutils::toMsg(p, state->link_transforms[tip_link] * tcp);
+      tool_path.poses.push_back(p);
+    }
+    else if (isCartesianWaypoint(pi->getWaypoint()))
+    {
+      const auto* cwp = pi->getWaypoint().cast_const<CartesianWaypoint>();
+      if (manip_info.working_frame.empty())
+      {
+        geometry_msgs::Pose p;
+        tesseract_rosutils::toMsg(p, (*cwp));
+        tool_path.poses.push_back(p);
+      }
+      else
+      {
+        tesseract_environment::EnvState::ConstPtr state = tesseract_->getEnvironment()->getCurrentState();
+        geometry_msgs::Pose p;
+        tesseract_rosutils::toMsg(p, state->link_transforms.at(manip_info.working_frame) * (*cwp));
+        tool_path.poses.push_back(p);
+      }
+    }
+    else
+    {
+      ROS_ERROR("plotTrajectoy: Unsupported Waypoint Type!");
+    }
+  }
+  else
+  {
+    ROS_ERROR("plotTrajectoy: Unsupported Instruction Type!");
+  }
+
+  tool_path_pub_.publish(tool_path);
 }
 
 void ROSPlotting::plotContactResults(const std::vector<std::string>& link_names,
