@@ -121,6 +121,7 @@ private:
   ros::Publisher collisions_pub_;            /**< Collision Data publisher */
   ros::Publisher arrows_pub_;                /**< Used for publishing arrow markers */
   ros::Publisher axes_pub_;                  /**< Used for publishing axis markers */
+  ros::Publisher tool_path_pub_;             /**< Used for publishing tool path markers */
 };
 using ROSPlottingPtr = std::shared_ptr<ROSPlotting>;
 using ROSPlottingConstPtr = std::shared_ptr<const ROSPlotting>;
