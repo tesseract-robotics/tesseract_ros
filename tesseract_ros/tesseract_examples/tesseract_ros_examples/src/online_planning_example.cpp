@@ -56,9 +56,13 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM =
-    "robot_description_semantic"; /**< Default ROS parameter for robot description */
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief Dynamic object joint states topic */
 const std::string DYNAMIC_OBJECT_JOINT_STATE = "/joint_states";
 
 namespace tesseract_ros_examples
@@ -84,12 +88,12 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
 
   // Extract necessary kinematic information
-  manipulator_fk_ = tesseract_->getFwdKinematicsManager()->getFwdKinematicSolver("manipulator");
+  manipulator_fk_ = tesseract_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
   manipulator_adjacency_map_ = std::make_shared<tesseract_environment::AdjacencyMap>(
       tesseract_->getEnvironment()->getSceneGraph(),
       manipulator_fk_->getActiveLinkNames(),
       tesseract_->getEnvironment()->getCurrentState()->link_transforms);
-  manipulator_ik_ = tesseract_->getInvKinematicsManager()->getInvKinematicSolver("manipulator");
+  manipulator_ik_ = tesseract_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver("manipulator");
 
   // Initialize the trajectory
   current_trajectory_ = trajopt::TrajArray::Zero(steps_, 10);
@@ -159,7 +163,7 @@ bool OnlinePlanningExample::setupProblem()
   nlp_ = ifopt::Problem{};
 
   // 2) Add Variables
-  Eigen::MatrixX2d joint_limits_eigen = manipulator_fk_->getLimits();
+  Eigen::MatrixX2d joint_limits_eigen = manipulator_fk_->getLimits().joint_limits;
   Eigen::VectorXd home_position = Eigen::VectorXd::Zero(manipulator_fk_->numJoints());
   Eigen::VectorXd target_joint_position(manipulator_fk_->numJoints());
   target_joint_position << 5.5, 3, 0, 0, 0, 0, 0, 0;

@@ -34,7 +34,7 @@ tesseract_variables()
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
 target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract::tesseract_collision_core tesseract::tesseract_collision_bullet ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_bullet_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(tesseract_collision_bullet_plugin PUBLIC VERSION 14)
+target_cxx_version(tesseract_collision_bullet_plugin PUBLIC VERSION 17)
 target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
     ${EIGEN3_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS})
@@ -42,7 +42,7 @@ target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
 add_library(tesseract_collision_fcl_plugin src/plugins/fcl_plugin.cpp)
 target_link_libraries(tesseract_collision_fcl_plugin PRIVATE tesseract::tesseract_collision_core tesseract::tesseract_collision_fcl ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_fcl_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(tesseract_collision_fcl_plugin PUBLIC VERSION 14)
+target_cxx_version(tesseract_collision_fcl_plugin PUBLIC VERSION 17)
 target_include_directories(tesseract_collision_fcl_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 

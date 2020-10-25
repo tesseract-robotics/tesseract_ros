@@ -6,7 +6,6 @@
     <arg name="box_side" default="0.2"/>
     <arg name="box_x" default="0.15"/>
     <arg name="box_y" default="0.4"/>
-    <arg name="box_parent_link" default="workcell_base"/>
     <arg name="rviz" default="true"/>
     <arg name="testing" default="false"/>
 
@@ -20,7 +19,6 @@
     <param name="box_side" value="$(arg box_side)"/>
     <param name="box_x" value="$(arg box_x)"/>
     <param name="box_y" value="$(arg box_y)"/>
-    <param name="box_parent_link" value="$(arg box_parent_link)"/>
     <group unless="$(arg testing)">
       <!-- Launch planner node -->
       <node name="tesseract_ros_examples_pick_and_place_example_node" pkg="tesseract_ros_examples" type="tesseract_ros_examples_pick_and_place_example_node" output="screen">

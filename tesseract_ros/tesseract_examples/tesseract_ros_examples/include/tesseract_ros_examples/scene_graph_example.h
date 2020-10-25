@@ -54,8 +54,6 @@ public:
 
 private:
   ros::NodeHandle nh_;
-
-  std::shared_ptr<tesseract_monitoring::EnvironmentMonitor> environment_monitor_;
 };
 
 }  // namespace tesseract_ros_examples

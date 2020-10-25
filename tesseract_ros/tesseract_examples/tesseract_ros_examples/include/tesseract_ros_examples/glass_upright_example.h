@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/example.h>
+#include <tesseract_command_language/composite_instruction.h>
 
 namespace tesseract_ros_examples
 {
@@ -44,15 +45,7 @@ namespace tesseract_ros_examples
 class GlassUprightExample : public Example
 {
 public:
-  GlassUprightExample(const ros::NodeHandle& nh,
-                      bool plotting,
-                      bool rviz,
-                      int steps,
-                      bool write_to_file,
-                      std::string method)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(std::move(method))
-  {
-  }
+  GlassUprightExample(const ros::NodeHandle& nh, bool plotting, bool rviz, bool write_to_file);
   ~GlassUprightExample() override = default;
   GlassUprightExample(const GlassUprightExample&) = default;
   GlassUprightExample& operator=(const GlassUprightExample&) = default;
@@ -63,12 +56,9 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  int steps_;
   bool write_to_file_;
-  std::string method_;
 
-  trajopt::TrajOptProb::Ptr jsonMethod();
-  trajopt::TrajOptProb::Ptr cppMethod();
+  tesseract_environment::Command::Ptr addSphere();
 };
 
 }  // namespace tesseract_ros_examples
