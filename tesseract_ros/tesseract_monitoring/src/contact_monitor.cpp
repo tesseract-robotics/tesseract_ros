@@ -35,14 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_monitoring/constants.h>
 
 namespace tesseract_monitoring
 {
-const std::string ContactMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
-const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC = R"(/contact_results)";
-const std::string ContactMonitor::DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC = R"(/contact_results_markers)";
-const std::string ContactMonitor::DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE = R"(/compute_contact_results)";
-
 ContactMonitor::ContactMonitor(std::string monitor_namespace,
                                const tesseract::Tesseract::Ptr& tesseract,
                                ros::NodeHandle& nh,

@@ -48,27 +48,6 @@ namespace tesseract_monitoring
 class ContactMonitor
 {
 public:
-  /// The name of the topic used by default for receiving joint states
-  static const std::string DEFAULT_JOINT_STATES_TOPIC;  // "/joint_states"
-
-  /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
-  /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/monitor_namespace/tesseract_published_environment"
-
-  /// The name of the service used by default for setting the full tesseract environment state
-  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/monitor_namespace/modify_tesseract"
-
-  /// The name of the topic used by default for publishing the monitored contact results (this is without "/" in
-  /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;  // "/monitor_namespace/contact_results"
-
-  /// The name of the topic used by default for publishing the monitored contact results markers (this is without "/" in
-  /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_CONTACT_MARKER_TOPIC;  // "/monitor_namespace/contact_results_markers"
-
-  /// The name of the service used by default for computing the contact results
-  static const std::string DEFAULT_COMPUTE_CONTACT_RESULTS_SERVICE;  // "/monitor_namespace/compute_contact_results"
-
   ContactMonitor(std::string monitor_namespace,
                  const tesseract::Tesseract::Ptr& tesseract,
                  ros::NodeHandle& nh,
