@@ -60,8 +60,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_monitoring/current_state_monitor.h>
-#include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_monitoring/constants.h>
+#include <tesseract_rosutils/utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_urdf/urdf_parser.h>
@@ -130,26 +131,6 @@ public:
     UPDATE_ENVIRONMENT = 8 + UPDATE_STATE + UPDATE_TRANSFORMS + UPDATE_GEOMETRY
   };
 
-  /// The name of the topic used by default for receiving joint states
-  static const std::string DEFAULT_JOINT_STATES_TOPIC;  // "/joint_states"
-
-  /// The name of the service used by default for requesting tesseract environment change history
-  static const std::string DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE;  // "/monitor_namespace/get_tesseract_changes"
-
-  /// The name of the service used by default for requesting tesseract environment information
-  static const std::string
-      DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;  // "/monitor_namespace/get_tesseract_information"
-
-  /// The name of the service used by default for setting the full tesseract environment state
-  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/monitor_namespace/modify_tesseract"
-
-  /// The name of the service used by default for saving the scene graph as a DOT
-  static const std::string DEFAULT_SAVE_SCENE_GRAPH_SERVICE;  //"/monitor_namespace/save_scene_graph"
-
-  /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
-  /// the name, so the topic is prefixed by the node name)
-  static const std::string DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;  // "/monitor_namespace/tesseract_published_environment"
-
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
    *  @param monitor_namespace A name identifying this monitor, must be unique
@@ -175,6 +156,15 @@ public:
 
   /** \brief Get the name of this monitor */
   const std::string& getName() const;
+
+  /**
+   * @brief Apply provided command to the environment
+   * @param command The command to apply
+   * @return True if successful, otherwise false
+   */
+  bool applyCommand(const tesseract_environment::Command& command);
+  bool applyCommands(const tesseract_environment::Commands& commands);
+  bool applyCommands(const std::vector<tesseract_environment::Command>& commands);
 
   /**
    * @brief Get the scene graph
@@ -242,10 +232,7 @@ public:
    *  @return An instance of the stored robot description*/
   const std::string& getURDFDescription() const { return robot_description_; }
 
-  /** \brief Start publishing the maintained environment. The first message set out is a complete environment.
-      Diffs are sent afterwards on updates specified by the \e event bitmask. For UPDATE_ENVIRONMENT, the full
-     environment is always
-     sent. */
+  /** \brief Start publishing the maintained environment.*/
   void startPublishingEnvironment(EnvironmentUpdateType update_type);
 
   /** \brief Stop publishing the maintained environment. */
@@ -333,7 +320,7 @@ protected:
   /** @brief Initialize the planning scene monitor
    *  @param scene The scene instance to fill with data (an instance is allocated if the one passed in is not allocated)
    */
-  void initialize();
+  bool initialize();
 
   /// The name of this scene monitor
   std::string monitor_namespace_;

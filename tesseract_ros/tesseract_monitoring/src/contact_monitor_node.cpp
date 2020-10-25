@@ -67,8 +67,7 @@ int main(int argc, char** argv)
 
   pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
-  pnh.param<std::string>(
-      "joint_state_topic", joint_state_topic, tesseract_monitoring::ContactMonitor::DEFAULT_JOINT_STATES_TOPIC);
+  pnh.param<std::string>("joint_state_topic", joint_state_topic, tesseract_monitoring::DEFAULT_JOINT_STATES_TOPIC);
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
   pnh.param<bool>("publish_markers", publish_markers, publish_markers);
 
