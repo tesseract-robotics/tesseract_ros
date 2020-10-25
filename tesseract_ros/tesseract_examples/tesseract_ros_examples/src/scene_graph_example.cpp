@@ -30,16 +30,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/scene_graph_example.h>
 #include <tesseract_environment/core/utils.h>
+#include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/utils/utils.h>
 
 using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
+using namespace tesseract_rosutils;
 
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM =
-    "robot_description_semantic"; /**< Default ROS parameter for robot description */
-const std::string ENVIRONMENT_TOPIC = "/monitored_environment";
-const std::string JOINT_STATE_TOPIC = "/joint_states";
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief RViz Example Namespace */
+const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
@@ -53,53 +61,68 @@ bool SceneGraphExample::run()
   ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
-  environment_monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, "environment_monitor");
-  environment_monitor_->startStateMonitor(JOINT_STATE_TOPIC);
-  environment_monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT,
-                                                   ENVIRONMENT_TOPIC);
 
-  environment_monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example.dot");
+  // Create monitor
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, EXAMPLE_MONITOR_NAMESPACE);
+  if (rviz_)
+    monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
+
+  ros::spinOnce();
+  {
+    auto lock = monitor_->lockEnvironmentRead();
+    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example.dot");
+  }
+
+  // Create plotting tool
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
+  plotter->init(tesseract_);
 
   if (plotting_)
   {
-    ROS_ERROR("Press enter to continue");
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    plotter->waitForInput();
     ROS_INFO("Reconfiguring using moveJoint");
   }
-  // Attach the iiwa to the end of the ABB using moveJoint. Notice that the joint transform stays the same. Only the
-  // parent changes.
-  environment_monitor_->getTesseract()->getEnvironment()->moveJoint("to_iiwa_mount", "tool0");
+
+  // Attach the iiwa to the end of the ABB using moveJoint. Notice that the joint transform stays the same.
+  // Only the parent changes.
+  tesseract_environment::MoveJointCommand move_joint_cmd("to_iiwa_mount", "tool0");
+  monitor_->applyCommand(move_joint_cmd);
+  ros::spinOnce();
 
   // Save the scene graph to a file and publish the change
-  environment_monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
-  environment_monitor_->triggerEnvironmentUpdateEvent(environment_monitor_->UPDATE_ENVIRONMENT);
+  {
+    auto lock = monitor_->lockEnvironmentRead();
+    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
+  }
 
   if (plotting_)
   {
-    ROS_ERROR("Press enter to continue");
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    plotter->waitForInput();
     ROS_INFO("Reconfiguring using moveLink");
   }
 
-  // Attach the iiwa to the end of the ABB using moveLink. The link to be moved is inferred to be the given Joint's
-  // child
-  tesseract_scene_graph::Joint new_joint("to_iiwa_mount");
-  new_joint.parent_link_name = "tool0";
-  new_joint.child_link_name = "iiwa_mount";
-  new_joint.type = tesseract_scene_graph::JointType::FIXED;
-  new_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  new_joint.parent_to_joint_origin_transform.rotate(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
-  new_joint.parent_to_joint_origin_transform.translate(Eigen::Vector3d(0.15, 0.0, 0.0));
-  environment_monitor_->getTesseract()->getEnvironment()->moveLink(std::move(new_joint));
+  // Attach the iiwa to the end of the ABB using moveLink.
+  // The link to be moved is inferred to be the given Joint child
+  auto new_joint = std::make_shared<tesseract_scene_graph::Joint>("to_iiwa_mount");
+  new_joint->parent_link_name = "tool0";
+  new_joint->child_link_name = "iiwa_mount";
+  new_joint->type = tesseract_scene_graph::JointType::FIXED;
+  new_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  new_joint->parent_to_joint_origin_transform.rotate(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+  new_joint->parent_to_joint_origin_transform.translate(Eigen::Vector3d(0.15, 0.0, 0.0));
+  tesseract_environment::MoveLinkCommand move_link_cmd(new_joint);
+  monitor_->applyCommand(move_link_cmd);
+  ros::spinOnce();
 
   // Save the scene graph to a file and publish the change
-  environment_monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
-  environment_monitor_->triggerEnvironmentUpdateEvent(environment_monitor_->UPDATE_ENVIRONMENT);
+  {
+    auto lock = monitor_->lockEnvironmentRead();
+    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
+  }
 
   if (plotting_)
   {
-    ROS_ERROR("Press enter to continue");
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    plotter->waitForInput();
     ROS_INFO("Open .dot files  in ~/.ros to see scene graph");
   }
   return true;

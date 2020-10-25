@@ -36,15 +36,11 @@ int main(int argc, char** argv)
 
   bool plotting = true;
   bool rviz = true;
-  int steps = 5;
-  bool write_to_file = false;
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
-  pnh.param("steps", steps, steps);
-  pnh.param("write_to_file", write_to_file, write_to_file);
 
-  PickAndPlaceExample example(nh, plotting, rviz, steps, write_to_file);
+  PickAndPlaceExample example(nh, plotting, rviz);
   example.run();
 }

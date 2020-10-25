@@ -36,17 +36,13 @@ int main(int argc, char** argv)
 
   bool plotting = true;
   bool rviz = true;
-  int steps = 5;
   bool write_to_file = false;
-  std::string method = "json";
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
-  pnh.param<std::string>("method", method, method);
-  pnh.param<int>("steps", steps, steps);
   pnh.param<bool>("write_to_file", write_to_file, write_to_file);
 
-  GlassUprightExample example(nh, plotting, rviz, steps, write_to_file, method);
+  GlassUprightExample example(nh, plotting, rviz, write_to_file);
   example.run();
 }

@@ -61,7 +61,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 14)
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -91,7 +91,7 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME} ${catkin_LIBRARIES})
   target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
   target_clang_tidy(${PROJECT_NAME}_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-  target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 14)
+  target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 17)
   target_include_directories(${PROJECT_NAME}_unit PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:include>")

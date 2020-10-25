@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <trajopt/problem_description.hpp>
 #include <string>
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -45,10 +44,7 @@ namespace tesseract_ros_examples
 class PickAndPlaceExample : public Example
 {
 public:
-  PickAndPlaceExample(const ros::NodeHandle& nh, bool plotting, bool rviz, int steps, bool write_to_file)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file)
-  {
-  }
+  PickAndPlaceExample(const ros::NodeHandle& nh, bool plotting, bool rviz);
   ~PickAndPlaceExample() override = default;
   PickAndPlaceExample(const PickAndPlaceExample&) = default;
   PickAndPlaceExample& operator=(const PickAndPlaceExample&) = default;
@@ -59,8 +55,8 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  int steps_;
-  bool write_to_file_;
+
+  tesseract_environment::Command::Ptr addBox(double box_x, double box_y, double box_side);
 };
 
 }  // namespace tesseract_ros_examples
