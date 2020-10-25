@@ -28,7 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <trajopt/problem_description.hpp>
 #include <string>
 #include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -43,10 +42,7 @@ namespace tesseract_ros_examples
 class BasicCartesianExample : public Example
 {
 public:
-  BasicCartesianExample(const ros::NodeHandle& nh, bool plotting, bool rviz, int steps, std::string method)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), method_(std::move(method))
-  {
-  }
+  BasicCartesianExample(const ros::NodeHandle& nh, bool plotting, bool rviz);
   ~BasicCartesianExample() override = default;
   BasicCartesianExample(const BasicCartesianExample&) = default;
   BasicCartesianExample& operator=(const BasicCartesianExample&) = default;
@@ -57,13 +53,7 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  int steps_;
-  std::string method_;
-
-  trajopt::TrajOptProb::Ptr jsonMethod();
-  trajopt::TrajOptProb::Ptr cppMethod();
-
-  bool addPointCloud();
+  tesseract_environment::Command::Ptr addPointCloud();
 };
 
 }  // namespace tesseract_ros_examples

@@ -36,15 +36,11 @@ int main(int argc, char** argv)
 
   bool plotting = true;
   bool rviz = true;
-  int steps = 5;
-  std::string method = "json";
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
-  pnh.param<std::string>("method", method, method);
-  pnh.param<int>("steps", steps, steps);
 
-  BasicCartesianExample example(nh, plotting, rviz, steps, method);
+  BasicCartesianExample example(nh, plotting, rviz);
   example.run();
 }
