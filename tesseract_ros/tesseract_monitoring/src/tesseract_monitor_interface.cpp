@@ -34,11 +34,64 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-const std::string TesseractMonitorInterface::DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE =
-    R"(/get_tesseract_information)";
-const std::string TesseractMonitorInterface::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = R"(/modify_tesseract)";
-
 TesseractMonitorInterface::TesseractMonitorInterface(const std::string& env_name) : env_name_(env_name) {}
+
+bool TesseractMonitorInterface::wait(ros::Duration timeout) const
+{
+  if (ns_.empty())
+  {
+    ROS_ERROR("TesseractMonitorInterface namespaces are empty and cannot wait!");
+    return false;
+  }
+
+  const ros::WallTime start_time = ros::WallTime::now();
+  const ros::WallDuration wall_timeout{ timeout.toSec() };
+  for (std::size_t i = 0; i < ns_.size(); ++i)
+  {
+    bool results = waitForNamespace(ns_[i], timeout);
+    if (!results)
+      return false;
+
+    if (wall_timeout >= ros::WallDuration(0))
+    {
+      const ros::WallTime current_time = ros::WallTime::now();
+
+      if ((current_time - start_time) >= wall_timeout)
+        return false;
+    }
+  }
+  return true;
+}
+
+bool TesseractMonitorInterface::waitForNamespace(const std::string& monitor_namespace, ros::Duration timeout) const
+{
+  std::string service_name = R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;
+  const ros::WallTime start_time = ros::WallTime::now();
+  const ros::WallDuration wall_timeout{ timeout.toSec() };
+  while (ros::ok())
+  {
+    bool results = ros::service::exists(service_name, false);
+    if (results)
+    {
+      tesseract_msgs::GetEnvironmentInformation res;
+      res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
+      bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
+      if (status && res.response.success)
+        return true;
+    }
+
+    if (wall_timeout >= ros::WallDuration(0))
+    {
+      const ros::WallTime current_time = ros::WallTime::now();
+      if ((current_time - start_time) >= wall_timeout)
+        return false;
+    }
+
+    ros::WallDuration(0.02).sleep();
+  }
+
+  return false;
+}
 
 void TesseractMonitorInterface::addNamespace(std::string monitor_namespace)
 {
@@ -171,7 +224,7 @@ TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namesp
   bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
   if (!status || !res.response.success)
   {
-    ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
+    ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironmentState: Failed to get monitor environment information!");
     return nullptr;
   }
 

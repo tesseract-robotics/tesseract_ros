@@ -38,32 +38,34 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract/manipulator_manager.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_monitoring/constants.h>
 
 namespace tesseract_monitoring
 {
 class TesseractMonitorInterface
 {
 public:
-  /**
-   * @brief The name of the service used by default for requesting tesseract environment information
-   *
-   * The full name is "/monitor_namespace/get_tesseract_information"
-   */
-  static const std::string DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;
-
-  /**
-   * @brief The name of the service used by default for setting the full tesseract environment state
-   *
-   * The full name is "/monitor_namespace/modify_tesseract"
-   */
-  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;
-
   TesseractMonitorInterface(const std::string& env_name);
   virtual ~TesseractMonitorInterface() = default;
   TesseractMonitorInterface(const TesseractMonitorInterface&) = default;
   TesseractMonitorInterface& operator=(const TesseractMonitorInterface&) = default;
   TesseractMonitorInterface(TesseractMonitorInterface&&) = default;
   TesseractMonitorInterface& operator=(TesseractMonitorInterface&&) = default;
+
+  /**
+   * @brief This will wait for all namespaces to begin publishing
+   * @param seconds The number of seconds to wait before returning, if zero it waits indefinitely
+   * @return True if namespace is available, otherwise false
+   */
+  bool wait(ros::Duration timeout = ros::Duration(-1)) const;
+
+  /**
+   * @brief This will wait for a given namespace to begin publishing
+   * @param monitor_namespace The namepace to wait for
+   * @param seconds The number of seconds to wait before returning, if zero it waits indefinitely
+   * @return True if namespace is available, otherwise false
+   */
+  bool waitForNamespace(const std::string& monitor_namespace, ros::Duration timeout = ros::Duration(-1)) const;
 
   /**
    * @brief Add monitor namespace to interface
@@ -110,7 +112,7 @@ public:
    * @return Environment Shared Pointer, if nullptr it failed
    */
   template <typename S>
-  tesseract_environment::Environment::Ptr getEnvironment(const std::string& monitor_namespace) const
+  static tesseract_environment::Environment::Ptr getEnvironment(const std::string& monitor_namespace)
   {
     tesseract_msgs::GetEnvironmentInformation res;
     res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
@@ -118,7 +120,7 @@ public:
     bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
     if (!status || !res.response.success)
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironment: Failed to get monitor environment information!");
       return nullptr;
     }
 
@@ -129,7 +131,7 @@ public:
     }
     catch (...)
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to convert command history message!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironment: Failed to convert command history message!");
       return nullptr;
     }
 
@@ -145,7 +147,7 @@ public:
    * @return Environment Shared Pointer, if nullptr it failed
    */
   template <typename S>
-  tesseract::Tesseract::Ptr getTesseract(const std::string& monitor_namespace) const
+  static tesseract::Tesseract::Ptr getTesseract(const std::string& monitor_namespace)
   {
     tesseract_msgs::GetEnvironmentInformation res;
     res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY |
@@ -154,7 +156,7 @@ public:
     bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
     if (!status || !res.response.success)
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to get monitor environment information!");
+      ROS_ERROR_NAMED(monitor_namespace, "getTesseract: Failed to get monitor environment information!");
       return nullptr;
     }
 
@@ -165,14 +167,14 @@ public:
     }
     catch (...)
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to convert command history message!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to convert command history message!");
       return nullptr;
     }
 
     auto env = std::make_shared<tesseract_environment::Environment>();
     if (!env->init<S>(commands))
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to initialize environment!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize environment!");
       return nullptr;
     }
 
@@ -182,14 +184,15 @@ public:
 
     if (!tesseract_rosutils::fromMsg(*manip_manager, res.response.kinematics_information))
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to populate manipulator manager from kinematics information!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace,
+                             "getTesseract: Failed to populate manipulator manager from kinematics information!");
       return nullptr;
     }
 
     auto thor = std::make_shared<tesseract::Tesseract>();
     if (!thor->init(*env, *manip_manager))
     {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "Failed to initialize tesseract!");
+      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize tesseract!");
       return nullptr;
     }
 
