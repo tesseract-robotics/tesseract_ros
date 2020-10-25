@@ -25,20 +25,15 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <jsoncpp/json/json.h>
 #include <ros/ros.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/car_seat_example.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <trajopt/plot_callback.hpp>
-#include <trajopt/problem_description.hpp>
-#include <trajopt_utils/config.hpp>
-#include <trajopt_utils/logging.hpp>
 #include <tesseract_geometry/mesh_parser.h>
-#include <memory>
 
 using namespace trajopt;
 using namespace tesseract;
@@ -48,16 +43,18 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
-                                                                          description */
-const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
-const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+/**@ Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/**@ Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief RViz Example Namespace */
+const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
-CarSeatExample::CarSeatExample(const ros::NodeHandle& nh, bool plotting, bool rviz)
-  : Example(plotting, rviz), nh_(nh), env_current_revision_(0)
+CarSeatExample::CarSeatExample(const ros::NodeHandle& nh, bool plotting, bool rviz) : Example(plotting, rviz), nh_(nh)
 {
   locator_ = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
 }
@@ -314,29 +311,34 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
 
 bool CarSeatExample::run()
 {
+  using tesseract_planning::CartesianWaypoint;
+  using tesseract_planning::CompositeInstruction;
+  using tesseract_planning::CompositeInstructionOrder;
+  using tesseract_planning::Instruction;
+  using tesseract_planning::ManipulatorInfo;
+  using tesseract_planning::PlanInstruction;
+  using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::StateWaypoint;
+  using tesseract_planning::Waypoint;
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator_))
+  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
-  // These are used to keep visualization updated
+  // Create monitor
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, EXAMPLE_MONITOR_NAMESPACE);
   if (rviz_)
-  {
-    modify_env_rviz_ = nh_.serviceClient<tesseract_msgs::ModifyEnvironment>(MODIFY_ENVIRONMENT_SERVICE, false);
-    get_env_changes_rviz_ =
-        nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
-
-    // Check RViz to make sure nothing has changed
-    if (!checkRviz())
-      return false;
-  }
+    monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter =
+  ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
+  plotter->init(tesseract_);
 
   // Get predefined positions
   saved_positions_ = getPredefinedPosition();
@@ -347,16 +349,6 @@ bool CarSeatExample::run()
   // Put three seats on the conveyor
   addSeats();
 
-  if (rviz_)
-  {
-    // Now update rviz environment
-    if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision_)))
-      return false;
-  }
-
-  // Store current revision
-  env_current_revision_ = tesseract_->getEnvironment()->getRevision();
-
   // Move to home position
   tesseract_->getEnvironment()->setState(saved_positions_["Home"]);
 
@@ -366,8 +358,39 @@ bool CarSeatExample::run()
   // Solve Trajectory
   ROS_INFO("Car Seat Demo Started");
 
-  // Go pick up first seat
+  // Create Program to pick up first seat
   ros::Time tStart;
+  CompositeInstruction program("program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+  program.setDescription("Pick up the first seat!");
+
+  //  // Start Joint Position for the program
+  //  Waypoint wp0 = StateWaypoint(joint_names, joint_pos);
+  //  PlanInstruction start_instruction(wp0, PlanInstructionType::START);
+  //  program.setStartInstruction(start_instruction);
+
+  //  // Create cartesian waypoint
+  //  Waypoint wp1 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.5, -0.2, 0.62) *
+  //                                   Eigen::Quaterniond(0, 0, 1.0, 0));
+
+  //  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.5, 0.3, 0.62) *
+  //                                   Eigen::Quaterniond(0, 0, 1.0, 0));
+
+  //  // Plan freespace from start
+  //  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
+  //  plan_f0.setDescription("from_start_plan");
+
+  //  // Plan linear move
+  //  PlanInstruction plan_c0(wp2, PlanInstructionType::LINEAR, "RASTER");
+
+  //  // Plan freespace to end
+  //  PlanInstruction plan_f1(wp0, PlanInstructionType::FREESPACE, "freespace_profile");
+  //  plan_f1.setDescription("to_end_plan");
+
+  //  // Add Instructions to program
+  //  program.push_back(plan_f0);
+  //  program.push_back(plan_c0);
+  //  program.push_back(plan_f1);
+
   std::shared_ptr<ProblemConstructionInfo> pci;
   TrajOptProb::Ptr prob;
 

@@ -33,11 +33,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <trajopt/plot_callback.hpp>
-#include <trajopt/file_write_callback.hpp>
-#include <trajopt/problem_description.hpp>
-#include <trajopt_utils/config.hpp>
-#include <trajopt_utils/logging.hpp>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/utils/utils.h>
+#include <tesseract_process_managers/process_input.h>
+#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
+#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
 using namespace trajopt;
 using namespace tesseract;
@@ -46,124 +48,58 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
-                                                                          description */
-const std::string TRAJOPT_DESCRIPTION_PARAM =
-    "trajopt_description"; /**< Default ROS parameter for trajopt description */
-const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
-const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief RViz Example Namespace */
+const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
-TrajOptProb::Ptr GlassUprightExample::jsonMethod()
+GlassUprightExample::GlassUprightExample(const ros::NodeHandle& nh, bool plotting, bool rviz, bool write_to_file)
+  : Example(plotting, rviz), nh_(nh), write_to_file_(write_to_file)
 {
-  ros::NodeHandle nh;
-  std::string trajopt_config;
-
-  nh.getParam(TRAJOPT_DESCRIPTION_PARAM, trajopt_config);
-
-  Json::Value root;
-  Json::Reader reader;
-  bool parse_success = reader.parse(trajopt_config, root);
-  if (!parse_success)
-  {
-    ROS_FATAL("Failed to load trajopt json file from ros parameter");
-  }
-
-  return ConstructProblem(root, tesseract_);
 }
 
-TrajOptProb::Ptr GlassUprightExample::cppMethod()
+tesseract_environment::Command::Ptr GlassUprightExample::addSphere()
 {
-  ProblemConstructionInfo pci(tesseract_);
+  // Add sphere to environment
+  auto link_sphere = std::make_shared<Link>("sphere_attached");
 
-  // Populate Basic Info
-  pci.basic_info.n_steps = steps_;
-  pci.basic_info.manip = "manipulator";
-  pci.basic_info.start_fixed = false;
-  pci.basic_info.use_time = false;
+  Visual::Ptr visual = std::make_shared<Visual>();
+  visual->origin = Eigen::Isometry3d::Identity();
+  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
+  visual->geometry = std::make_shared<tesseract_geometry::Sphere>(0.15);
+  link_sphere->visual.push_back(visual);
 
-  // Create Kinematic Object
-  pci.kin = pci.getManipulator(pci.basic_info.manip);
+  Collision::Ptr collision = std::make_shared<Collision>();
+  collision->origin = visual->origin;
+  collision->geometry = visual->geometry;
+  link_sphere->collision.push_back(collision);
 
-  // Populate Init Info
-  EnvState::ConstPtr current_state = pci.env->getCurrentState();
-  Eigen::VectorXd start_pos;
-  start_pos.resize(pci.kin->numJoints());
-  int cnt = 0;
-  for (const auto& j : pci.kin->getJointNames())
-  {
-    start_pos[cnt] = current_state->joints.at(j);
-    ++cnt;
-  }
+  auto joint_sphere = std::make_shared<Joint>("joint_sphere_attached");
+  joint_sphere->parent_link_name = "base_link";
+  joint_sphere->child_link_name = link_sphere->getName();
+  joint_sphere->type = JointType::FIXED;
 
-  Eigen::VectorXd end_pos;
-  end_pos.resize(pci.kin->numJoints());
-  end_pos << 0.4, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0;
-
-  pci.init_info.type = InitInfo::GIVEN_TRAJ;
-  pci.init_info.data = tesseract_common::TrajArray(steps_, pci.kin->numJoints());
-  for (unsigned idof = 0; idof < pci.kin->numJoints(); ++idof)
-  {
-    pci.init_info.data.col(idof) = Eigen::VectorXd::LinSpaced(steps_, start_pos[idof], end_pos[idof]);
-  }
-
-  // Populate Cost Info
-  auto jv = std::make_shared<JointVelTermInfo>();
-  jv->coeffs = std::vector<double>(7, 1.0);
-  jv->targets = std::vector<double>(7, 0.0);
-  jv->first_step = 0;
-  jv->last_step = pci.basic_info.n_steps - 1;
-  jv->name = "joint_vel";
-  jv->term_type = TT_COST;
-  pci.cost_infos.push_back(jv);
-
-  auto collision = std::make_shared<CollisionTermInfo>();
-  collision->name = "collision";
-  collision->term_type = TT_COST;
-  collision->evaluator_type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
-  collision->first_step = 0;
-  collision->last_step = pci.basic_info.n_steps - 1;
-  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 1);
-  collision->use_weighted_sum = true;
-  for (auto& info : collision->info)
-  {
-    info->setPairSafetyMarginData("base_link", "link_5", 0.05, 1);
-    info->setPairSafetyMarginData("link_3", "link_5", 0.01, 1);
-    info->setPairSafetyMarginData("link_3", "link_6", 0.01, 1);
-  }
-  pci.cost_infos.push_back(collision);
-
-  // Populate Constraints
-  double delta = 0.5 / pci.basic_info.n_steps;
-  for (auto i = 0; i < pci.basic_info.n_steps; ++i)
-  {
-    auto pose = std::make_shared<CartPoseTermInfo>();
-    pose->term_type = TT_CNT;
-    pose->name = "waypoint_cart_" + std::to_string(i);
-    pose->link = "tool0";
-    pose->timestep = i;
-    pose->xyz = Eigen::Vector3d(0.5, -0.2 + delta * i, 0.62);
-    pose->wxyz = Eigen::Vector4d(0.0, 0.0, 1.0, 0.0);
-    if (i == (pci.basic_info.n_steps - 1) || i == 0)
-    {
-      pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-      pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
-    }
-    else
-    {
-      pose->pos_coeffs = Eigen::Vector3d(0, 0, 0);
-      pose->rot_coeffs = Eigen::Vector3d(10, 10, 0);
-    }
-    pci.cnt_infos.push_back(pose);
-  }
-
-  return ConstructProblem(pci);
+  return std::make_shared<tesseract_environment::AddCommand>(link_sphere, joint_sphere);
 }
 
 bool GlassUprightExample::run()
 {
+  using tesseract_planning::CartesianWaypoint;
+  using tesseract_planning::CompositeInstruction;
+  using tesseract_planning::CompositeInstructionOrder;
+  using tesseract_planning::Instruction;
+  using tesseract_planning::ManipulatorInfo;
+  using tesseract_planning::PlanInstruction;
+  using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::StateWaypoint;
+  using tesseract_planning::Waypoint;
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
@@ -173,143 +109,115 @@ bool GlassUprightExample::run()
   if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
-  // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
-
+  // Create monitor
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, EXAMPLE_MONITOR_NAMESPACE);
   if (rviz_)
-  {
-    // These are used to keep visualization updated
-    modify_env_rviz_ = nh_.serviceClient<tesseract_msgs::ModifyEnvironment>(MODIFY_ENVIRONMENT_SERVICE, false);
-    get_env_changes_rviz_ =
-        nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
+    monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
-    // Check RViz to make sure nothing has changed
-    if (!checkRviz())
-      return false;
-  }
+  // Create plotting tool
+  ROSPlottingPtr plotter =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
+  plotter->init(tesseract_);
 
   // Add sphere to environment
-  Link link_sphere("sphere_attached");
-
-  Visual::Ptr visual = std::make_shared<Visual>();
-  visual->origin = Eigen::Isometry3d::Identity();
-  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
-  visual->geometry = std::make_shared<tesseract_geometry::Sphere>(0.15);
-  link_sphere.visual.push_back(visual);
-
-  Collision::Ptr collision = std::make_shared<Collision>();
-  collision->origin = visual->origin;
-  collision->geometry = visual->geometry;
-  link_sphere.collision.push_back(collision);
-
-  Joint joint_sphere("joint_sphere_attached");
-  joint_sphere.parent_link_name = "base_link";
-  joint_sphere.child_link_name = link_sphere.getName();
-  joint_sphere.type = JointType::FIXED;
-
-  tesseract_->getEnvironment()->addLink(std::move(link_sphere), std::move(joint_sphere));
-
-  if (rviz_)
-  {
-    // Now update rviz environment
-    if (!sendRvizChanges(0))
-      return false;
-  }
+  Command::Ptr cmd = addSphere();
+  if (!monitor_->applyCommand(*cmd))
+    return false;
 
   // Set the robot initial state
-  std::unordered_map<std::string, double> ipos;
-  ipos["joint_a1"] = -0.4;
-  ipos["joint_a2"] = 0.2762;
-  ipos["joint_a3"] = 0.0;
-  ipos["joint_a4"] = -1.3348;
-  ipos["joint_a5"] = 0.0;
-  ipos["joint_a6"] = 1.4959;
-  ipos["joint_a7"] = 0.0;
-  tesseract_->getEnvironment()->setState(ipos);
+  std::vector<std::string> joint_names;
+  joint_names.push_back("joint_a1");
+  joint_names.push_back("joint_a2");
+  joint_names.push_back("joint_a3");
+  joint_names.push_back("joint_a4");
+  joint_names.push_back("joint_a5");
+  joint_names.push_back("joint_a6");
+  joint_names.push_back("joint_a7");
 
-  //  plotter->plotScene();
+  Eigen::VectorXd joint_start_pos(7);
+  joint_start_pos(0) = -0.4;
+  joint_start_pos(1) = 0.2762;
+  joint_start_pos(2) = 0.0;
+  joint_start_pos(3) = -1.3348;
+  joint_start_pos(4) = 0.0;
+  joint_start_pos(5) = 1.4959;
+  joint_start_pos(6) = 0.0;
 
-  // Set Log Level
-  util::gLogLevel = util::LevelError;
+  Eigen::VectorXd joint_end_pos(7);
+  joint_end_pos(0) = 0.4;
+  joint_end_pos(1) = 0.2762;
+  joint_end_pos(2) = 0.0;
+  joint_end_pos(3) = -1.3348;
+  joint_end_pos(4) = 0.0;
+  joint_end_pos(5) = 1.4959;
+  joint_end_pos(6) = 0.0;
 
-  // Setup Problem
-  TrajOptProb::Ptr prob;
-  if (method_ == "cpp")
-    prob = cppMethod();
-  else
-    prob = jsonMethod();
+  tesseract_->getEnvironment()->setState(joint_names, joint_start_pos);
 
   // Solve Trajectory
   ROS_INFO("glass upright plan example");
 
-  std::vector<ContactResultMap> collisions;
-  tesseract_environment::StateSolver::Ptr state_solver = prob->GetEnv()->getStateSolver();
-  ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMap::Ptr adjacency_map =
-      std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
-                                                            prob->GetKin()->getActiveLinkNames(),
-                                                            prob->GetEnv()->getCurrentState()->link_transforms);
+  // Create Program
+  CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
-  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  manager->setContactDistanceThreshold(0);
-  collisions.clear();
-  bool found =
-      checkTrajectory(collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), prob->GetInitTraj());
+  // Start and End Joint Position for the program
+  Waypoint wp0 = StateWaypoint(joint_names, joint_start_pos);
+  Waypoint wp1 = StateWaypoint(joint_names, joint_end_pos);
 
-  ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
+  PlanInstruction start_instruction(wp0, PlanInstructionType::START);
+  program.setStartInstruction(start_instruction);
 
-  sco::BasicTrustRegionSQP opt(prob);
-  if (plotting_)
+  // Plan freespace from start
+  // Assign a linear motion so cartesian is defined as the target
+  PlanInstruction plan_f0(wp1, PlanInstructionType::LINEAR, "UPRIGHT");
+  plan_f0.setDescription("freespace_plan");
+
+  // Add Instructions to program
+  program.push_back(plan_f0);
+
+  // Create Seed data structure
+  const Instruction program_instruction{ program };
+  Instruction seed = tesseract_planning::generateSkeletonSeed(program);
+
+  // Define the Process Input
+  tesseract_planning::ProcessInput input(tesseract_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Create TrajOpt Profile
+  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
+  trajopt_plan_profile->cartesian_coeff(0) = 0;
+  trajopt_plan_profile->cartesian_coeff(1) = 0;
+  trajopt_plan_profile->cartesian_coeff(2) = 0;
+
+  // Initialize Process Manager
+  ROS_INFO("basic cartesian plan example");
+  tesseract_planning::TrajOptTaskflowParams params;
+  params.trajopt_plan_profiles["UPRIGHT"] = trajopt_plan_profile;
+  tesseract_planning::GraphTaskflow::UPtr trajopt_taskflow = tesseract_planning::createTrajOptTaskflow(params);
+  tesseract_planning::SimpleProcessManager pm(std::move(trajopt_taskflow));
+
+  if (!pm.init(input))
   {
-    opt.addCallback(PlotCallback(*prob, plotter));
+    ROS_ERROR("Initialization Failed");
+    return false;
   }
 
-  std::shared_ptr<std::ofstream> stream_ptr;
-  if (write_to_file_)
+  // Solve
+  if (!pm.execute())
   {
-    // Create file write callback discarding any of the file's current contents
-    stream_ptr.reset(new std::ofstream);
-    std::string path = ros::package::getPath("trajopt") + "/scripts/glass_up_right_plan.csv";
-    stream_ptr->open(path, std::ofstream::out | std::ofstream::trunc);
-    opt.addCallback(trajopt::WriteCallback(stream_ptr, prob));
+    ROS_ERROR("Execution Failed");
+    return false;
   }
 
-  opt.initialize(trajToDblVec(prob->GetInitTraj()));
-  ros::Time tStart = ros::Time::now();
-  opt.optimize();
-  ROS_ERROR("planning time: %.3f", (ros::Time::now() - tStart).toSec());
-
-  double d = 0;
-  tesseract_common::TrajArray traj = getTraj(opt.x(), prob->GetVars());
-  for (unsigned i = 1; i < traj.rows(); ++i)
+  // Plot Trajectory
+  if (plotter)
   {
-    for (unsigned j = 0; j < traj.cols(); ++j)
-    {
-      d += std::abs(traj(i, j) - traj(i - 1, j));
-    }
-  }
-  ROS_ERROR("trajectory norm: %.3f", d);
-
-  if (plotting_)
-  {
-    plotter->clear();
+    plotter->waitForInput();
+    plotter->plotToolPath(*(input.getResults()));
+    plotter->plotTrajectory(*(input.getResults()));
   }
 
-  if (write_to_file_)
-  {
-    stream_ptr->close();
-    ROS_INFO("Data written to file. Evaluate using scripts in trajopt/scripts.");
-  }
-
-  collisions.clear();
-  found = checkTrajectory(
-      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
-
-  ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
-
-  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
-
+  ROS_INFO("Final trajectory is collision free");
   return true;
 }
 }  // namespace tesseract_ros_examples

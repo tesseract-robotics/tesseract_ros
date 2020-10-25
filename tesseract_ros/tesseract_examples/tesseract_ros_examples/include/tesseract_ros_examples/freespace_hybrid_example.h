@@ -56,6 +56,8 @@ private:
   ros::NodeHandle nh_;
   double range_;
   double planning_time_;
+
+  tesseract_environment::Command::Ptr addSphere();
 };
 
 }  // namespace tesseract_ros_examples
