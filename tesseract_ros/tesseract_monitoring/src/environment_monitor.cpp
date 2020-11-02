@@ -131,7 +131,7 @@ bool EnvironmentMonitor::initialize()
 
   if (!tesseract_->isInitialized())
   {
-    ROS_WARN_NAMED(monitor_namespace_, "Faild to initalize environment monitor, the tesseract is uninitialized!");
+    ROS_DEBUG_NAMED(monitor_namespace_, "Faild to initalize environment monitor, the tesseract is uninitialized!");
     return false;
   }
 
