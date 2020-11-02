@@ -158,7 +158,14 @@ public:
   const std::string& getName() const;
 
   /**
-   * @brief Apply provided command to the environment
+   * @brief Apply provided command to the environment owned by this monitor
+   *
+   * @details This should only be used if this monitor is the master. If this is monitoring another environment the
+   * local changes will get removed on the next update cycle. Recommend using the TesseractMonitorInterface to apply
+   * commands to the monitored environment until the todo below is implemented.
+   *
+   * @todo Add similar commands applyCommandUpstream
+   *
    * @param command The command to apply
    * @return True if successful, otherwise false
    */

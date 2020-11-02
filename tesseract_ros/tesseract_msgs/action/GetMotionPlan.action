@@ -34,6 +34,18 @@ string RASTER_G_FT_PLANNER_NAME = "RasterGFTPlanner"
 # Raster planner performs global plan first then macro planning using cartesian planner for transitions
 string RASTER_G_CT_PLANNER_NAME = "RasterGCTPlanner"
 
+# Raster only planner using freespace planner for transitions
+string RASTER_O_FT_PLANNER_NAME = "RasterOFTPlanner"
+
+# Raster only planner using cartesian planner for transitions
+string RASTER_O_CT_PLANNER_NAME = "RasterOCTPlanner"
+
+# Raster only planner performs global plan first then macro planning using freespace planner for transitions
+string RASTER_O_G_FT_PLANNER_NAME = "RasterOGFTPlanner"
+
+# Raster only planner performs global plan first then macro planning using cartesian planner for transitions
+string RASTER_O_G_CT_PLANNER_NAME = "RasterOGCTPlanner"
+
 tesseract_msgs/PlanningRequest request
 ---
 tesseract_msgs/PlanningResponse response
