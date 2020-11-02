@@ -139,6 +139,12 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
 {
   using namespace tesseract_planning;
 
+  if (tesseract_ == nullptr)
+  {
+    ROS_ERROR("plotToolPath: requires that the plotter be initialized with a tesseract!");
+    return;
+  }
+
   geometry_msgs::PoseArray tool_path;
   tool_path.header.frame_id = tesseract_->getEnvironment()->getRootLinkName();
   tesseract_environment::StateSolver::Ptr state_solver = tesseract_->getEnvironment()->getStateSolver();

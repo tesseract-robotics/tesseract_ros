@@ -38,6 +38,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_global_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_global_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
@@ -238,6 +241,15 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
       pm = std::make_shared<tesseract_planning::RasterProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
+    else if (goal->request.name == goal->RASTER_O_FT_PLANNER_NAME)
+    {
+      pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ftask1), std::move(task2), nt);
+    }
+    else if (goal->request.name == goal->RASTER_G_FT_PLANNER_NAME)
+    {
+      pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
+          std::move(gtask), std::move(gtaskf), std::move(gtasktf), std::move(gtaskc), nt);
+    }
     else if (goal->request.name == goal->RASTER_FT_DT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterDTProcessManager>(
@@ -253,10 +265,19 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
       pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
+    else if (goal->request.name == goal->RASTER_O_G_FT_PLANNER_NAME)
+    {
+      pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
+          std::move(gtask), std::move(gtasktf), std::move(gtaskc), nt);
+    }
     else if (goal->request.name == goal->RASTER_CT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
+    }
+    else if (goal->request.name == goal->RASTER_O_CT_PLANNER_NAME)
+    {
+      pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ctask1), std::move(task2), nt);
     }
     else if (goal->request.name == goal->RASTER_CT_DT_PLANNER_NAME)
     {
@@ -273,15 +294,15 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
       pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_G_FT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterProcessManager>(
-          std::move(gtask), std::move(gtaskf), std::move(gtasktf), std::move(gtaskc), nt);
-    }
     else if (goal->request.name == goal->RASTER_G_CT_PLANNER_NAME)
     {
-      pm = std::make_shared<tesseract_planning::RasterProcessManager>(
+      pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
           std::move(gtask), std::move(gtaskf), std::move(gtasktc), std::move(gtaskc), nt);
+    }
+    else if (goal->request.name == goal->RASTER_O_G_CT_PLANNER_NAME)
+    {
+      pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
+          std::move(gtask), std::move(gtasktc), std::move(gtaskc), nt);
     }
     else
     {
@@ -296,7 +317,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   pm->enableDebug(goal->request.debug);
   pm->enableProfile(goal->request.profile);
-  pm->init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed));
+  pm->init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed, goal->request.debug));
 
   result.response.successful = pm->execute();
   result.response.results = tesseract_planning::toXMLString(seed);
