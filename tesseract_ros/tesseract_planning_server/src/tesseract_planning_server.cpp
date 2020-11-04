@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning_server/tesseract_planning_server.h>
 
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
@@ -119,16 +119,22 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   tesseract_planning::GraphTaskflow::UPtr task = nullptr;
   if (goal->request.name == goal->TRAJOPT_PLANNER_NAME)
   {
-    task = tesseract_planning::createTrajOptTaskflow(goal->request.seed.empty(),
-                                                     simple_plan_profiles_,
-                                                     simple_composite_profiles_,
-                                                     trajopt_plan_profiles_,
-                                                     trajopt_composite_profiles_);
+    tesseract_planning::TrajOptTaskflowParams params;
+    params.enable_simple_planner = goal->request.seed.empty();
+    params.simple_plan_profiles = simple_plan_profiles_;
+    params.simple_composite_profiles = simple_composite_profiles_;
+    params.trajopt_plan_profiles = trajopt_plan_profiles_;
+    params.trajopt_composite_profiles = trajopt_composite_profiles_;
+    task = tesseract_planning::createTrajOptTaskflow(params);
   }
   else if (goal->request.name == goal->OMPL_PLANNER_NAME)
   {
-    task = tesseract_planning::createOMPLTaskflow(
-        goal->request.seed.empty(), simple_plan_profiles_, simple_composite_profiles_, ompl_plan_profiles_);
+    tesseract_planning::OMPLTaskflowParams params;
+    params.enable_simple_planner = goal->request.seed.empty();
+    params.simple_plan_profiles = simple_plan_profiles_;
+    params.simple_composite_profiles = simple_composite_profiles_;
+    params.ompl_plan_profiles = ompl_plan_profiles_;
+    task = tesseract_planning::createOMPLTaskflow(params);
   }
   else if (goal->request.name == goal->DESCARTES_PLANNER_NAME)
   {
@@ -141,12 +147,14 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
   else if (goal->request.name == goal->CARTESIAN_PLANNER_NAME)
   {
-    task = tesseract_planning::createCartesianTaskflow(goal->request.seed.empty(),
-                                                       simple_plan_profiles_,
-                                                       simple_composite_profiles_,
-                                                       descartes_plan_profiles_,
-                                                       trajopt_plan_profiles_,
-                                                       trajopt_composite_profiles_);
+    tesseract_planning::CartesianTaskflowParams params;
+    params.enable_simple_planner = goal->request.seed.empty();
+    params.simple_plan_profiles = simple_plan_profiles_;
+    params.simple_composite_profiles = simple_composite_profiles_;
+    params.descartes_plan_profiles = descartes_plan_profiles_;
+    params.trajopt_plan_profiles = trajopt_plan_profiles_;
+    params.trajopt_composite_profiles = trajopt_composite_profiles_;
+    task = tesseract_planning::createCartesianTaskflow(params);
   }
   else if (goal->request.name == goal->FREESPACE_PLANNER_NAME)
   {
@@ -183,29 +191,26 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     tesseract_planning::GraphTaskflow::UPtr ftask1 = nullptr;
     tesseract_planning::GraphTaskflow::UPtr task2 = nullptr;
 
-    tesseract_planning::FreespaceTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.ompl_plan_profiles = ompl_plan_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
+    tesseract_planning::FreespaceTaskflowParams fparams;
+    fparams.enable_simple_planner = goal->request.seed.empty();
+    fparams.simple_plan_profiles = simple_plan_profiles_;
+    fparams.simple_composite_profiles = simple_composite_profiles_;
+    fparams.ompl_plan_profiles = ompl_plan_profiles_;
+    fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+    fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
 
-    task = tesseract_planning::createFreespaceTaskflow(params);
-    ftask1 = tesseract_planning::createFreespaceTaskflow(params);
-    ctask1 = tesseract_planning::createCartesianTaskflow(goal->request.seed.empty(),
-                                                         simple_plan_profiles_,
-                                                         simple_composite_profiles_,
-                                                         descartes_plan_profiles_,
-                                                         trajopt_plan_profiles_,
-                                                         trajopt_composite_profiles_);
+    tesseract_planning::CartesianTaskflowParams cparams;
+    cparams.enable_simple_planner = goal->request.seed.empty();
+    cparams.simple_plan_profiles = simple_plan_profiles_;
+    cparams.simple_composite_profiles = simple_composite_profiles_;
+    cparams.descartes_plan_profiles = descartes_plan_profiles_;
+    cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+    cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
 
-    task2 = tesseract_planning::createCartesianTaskflow(goal->request.seed.empty(),
-                                                        simple_plan_profiles_,
-                                                        simple_composite_profiles_,
-                                                        descartes_plan_profiles_,
-                                                        trajopt_plan_profiles_,
-                                                        trajopt_composite_profiles_);
+    task = tesseract_planning::createFreespaceTaskflow(fparams);
+    ftask1 = tesseract_planning::createFreespaceTaskflow(fparams);
+    ctask1 = tesseract_planning::createCartesianTaskflow(cparams);
+    task2 = tesseract_planning::createCartesianTaskflow(cparams);
 
     tesseract_planning::DescartesTaskflowParams gdparams;
     gdparams.enable_simple_planner = goal->request.seed.empty();
@@ -225,16 +230,24 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     gfparams.ompl_plan_profiles = ompl_plan_profiles_;
     gfparams.trajopt_plan_profiles = trajopt_plan_profiles_;
     gfparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-
-    gtaskc = tesseract_planning::createTrajOptTaskflow(
-        false, simple_plan_profiles_, simple_composite_profiles_, trajopt_plan_profiles_, trajopt_composite_profiles_);
-
     gtaskf = tesseract_planning::createFreespaceTaskflow(gfparams);
-
-    gtasktc = tesseract_planning::createTrajOptTaskflow(
-        false, simple_plan_profiles_, simple_composite_profiles_, trajopt_plan_profiles_, trajopt_composite_profiles_);
-
     gtasktf = tesseract_planning::createFreespaceTaskflow(gfparams);
+
+    tesseract_planning::TrajOptTaskflowParams gcparams;
+    gcparams.enable_simple_planner = false;
+    gcparams.simple_plan_profiles = simple_plan_profiles_;
+    gcparams.simple_composite_profiles = simple_composite_profiles_;
+    gcparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+    gcparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+    gtaskc = tesseract_planning::createTrajOptTaskflow(gcparams);
+
+    tesseract_planning::TrajOptTaskflowParams gtcparams;
+    gtcparams.enable_simple_planner = false;
+    gtcparams.simple_plan_profiles = simple_plan_profiles_;
+    gtcparams.simple_composite_profiles = simple_composite_profiles_;
+    gtcparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+    gtcparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+    gtasktc = tesseract_planning::createTrajOptTaskflow(gtcparams);
 
     if (goal->request.name == goal->RASTER_FT_PLANNER_NAME)
     {
@@ -328,11 +341,16 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
 void TesseractPlanningServer::loadDefaultPlannerProfiles()
 {
-  trajopt_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
-  trajopt_composite_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
-  descartes_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>();
-  ompl_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>();
-  simple_plan_profiles_["DEFAULT"] = std::make_shared<tesseract_planning::SimplePlannerDefaultPlanProfile>();
+  trajopt_plan_profiles_[tesseract_planning::DEFAULT_PROFILE_KEY] =
+      std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  trajopt_composite_profiles_[tesseract_planning::DEFAULT_PROFILE_KEY] =
+      std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  descartes_plan_profiles_[tesseract_planning::DEFAULT_PROFILE_KEY] =
+      std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>();
+  ompl_plan_profiles_[tesseract_planning::DEFAULT_PROFILE_KEY] =
+      std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>();
+  simple_plan_profiles_[tesseract_planning::DEFAULT_PROFILE_KEY] =
+      std::make_shared<tesseract_planning::SimplePlannerDefaultLVSPlanProfile>();
 }
 
 Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info)
