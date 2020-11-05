@@ -6,6 +6,8 @@
   <arg name="discrete_plugin" default="BulletDiscreteBVHManager"/>
   <arg name="continuous_plugin" default="BulletCastBVHManager"/>
   <arg name="publish_environment" default="false"/>
+  <arg name="cache_size" default="5"/>
+  <arg name="cache_refresh_rate" default="0.1"/>
 
   <node pkg="tesseract_planning_server" type="tesseract_planning_server_node" name="tesseract_planning_server">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
@@ -14,6 +16,8 @@
     <param name="monitor_namespace" type="string" value="$(arg monitor_namespace)"/>
     <param name="monitored_namespace" type="string" value="$(arg monitored_namespace)"/>
     <param name="publish_environment" type="bool" value="$(arg publish_environment)"/>
+    <param name="cache_size" type="int" value="$(arg cache_size)"/>
+    <param name="cache_refresh_rate" type="double" value="$(arg cache_refresh_rate)"/>
   </node>
 
 </launch>

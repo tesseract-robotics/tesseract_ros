@@ -232,11 +232,16 @@ void toMsg(trajectory_msgs::JointTrajectory& traj_msg, const tesseract_common::J
 void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg, const tesseract_common::JointTrajectory& traj);
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
+bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg);
 
+/**
+ * @brief Apply the provided commands to the environment
+ * @param env The environment to apply the commands
+ * @param env_command_msg The commands to apply
+ * @return True if successful, otherwise false
+ */
 bool processMsg(tesseract_environment::Environment& env,
                 const std::vector<tesseract_msgs::EnvironmentCommand>& env_command_msg);
-
-bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg);
 
 /**
  * @brief Convert Geometry Pose Message to Eigen

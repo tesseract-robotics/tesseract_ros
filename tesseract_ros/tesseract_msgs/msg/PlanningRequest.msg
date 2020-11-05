@@ -1,4 +1,5 @@
 tesseract_msgs/TesseractState tesseract_state
+tesseract_msgs/EnvironmentCommand[] commands # Additional Commands to be applied to environment prior to planning
 
 string name # The name of the planner to use
 string instructions # This should an xml string of the command language instructions
