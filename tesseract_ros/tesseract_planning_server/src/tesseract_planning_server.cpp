@@ -56,6 +56,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/deserialize.h>
 #include <tesseract_command_language/serialize.h>
 
+#include <tesseract_rosutils/utils.h>
+
+using tesseract_rosutils::processMsg;
+
 namespace tesseract_planning_server
 {
 const std::string TesseractPlanningServer::DEFAULT_GET_MOTION_PLAN_ACTION = "tesseract_get_motion_plan";
@@ -104,6 +108,63 @@ tesseract_monitoring::EnvironmentMonitor& TesseractPlanningServer::getEnvironmen
 const tesseract_monitoring::EnvironmentMonitor& TesseractPlanningServer::getEnvironmentMonitor() const
 {
   return environment_;
+}
+
+void TesseractPlanningServer::setCacheSize(long size)
+{
+  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
+  cache_size_ = static_cast<std::size_t>(size);
+}
+
+long TesseractPlanningServer::getCacheSize() const { return static_cast<long>(cache_size_); }
+
+void TesseractPlanningServer::refreshCache()
+{
+  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
+  tesseract::Tesseract::Ptr thor;
+  {
+    auto lock = environment_.lockEnvironmentRead();
+    int rev = environment_.getEnvironment()->getRevision();
+    if (rev != cache_env_revision_ || cache_.empty())
+    {
+      thor = environment_.getTesseract()->clone();
+      cache_env_revision_ = rev;
+    }
+  }
+
+  if (thor != nullptr)
+  {
+    cache_.clear();
+    for (std::size_t i = 0; i < cache_size_; ++i)
+      cache_.push_back(thor->clone());
+  }
+  else if (cache_.size() <= 2)
+  {
+    for (std::size_t i = (cache_.size() - 1); i < cache_size_; ++i)
+      cache_.push_back(thor->clone());
+  }
+}
+
+tesseract::Tesseract::Ptr TesseractPlanningServer::getCachedTesseract()
+{
+  // This is to make sure the cached items are updated if needed
+  refreshCache();
+
+  tesseract_environment::EnvState current_state;
+  {
+    auto lock = environment_.lockEnvironmentRead();
+    current_state = *(environment_.getEnvironment()->getCurrentState());
+  }
+
+  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
+  tesseract::Tesseract::Ptr t = cache_.back();
+
+  // Update to the current joint values
+  t->getEnvironment()->setState(current_state.joints);
+
+  cache_.pop_back();
+
+  return t;
 }
 
 void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
@@ -327,10 +388,17 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
 
   assert(pm != nullptr);
-
+  tesseract::Tesseract::Ptr tc = getCachedTesseract();
+  if (!goal->request.commands.empty() && !processMsg(*(tc->getEnvironment()), goal->request.commands))
+  {
+    result.response.successful = false;
+    result.response.status_string = "Failed to apply provided commands to the environment";
+    ROS_INFO("Tesseract Planning Server Finished Request!");
+    motion_plan_server_.setSucceeded(result);
+  }
   pm->enableDebug(goal->request.debug);
   pm->enableProfile(goal->request.profile);
-  pm->init(tesseract_planning::ProcessInput(environment_.getTesseract(), &program, mi, &seed, goal->request.debug));
+  pm->init(tesseract_planning::ProcessInput(tc, &program, mi, &seed, goal->request.debug));
 
   result.response.successful = pm->execute();
   result.response.results = tesseract_planning::toXMLString(seed);
