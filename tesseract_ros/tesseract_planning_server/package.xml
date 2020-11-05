@@ -16,6 +16,7 @@
   <depend>tesseract_command_language</depend>
   <depend>tesseract_process_managers</depend>
   <depend>tesseract_motion_planners</depend>
+  <depend>tesseract_rosutils</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
 
