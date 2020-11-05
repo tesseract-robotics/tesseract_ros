@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <deque>
+#include <shared_mutex>
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <tf2_ros/buffer.h>
@@ -72,6 +74,27 @@ public:
 
   void onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
 
+  /**
+   * @brief Set the cache size used to hold tesseract objects for motion planning
+   * @param size The size of the cache.
+   */
+  void setCacheSize(long size);
+
+  /**
+   * @brief Get the cache size used to hold tesseract objects for motion planning
+   * @return The size of the cache.
+   */
+  long getCacheSize() const;
+
+  /** @brief If the environment has changed it will rebuild the cache of tesseract objects */
+  void refreshCache();
+
+  /**
+   * @brief This will pop a Tesseract object from the queue
+   * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
+   */
+  tesseract::Tesseract::Ptr getCachedTesseract();
+
 protected:
   ros::NodeHandle nh_;
 
@@ -104,6 +127,18 @@ protected:
 
   /** @brief TF listener to lookup TCP transforms */
   tf2_ros::TransformListener tf_listener_;
+
+  /** @brief The environment revision number at the time the cache was populated */
+  int cache_env_revision_{ 0 };
+
+  /** @brief The assigned cache size */
+  std::size_t cache_size_{ 5 };
+
+  /** @brief A vector of cached Tesseact objects */
+  std::deque<tesseract::Tesseract::Ptr> cache_;
+
+  /** @brief The mutex used when reading and writing to cache_ */
+  mutable std::shared_mutex cache_mutex_;
 
   void ctor();
 

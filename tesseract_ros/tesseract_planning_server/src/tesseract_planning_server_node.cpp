@@ -26,6 +26,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/environment.h>
@@ -34,17 +35,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using namespace tesseract_environment;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
+static std::shared_ptr<tesseract_planning_server::TesseractPlanningServer> planning_server;
+
+void updateCacheCallback(const ros::TimerEvent&) { planning_server->refreshCache(); }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "tesseract_planning_server");
+  ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
+
   std::string robot_description;
   std::string discrete_plugin;
   std::string continuous_plugin;
   std::string monitor_namespace;
   std::string monitored_namespace;
   bool publish_environment{ false };
+  int cache_size{ 5 };
+  double cache_refresh_rate{ 0.1 };
 
   if (!pnh.getParam("monitor_namespace", monitor_namespace))
   {
@@ -57,16 +65,22 @@ int main(int argc, char** argv)
   pnh.param<std::string>("discrete_plugin", discrete_plugin, "");
   pnh.param<std::string>("continuous_plugin", continuous_plugin, "");
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
+  pnh.param<int>("cache_size", cache_size, cache_size);
+  pnh.param<double>("cache_refresh_rate", cache_refresh_rate, cache_refresh_rate);
 
-  tesseract_planning_server::TesseractPlanningServer planning_server(
+  planning_server = std::make_shared<tesseract_planning_server::TesseractPlanningServer>(
       robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
 
+  planning_server->setCacheSize(cache_size);
+
   if (publish_environment)
-    planning_server.getEnvironmentMonitor().startPublishingEnvironment(
+    planning_server->getEnvironmentMonitor().startPublishingEnvironment(
         tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
   if (!monitored_namespace.empty())
-    planning_server.getEnvironmentMonitor().startMonitoringEnvironment(monitored_namespace);
+    planning_server->getEnvironmentMonitor().startMonitoringEnvironment(monitored_namespace);
+
+  ros::Timer update_cache = nh.createTimer(ros::Duration(cache_refresh_rate), updateCacheCallback);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
