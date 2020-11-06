@@ -497,9 +497,9 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
         return;
       }
 
-      auto manip_manager = std::make_shared<tesseract::ManipulatorManager>();
+      auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
       auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-      manip_manager->init(env, srdf);
+      manip_manager->init(env->getSceneGraph(), srdf);
 
       if (!tesseract_rosutils::fromMsg(*manip_manager, res.response.kinematics_information))
       {
@@ -509,7 +509,7 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
         return;
       }
 
-      if (!tesseract_->init(*env, *manip_manager))
+      if (!tesseract_->init(*env))
       {
         ROS_ERROR_STREAM_NAMED(monitor_namespace_, "newTesseractStateCallback: Failed to initialize tesseract!");
         return;
