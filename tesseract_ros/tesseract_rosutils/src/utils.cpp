@@ -1672,7 +1672,7 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
   return g;
 }
 
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::ManipulatorManager& manager)
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_environment::ManipulatorManager& manager)
 {
   for (const auto& group_name : kin_info.group_names)
   {
@@ -1746,7 +1746,7 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::Man
   return true;
 }
 
-bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info)
+bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info)
 {
   for (const auto& group : kin_info.chain_groups)
   {
@@ -1904,7 +1904,7 @@ bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract&
     return false;
   }
 
-  auto manipulator_manager = tesseract.getManipulatorManager();
+  auto manipulator_manager = tesseract.getEnvironment()->getManipulatorManager();
   if (!tesseract_rosutils::toMsg(tesseract_msg.kinematics_information, *manipulator_manager))
   {
     return false;
@@ -1946,9 +1946,9 @@ tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg
   }
   env->setState(env_state->joints);
 
-  auto manip_manager = std::make_shared<tesseract::ManipulatorManager>();
+  auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
   auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  manip_manager->init(env, srdf);
+  manip_manager->init(env->getSceneGraph(), srdf);
 
   if (!tesseract_rosutils::fromMsg(*manip_manager, tesseract_msg.kinematics_information))
   {
@@ -1957,7 +1957,7 @@ tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg
   }
 
   auto thor = std::make_shared<tesseract::Tesseract>();
-  if (!thor->init(*env, *manip_manager))
+  if (!thor->init(*env))
   {
     ROS_ERROR_STREAM("Failed to initialize tesseract!");
     return nullptr;
