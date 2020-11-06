@@ -74,7 +74,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
-#include <tesseract/manipulator_manager.h>
+#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/resource_locator.h>
@@ -323,7 +323,7 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
  * @param manager The Manipulator manager to convert to message
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::ManipulatorManager& manager);
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_environment::ManipulatorManager& manager);
 
 /**
  * @brief This will populate the manipulator manager with data from the kinematics information
@@ -331,7 +331,7 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract::Man
  * @param kin_info The kinematics information message
  * @return True if successful, otherwise false
  */
-bool fromMsg(tesseract::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info);
+bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info);
 
 /**
  * @brief This will populate a transfrom map message
