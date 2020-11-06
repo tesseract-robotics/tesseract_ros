@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/commands.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract/tesseract.h>
-#include <tesseract/manipulator_manager.h>
+#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/constants.h>
 
@@ -178,9 +178,9 @@ public:
       return nullptr;
     }
 
-    auto manip_manager = std::make_shared<tesseract::ManipulatorManager>();
+    auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
     auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    manip_manager->init(env, srdf);
+    manip_manager->init(env->getSceneGraph(), srdf);
 
     if (!tesseract_rosutils::fromMsg(*manip_manager, res.response.kinematics_information))
     {
@@ -190,7 +190,7 @@ public:
     }
 
     auto thor = std::make_shared<tesseract::Tesseract>();
-    if (!thor->init(*env, *manip_manager))
+    if (!thor->init(*env))
     {
       ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize tesseract!");
       return nullptr;

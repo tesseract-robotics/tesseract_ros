@@ -47,13 +47,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_monitoring
 {
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         tesseract::ManipulatorManager::ConstPtr manipulator_manager)
+                                         tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager)
   : CurrentStateMonitor(env, std::move(manipulator_manager), ros::NodeHandle())
 {
 }
 
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         tesseract::ManipulatorManager::ConstPtr manipulator_manager,
+                                         tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager,
                                          const ros::NodeHandle& nh)
   : nh_(nh)
   , env_(env)
