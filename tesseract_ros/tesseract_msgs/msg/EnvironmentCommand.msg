@@ -13,6 +13,7 @@ uint8 REMOVE_ALLOWED_COLLISION=10
 uint8 REMOVE_ALLOWED_COLLISION_LINK=11
 uint8 UPDATE_JOINT_STATE=12
 uint8 ADD_SCENE_GRAPH=13
+uint8 CHANGE_JOINT_LIMITS=14
 
 # Specifies the type of command. Dictates which of the fields below are used
 uint8 command
@@ -66,3 +67,7 @@ sensor_msgs/JointState joint_state
 tesseract_msgs/SceneGraph scene_graph
 tesseract_msgs/Joint scene_graph_joint
 string scene_graph_prefix
+
+# CHANGE_JOINT_LIMITS Command
+string change_joint_limits_name
+tesseract_msgs/JointLimits change_joint_limits_joint_limits
