@@ -294,7 +294,7 @@ tesseract_scene_graph::SceneGraph::ConstPtr EnvironmentMonitor::getSceneGraph() 
 
 tesseract_scene_graph::SRDFModel::ConstPtr EnvironmentMonitor::getSRDF() const
 {
-  return tesseract_->getManipulatorManager()->getSRDFModel();
+  return tesseract_->getEnvironment()->getManipulatorManager()->getSRDFModel();
 }
 
 tesseract_environment::Environment::Ptr EnvironmentMonitor::getEnvironment() { return tesseract_->getEnvironment(); }
@@ -726,8 +726,8 @@ void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic
   if (tesseract_->getEnvironment())
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(
-          new CurrentStateMonitor(tesseract_->getEnvironment(), tesseract_->getManipulatorManager(), root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(
+          tesseract_->getEnvironment(), tesseract_->getEnvironment()->getManipulatorManager(), root_nh_));
 
     current_state_monitor_->addUpdateCallback(boost::bind(&EnvironmentMonitor::onJointStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic, publish_tf);
@@ -1038,7 +1038,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::KINEMATICS_INFORMATION)
   {
-    auto manipulator_manager = tesseract_->getManipulatorManager();
+    auto manipulator_manager = tesseract_->getEnvironment()->getManipulatorManager();
     if (!tesseract_rosutils::toMsg(res.kinematics_information, *manipulator_manager))
     {
       res.success = false;

@@ -427,7 +427,8 @@ Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::M
     throw std::runtime_error("tfFindTCP: TCP is not a string!");
 
   auto composite_mi_fwd_kin =
-      environment_.getTesseract()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+      environment_.getTesseract()->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(
+          manip_info.manipulator);
   if (composite_mi_fwd_kin == nullptr)
     throw std::runtime_error("tfFindTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
 

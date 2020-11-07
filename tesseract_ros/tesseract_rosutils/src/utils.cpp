@@ -1153,6 +1153,10 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.scene_graph_prefix = cmd.getPrefix();
       return true;
     }
+    case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+    {
+      return false;
+    }
   }
 
   return false;
@@ -1253,6 +1257,13 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
       auto j = std::make_shared<tesseract_scene_graph::Joint>(fromMsg(command_msg.scene_graph_joint));
       return std::make_shared<tesseract_environment::AddSceneGraphCommand>(
           fromMsg(command_msg.scene_graph), j, command_msg.scene_graph_prefix);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_LIMITS:
+    {
+      tesseract_scene_graph::JointLimits::Ptr limits;
+      fromMsg(limits, command_msg.change_joint_limits_joint_limits);
+      return std::make_shared<tesseract_environment::ChangeJointLimitsCommand>(command_msg.change_joint_limits_name,
+                                                                               *limits);
     }
     default:
     {
@@ -1468,6 +1479,13 @@ bool processMsg(tesseract_environment::Environment& env,
         else
           success &= env.addSceneGraph(g, fromMsg(command.scene_graph_joint), command.scene_graph_prefix);
 
+        break;
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_LIMITS:
+      {
+        tesseract_scene_graph::JointLimits::Ptr limits;
+        fromMsg(limits, command.change_joint_limits_joint_limits);
+        success &= env.changeJointLimits(command.change_joint_limits_name, *limits);
         break;
       }
     }
@@ -1946,15 +1964,16 @@ tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg
   }
   env->setState(env_state->joints);
 
-  auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
-  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  manip_manager->init(env->getSceneGraph(), srdf);
+  // TODO: Levi, I assume this needs to go somewhere else now. Where would that be?
+  //  auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
+  //  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  //  manip_manager->init(env->getSceneGraph(), srdf);
 
-  if (!tesseract_rosutils::fromMsg(*manip_manager, tesseract_msg.kinematics_information))
-  {
-    ROS_ERROR_STREAM("Failed to populate manipulator manager from kinematics information!");
-    return nullptr;
-  }
+  //  if (!tesseract_rosutils::fromMsg(*manip_manager, tesseract_msg.kinematics_information))
+  //  {
+  //    ROS_ERROR_STREAM("Failed to populate manipulator manager from kinematics information!");
+  //    return nullptr;
+  //  }
 
   auto thor = std::make_shared<tesseract::Tesseract>();
   if (!thor->init(*env))

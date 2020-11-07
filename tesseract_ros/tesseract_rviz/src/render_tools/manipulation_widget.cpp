@@ -153,7 +153,8 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
   {
     int cnt = 0;
     available_manipulators_.clear();
-    for (const auto& manip : tesseract_->getManipulatorManager()->getAvailableInvKinematicsManipulators())
+    for (const auto& manip :
+         tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators())
     {
       available_manipulators_.push_back(QString::fromStdString(manip));
       manipulator_property_->addOptionStd(manip, cnt);
@@ -263,7 +264,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 {
   if (tesseract_->isInitialized())
   {
-    inv_kin_ = tesseract_->getManipulatorManager()->getInvKinematicSolver(manipulator.toStdString());
+    inv_kin_ = tesseract_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manipulator.toStdString());
     if (inv_kin_ == nullptr)
       return false;
 
@@ -718,14 +719,15 @@ void ManipulationWidget::onUpdate(float wall_dt)
 
     std::string current_manipulator = manipulator_property_->getStdString();
     std::vector<std::string> manipulators =
-        tesseract_->getManipulatorManager()->getAvailableInvKinematicsManipulators();
+        tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators();
 
     if (manipulators_.size() != manipulators.size() && !manipulators.empty())
     {
       int cnt = 0;
       manipulator_property_->clearOptions();
       available_manipulators_.clear();
-      for (const auto& manip : tesseract_->getManipulatorManager()->getAvailableInvKinematicsManipulators())
+      for (const auto& manip :
+           tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators())
       {
         available_manipulators_.push_back(QString::fromStdString(manip));
         manipulator_property_->addOptionStd(manip, cnt);
