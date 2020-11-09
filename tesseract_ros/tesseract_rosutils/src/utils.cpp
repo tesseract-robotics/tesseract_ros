@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
 #include <ros/package.h>
+#include <tesseract_msgs/StringLimitsPair.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/utils.h>
@@ -825,6 +826,8 @@ bool toMsg(tesseract_msgs::JointLimits& joint_limits_msg, const tesseract_scene_
 
   joint_limits_msg.velocity = joint_limits->velocity;
 
+  joint_limits_msg.acceleration = joint_limits->acceleration;
+
   return true;
 }
 
@@ -845,6 +848,8 @@ bool fromMsg(tesseract_scene_graph::JointLimits::Ptr& joint_limits, const tesser
   joint_limits->effort = joint_limits_msg.effort;
 
   joint_limits->velocity = joint_limits_msg.velocity;
+
+  joint_limits->acceleration = joint_limits_msg.acceleration;
 
   return true;
 }
@@ -1153,9 +1158,48 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.scene_graph_prefix = cmd.getPrefix();
       return true;
     }
-    case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+    case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
     {
-      return false;
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_POSITION_LIMITS;
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointPositionLimitsCommand&>(command);
+      for (const auto& l : cmd.getLimits())
+      {
+        tesseract_msgs::StringLimitsPair pair;
+        pair.first = l.first;
+        pair.second[0] = l.second.first;
+        pair.second[1] = l.second.second;
+        command_msg.change_joint_position_limits.push_back(pair);
+      }
+
+      return true;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_VELOCITY_LIMITS;
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointVelocityLimitsCommand&>(command);
+      for (const auto& l : cmd.getLimits())
+      {
+        tesseract_msgs::StringDoublePair pair;
+        pair.first = l.first;
+        pair.second = l.second;
+        command_msg.change_joint_velocity_limits.push_back(pair);
+      }
+
+      return true;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ACCELERATION_LIMITS;
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointAccelerationLimitsCommand&>(command);
+      for (const auto& l : cmd.getLimits())
+      {
+        tesseract_msgs::StringDoublePair pair;
+        pair.first = l.first;
+        pair.second = l.second;
+        command_msg.change_joint_acceleration_limits.push_back(pair);
+      }
+
+      return true;
     }
   }
 
@@ -1258,12 +1302,29 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
       return std::make_shared<tesseract_environment::AddSceneGraphCommand>(
           fromMsg(command_msg.scene_graph), j, command_msg.scene_graph_prefix);
     }
-    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_LIMITS:
+    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_POSITION_LIMITS:
     {
-      tesseract_scene_graph::JointLimits::Ptr limits;
-      fromMsg(limits, command_msg.change_joint_limits_joint_limits);
-      return std::make_shared<tesseract_environment::ChangeJointLimitsCommand>(command_msg.change_joint_limits_name,
-                                                                               *limits);
+      std::unordered_map<std::string, std::pair<double, double>> limits_map;
+      for (const auto& l : command_msg.change_joint_position_limits)
+        limits_map[l.first] = std::make_pair(l.second[0], l.second[1]);
+
+      return std::make_shared<tesseract_environment::ChangeJointPositionLimitsCommand>(limits_map);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_VELOCITY_LIMITS:
+    {
+      std::unordered_map<std::string, double> limits_map;
+      for (const auto& l : command_msg.change_joint_velocity_limits)
+        limits_map[l.first] = l.second;
+
+      return std::make_shared<tesseract_environment::ChangeJointVelocityLimitsCommand>(limits_map);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ACCELERATION_LIMITS:
+    {
+      std::unordered_map<std::string, double> limits_map;
+      for (const auto& l : command_msg.change_joint_acceleration_limits)
+        limits_map[l.first] = l.second;
+
+      return std::make_shared<tesseract_environment::ChangeJointAccelerationLimitsCommand>(limits_map);
     }
     default:
     {
@@ -1481,11 +1542,31 @@ bool processMsg(tesseract_environment::Environment& env,
 
         break;
       }
-      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_LIMITS:
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_POSITION_LIMITS:
       {
-        tesseract_scene_graph::JointLimits::Ptr limits;
-        fromMsg(limits, command.change_joint_limits_joint_limits);
-        success &= env.changeJointLimits(command.change_joint_limits_name, *limits);
+        std::unordered_map<std::string, std::pair<double, double>> limits_map;
+        for (const auto& l : command.change_joint_position_limits)
+          limits_map[l.first] = std::make_pair(l.second[0], l.second[1]);
+
+        success &= env.changeJointPositionLimits(limits_map);
+        break;
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_VELOCITY_LIMITS:
+      {
+        std::unordered_map<std::string, double> limits_map;
+        for (const auto& l : command.change_joint_velocity_limits)
+          limits_map[l.first] = l.second;
+
+        success &= env.changeJointVelocityLimits(limits_map);
+        break;
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ACCELERATION_LIMITS:
+      {
+        std::unordered_map<std::string, double> limits_map;
+        for (const auto& l : command.change_joint_acceleration_limits)
+          limits_map[l.first] = l.second;
+
+        success &= env.changeJointAccelerationLimits(limits_map);
         break;
       }
     }
