@@ -73,6 +73,7 @@ add_message_files(
     ProfileMap.msg
     SceneGraph.msg
     StringDoublePair.msg
+    StringLimitsPair.msg
     StringPair.msg
     TesseractState.msg
     Tesseract.msg
