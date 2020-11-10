@@ -107,6 +107,122 @@ TEST_F(TesseractROSUtilsUnit, toFromFile)  // NOLINT
   EXPECT_DOUBLE_EQ(msg.a, new_msg.a);
 }
 
+TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
+{
+  tesseract_scene_graph::KinematicsInformation kin_info;
+  kin_info.group_names = { "manipulator1", "manipulator2", "manipulator3" };
+  kin_info.chain_groups["manipulator1"] = { std::make_pair("base_link", "tip_link") };
+  kin_info.joint_groups["manipulator2"] = { "joint_1", "joint_2", "joint_3" };
+  kin_info.link_groups["manipulator3"] = { "base_link", "link_1", "link_2" };
+  tesseract_scene_graph::GroupsJointState js;
+  js["joint_0"] = 1.1;
+  js["joint_1"] = 2.1;
+  tesseract_scene_graph::GroupsJointStates jss;
+  jss["home"] = js;
+  kin_info.group_states["manipulator1"] = jss;
+
+  tesseract_scene_graph::GroupsTCPs gts;
+  Eigen::Isometry3d p = Eigen::Isometry3d::Identity();
+  gts["sander"] = p;
+  kin_info.group_tcps["manipulator1"] = gts;
+
+  tesseract_scene_graph::ROPKinematicParameters rop;
+  kin_info.group_rop_kinematics["manipulator1"] = rop;
+
+  tesseract_scene_graph::REPKinematicParameters rep;
+  kin_info.group_rep_kinematics["manipulator2"] = rep;
+
+  tesseract_scene_graph::OPWKinematicParameters opw;
+  kin_info.group_opw_kinematics["manipulator3"] = opw;
+
+  kin_info.group_default_fwd_kin["manipulator1"] = "ROPSolver";
+  kin_info.group_default_inv_kin["manipulator2"] = "REPSolver";
+
+  tesseract_msgs::KinematicsInformation kin_info_msg;
+  tesseract_rosutils::toMsg(kin_info_msg, kin_info);
+
+  EXPECT_EQ(kin_info.group_names.size(), kin_info_msg.group_names.size());
+  for (std::size_t i = 0; i < kin_info.group_names.size(); ++i)
+  {
+    EXPECT_EQ(kin_info.group_names[i], kin_info_msg.group_names[i]);
+  }
+
+  EXPECT_EQ(kin_info.chain_groups.size(), kin_info_msg.chain_groups.size());
+  EXPECT_EQ(kin_info_msg.chain_groups[0].name, "manipulator1");
+
+  EXPECT_EQ(kin_info.joint_groups.size(), kin_info_msg.joint_groups.size());
+  EXPECT_EQ(kin_info_msg.joint_groups[0].name, "manipulator2");
+
+  EXPECT_EQ(kin_info.link_groups.size(), kin_info_msg.link_groups.size());
+  EXPECT_EQ(kin_info_msg.link_groups[0].name, "manipulator3");
+
+  EXPECT_EQ(kin_info.group_states.size(), kin_info_msg.group_joint_states.size());
+  EXPECT_EQ(kin_info_msg.group_joint_states[0].name, "manipulator1");
+
+  EXPECT_EQ(kin_info.group_tcps.size(), kin_info_msg.group_tcps.size());
+  EXPECT_EQ(kin_info_msg.group_tcps[0].name, "manipulator1");
+  EXPECT_EQ(kin_info_msg.group_tcps[0].tcps.size(), 1);
+  EXPECT_EQ(kin_info_msg.group_tcps[0].tcps[0].name, "sander");
+
+  EXPECT_EQ(kin_info.group_rop_kinematics.size(), kin_info_msg.group_rop.size());
+  EXPECT_EQ(kin_info_msg.group_rop[0].name, "manipulator1");
+
+  EXPECT_EQ(kin_info.group_rep_kinematics.size(), kin_info_msg.group_rep.size());
+  EXPECT_EQ(kin_info_msg.group_rep[0].name, "manipulator2");
+
+  EXPECT_EQ(kin_info.group_opw_kinematics.size(), kin_info_msg.group_opw.size());
+  EXPECT_EQ(kin_info_msg.group_opw[0].name, "manipulator3");
+
+  EXPECT_EQ(kin_info.group_default_fwd_kin.size(), kin_info_msg.default_fwd_kin.size());
+  EXPECT_EQ(kin_info_msg.default_fwd_kin[0].first, "manipulator1");
+  EXPECT_EQ(kin_info_msg.default_fwd_kin[0].second, "ROPSolver");
+
+  EXPECT_EQ(kin_info.group_default_inv_kin.size(), kin_info_msg.default_inv_kin.size());
+  EXPECT_EQ(kin_info_msg.default_inv_kin[0].first, "manipulator2");
+  EXPECT_EQ(kin_info_msg.default_inv_kin[0].second, "REPSolver");
+
+  tesseract_scene_graph::KinematicsInformation kin_info2;
+  tesseract_rosutils::fromMsg(kin_info2, kin_info_msg);
+
+  EXPECT_EQ(kin_info2.group_names.size(), kin_info_msg.group_names.size());
+  for (std::size_t i = 0; i < kin_info2.group_names.size(); ++i)
+  {
+    EXPECT_EQ(kin_info2.group_names[i], kin_info_msg.group_names[i]);
+  }
+
+  EXPECT_EQ(kin_info2.chain_groups.size(), kin_info_msg.chain_groups.size());
+  EXPECT_TRUE(kin_info2.chain_groups.find("manipulator1") != kin_info2.chain_groups.end());
+
+  EXPECT_EQ(kin_info2.joint_groups.size(), kin_info_msg.joint_groups.size());
+  EXPECT_TRUE(kin_info2.joint_groups.find("manipulator2") != kin_info2.joint_groups.end());
+
+  EXPECT_EQ(kin_info2.link_groups.size(), kin_info_msg.link_groups.size());
+  EXPECT_TRUE(kin_info2.link_groups.find("manipulator3") != kin_info2.link_groups.end());
+
+  EXPECT_EQ(kin_info2.group_states.size(), kin_info_msg.group_joint_states.size());
+  EXPECT_TRUE(kin_info2.group_states.find("manipulator1") != kin_info2.group_states.end());
+
+  EXPECT_EQ(kin_info2.group_tcps.size(), kin_info_msg.group_tcps.size());
+  EXPECT_TRUE(kin_info2.group_tcps.find("manipulator1") != kin_info2.group_tcps.end());
+
+  EXPECT_EQ(kin_info2.group_rop_kinematics.size(), kin_info_msg.group_rop.size());
+  EXPECT_TRUE(kin_info2.group_rop_kinematics.find("manipulator1") != kin_info2.group_rop_kinematics.end());
+
+  EXPECT_EQ(kin_info2.group_rep_kinematics.size(), kin_info_msg.group_rep.size());
+  EXPECT_TRUE(kin_info2.group_rep_kinematics.find("manipulator2") != kin_info2.group_rep_kinematics.end());
+
+  EXPECT_EQ(kin_info2.group_opw_kinematics.size(), kin_info_msg.group_opw.size());
+  EXPECT_TRUE(kin_info2.group_opw_kinematics.find("manipulator3") != kin_info2.group_opw_kinematics.end());
+
+  EXPECT_EQ(kin_info2.group_default_fwd_kin.size(), kin_info_msg.default_fwd_kin.size());
+  EXPECT_TRUE(kin_info2.group_default_fwd_kin.find("manipulator1") != kin_info2.group_default_fwd_kin.end());
+  EXPECT_EQ(kin_info2.group_default_fwd_kin.find("manipulator1")->second, "ROPSolver");
+
+  EXPECT_EQ(kin_info2.group_default_inv_kin.size(), kin_info_msg.default_inv_kin.size());
+  EXPECT_TRUE(kin_info2.group_default_inv_kin.find("manipulator2") != kin_info2.group_default_inv_kin.end());
+  EXPECT_EQ(kin_info2.group_default_inv_kin.find("manipulator2")->second, "REPSolver");
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

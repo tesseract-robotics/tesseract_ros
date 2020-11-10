@@ -292,9 +292,9 @@ tesseract_scene_graph::SceneGraph::ConstPtr EnvironmentMonitor::getSceneGraph() 
   return tesseract_->getEnvironment()->getSceneGraph();
 }
 
-tesseract_scene_graph::SRDFModel::ConstPtr EnvironmentMonitor::getSRDF() const
+const tesseract_scene_graph::KinematicsInformation& EnvironmentMonitor::getKinematicsInformation() const
 {
-  return tesseract_->getEnvironment()->getManipulatorManager()->getSRDFModel();
+  return tesseract_->getEnvironment()->getManipulatorManager()->getKinematicsInformation();
 }
 
 tesseract_environment::Environment::Ptr EnvironmentMonitor::getEnvironment() { return tesseract_->getEnvironment(); }
@@ -494,18 +494,6 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
       if (!env->init<tesseract_environment::OFKTStateSolver>(commands))
       {
         ROS_ERROR_STREAM_NAMED(monitor_namespace_, "newTesseractStateCallback: Failed to initialize environment!");
-        return;
-      }
-
-      auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
-      auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-      manip_manager->init(env->getSceneGraph(), srdf);
-
-      if (!tesseract_rosutils::fromMsg(*manip_manager, res.response.kinematics_information))
-      {
-        ROS_ERROR_STREAM_NAMED(monitor_namespace_,
-                               "newTesseractStateCallback: Failed to populate manipulator manager from kinematics "
-                               "information!");
         return;
       }
 
@@ -1039,7 +1027,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::KINEMATICS_INFORMATION)
   {
     auto manipulator_manager = tesseract_->getEnvironment()->getManipulatorManager();
-    if (!tesseract_rosutils::toMsg(res.kinematics_information, *manipulator_manager))
+    if (!tesseract_rosutils::toMsg(res.kinematics_information, manipulator_manager->getKinematicsInformation()))
     {
       res.success = false;
       return false;
