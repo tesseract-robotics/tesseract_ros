@@ -180,10 +180,10 @@ public:
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
 
   /**
-   * @brief Get the SRDF
-   * @return Const SRDFModel
+   * @brief Get the kinematics information
+   * @return Const KinematicsInformatiion
    */
-  tesseract_scene_graph::SRDFModel::ConstPtr getSRDF() const;
+  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const;
 
   /**
    * @brief Returns an @b unsafe pointer to the current environment.

@@ -1201,6 +1201,12 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
 
       return true;
     }
+    case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_KINEMATICS_INFORMATION;
+      const auto& cmd = static_cast<const tesseract_environment::AddKinematicsInformationCommand&>(command);
+      return toMsg(command_msg.add_kinematics_information, cmd.getKinematicsInformation());
+    }
   }
 
   return false;
@@ -1325,6 +1331,13 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
         limits_map[l.first] = l.second;
 
       return std::make_shared<tesseract_environment::ChangeJointAccelerationLimitsCommand>(limits_map);
+    }
+    case tesseract_msgs::EnvironmentCommand::ADD_KINEMATICS_INFORMATION:
+    {
+      tesseract_scene_graph::KinematicsInformation kin_info;
+      fromMsg(kin_info, command_msg.add_kinematics_information);
+
+      return std::make_shared<tesseract_environment::AddKinematicsInformationCommand>(kin_info);
     }
     default:
     {
@@ -1569,6 +1582,14 @@ bool processMsg(tesseract_environment::Environment& env,
         success &= env.changeJointAccelerationLimits(limits_map);
         break;
       }
+      case tesseract_msgs::EnvironmentCommand::ADD_KINEMATICS_INFORMATION:
+      {
+        tesseract_scene_graph::KinematicsInformation kin_info;
+        fromMsg(kin_info, command.add_kinematics_information);
+
+        success &= env.addKinematicsInformation(kin_info);
+        break;
+      }
     }
   }
 
@@ -1767,39 +1788,53 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
     tesseract_msgs::GroupsTCP gtcp;
     gtcp.name = gs.first;
     toMsg(gtcp.tcp, gs.second);
+    g.tcps.push_back(gtcp);
   }
   return g;
 }
 
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_environment::ManipulatorManager& manager)
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
+           const tesseract_scene_graph::KinematicsInformation& kin_info)
 {
-  for (const auto& group_name : kin_info.group_names)
-  {
-    auto fk_solver = manager.getFwdKinematicSolver(group_name);
-    if (fk_solver != nullptr)
-    {
-      tesseract_msgs::StringPair pair;
-      pair.first = group_name;
-      pair.second = fk_solver->getSolverName();
-      kin_info.default_fwd_kin.push_back(pair);
-    }
+  kin_info_msg.group_names = kin_info.group_names;
 
-    auto ik_solver = manager.getInvKinematicSolver(group_name);
-    if (ik_solver != nullptr)
-    {
-      tesseract_msgs::StringPair pair;
-      pair.first = group_name;
-      pair.second = ik_solver->getSolverName();
-      kin_info.default_inv_kin.push_back(pair);
-    }
+  kin_info_msg.default_fwd_kin.reserve(kin_info.group_default_fwd_kin.size());
+  for (const auto& group : kin_info.group_default_fwd_kin)
+  {
+    tesseract_msgs::StringPair pair;
+    pair.first = group.first;
+    pair.second = group.second;
+    kin_info_msg.default_fwd_kin.push_back(pair);
   }
 
-  kin_info.chain_groups.reserve(manager.getChainGroups().size());
-  for (const auto& group : manager.getChainGroups())
-    kin_info.chain_groups.push_back(toMsg(group));
+  kin_info_msg.default_inv_kin.reserve(kin_info.group_default_inv_kin.size());
+  for (const auto& group : kin_info.group_default_inv_kin)
+  {
+    tesseract_msgs::StringPair pair;
+    pair.first = group.first;
+    pair.second = group.second;
+    kin_info_msg.default_inv_kin.push_back(pair);
+  }
 
-  kin_info.joint_groups.reserve(manager.getJointGroups().size());
-  for (const auto& group : manager.getJointGroups())
+  kin_info_msg.chain_groups.reserve(kin_info.chain_groups.size());
+  for (const auto& group : kin_info.chain_groups)
+  {
+    tesseract_msgs::ChainGroup g;
+    g.name = group.first;
+    g.chains.reserve(group.second.size());
+    for (const auto& chain : group.second)
+    {
+      tesseract_msgs::StringPair pair;
+      pair.first = chain.first;
+      pair.second = chain.second;
+      g.chains.push_back(pair);
+    }
+
+    kin_info_msg.chain_groups.push_back(g);
+  }
+
+  kin_info_msg.joint_groups.reserve(kin_info.joint_groups.size());
+  for (const auto& group : kin_info.joint_groups)
   {
     tesseract_msgs::JointGroup g;
     g.name = group.first;
@@ -1807,11 +1842,11 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_envi
     for (const auto& joint_name : group.second)
       g.joints.push_back(joint_name);
 
-    kin_info.joint_groups.push_back(g);
+    kin_info_msg.joint_groups.push_back(g);
   }
 
-  kin_info.link_groups.reserve(manager.getLinkGroups().size());
-  for (const auto& group : manager.getLinkGroups())
+  kin_info_msg.link_groups.reserve(kin_info.link_groups.size());
+  for (const auto& group : kin_info.link_groups)
   {
     tesseract_msgs::LinkGroup g;
     g.name = group.first;
@@ -1819,49 +1854,53 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_envi
     for (const auto& link_name : group.second)
       g.links.push_back(link_name);
 
-    kin_info.link_groups.push_back(g);
+    kin_info_msg.link_groups.push_back(g);
   }
 
-  kin_info.group_rop.reserve(manager.getROPKinematicsSolvers().size());
-  for (const auto& group : manager.getROPKinematicsSolvers())
-    kin_info.group_rop.push_back(toMsg(group));
+  kin_info_msg.group_rop.reserve(kin_info.group_rop_kinematics.size());
+  for (const auto& group : kin_info.group_rop_kinematics)
+    kin_info_msg.group_rop.push_back(toMsg(group));
 
-  kin_info.group_rep.reserve(manager.getREPKinematicsSolvers().size());
-  for (const auto& group : manager.getREPKinematicsSolvers())
-    kin_info.group_rep.push_back(toMsg(group));
+  kin_info_msg.group_rep.reserve(kin_info.group_rep_kinematics.size());
+  for (const auto& group : kin_info.group_rep_kinematics)
+    kin_info_msg.group_rep.push_back(toMsg(group));
 
-  kin_info.group_opw.reserve(manager.getOPWKinematicsSolvers().size());
-  for (const auto& group : manager.getOPWKinematicsSolvers())
-    kin_info.group_opw.push_back(toMsg(group));
+  kin_info_msg.group_opw.reserve(kin_info.group_opw_kinematics.size());
+  for (const auto& group : kin_info.group_opw_kinematics)
+    kin_info_msg.group_opw.push_back(toMsg(group));
 
-  kin_info.group_joint_states.reserve(manager.getGroupJointStates().size());
-  for (const auto& group : manager.getGroupJointStates())
-    kin_info.group_joint_states.push_back(toMsg(group));
+  kin_info_msg.group_joint_states.reserve(kin_info.group_states.size());
+  for (const auto& group : kin_info.group_states)
+    kin_info_msg.group_joint_states.push_back(toMsg(group));
 
-  kin_info.group_tcps.reserve(manager.getGroupTCPs().size());
-  for (const auto& group : manager.getGroupTCPs())
-    kin_info.group_tcps.push_back(toMsg(group));
+  kin_info_msg.group_tcps.reserve(kin_info.group_tcps.size());
+  for (const auto& group : kin_info.group_tcps)
+    kin_info_msg.group_tcps.push_back(toMsg(group));
 
   return true;
 }
 
-bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info)
+bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
+             const tesseract_msgs::KinematicsInformation& kin_info_msg)
 {
-  for (const auto& group : kin_info.chain_groups)
+  kin_info.group_names = kin_info_msg.group_names;
+
+  for (const auto& group : kin_info_msg.chain_groups)
   {
     tesseract_scene_graph::ChainGroup chain_group;
     for (const auto& pair : group.chains)
       chain_group.emplace_back(pair.first, pair.second);
-    manager.addChainGroup(group.name, chain_group);
+
+    kin_info.chain_groups[group.name] = chain_group;
   }
 
-  for (const auto& group : kin_info.joint_groups)
-    manager.addJointGroup(group.name, group.joints);
+  for (const auto& group : kin_info_msg.joint_groups)
+    kin_info.joint_groups[group.name] = group.joints;
 
-  for (const auto& group : kin_info.link_groups)
-    manager.addLinkGroup(group.name, group.links);
+  for (const auto& group : kin_info_msg.link_groups)
+    kin_info.link_groups[group.name] = group.links;
 
-  for (const auto& group : kin_info.group_rop)
+  for (const auto& group : kin_info_msg.group_rop)
   {
     tesseract_scene_graph::ROPKinematicParameters rop_group;
     rop_group.manipulator_group = group.manipulator_group;
@@ -1871,10 +1910,11 @@ bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract
     rop_group.positioner_fk_solver = group.positioner_fk_solver;
     for (const auto& pair : group.positioner_sample_resolution)
       rop_group.positioner_sample_resolution[pair.first] = pair.second;
-    manager.addROPKinematicsSolver(group.name, rop_group);
+
+    kin_info.group_rop_kinematics[group.name] = rop_group;
   }
 
-  for (const auto& group : kin_info.group_rep)
+  for (const auto& group : kin_info_msg.group_rep)
   {
     tesseract_scene_graph::REPKinematicParameters rep_group;
     rep_group.manipulator_group = group.manipulator_group;
@@ -1884,10 +1924,11 @@ bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract
     rep_group.positioner_fk_solver = group.positioner_fk_solver;
     for (const auto& pair : group.positioner_sample_resolution)
       rep_group.positioner_sample_resolution[pair.first] = pair.second;
-    manager.addREPKinematicsSolver(group.name, rep_group);
+
+    kin_info.group_rep_kinematics[group.name] = rep_group;
   }
 
-  for (const auto& group : kin_info.group_opw)
+  for (const auto& group : kin_info_msg.group_opw)
   {
     tesseract_scene_graph::OPWKinematicParameters opw_group;
     opw_group.a1 = group.a1;
@@ -1903,10 +1944,10 @@ bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract
       opw_group.sign_corrections[i] = group.sign_corrections[i];
     }
 
-    manager.addOPWKinematicsSolver(group.name, opw_group);
+    kin_info.group_opw_kinematics[group.name] = opw_group;
   }
 
-  for (const auto& group : kin_info.group_joint_states)
+  for (const auto& group : kin_info_msg.group_joint_states)
   {
     for (const auto& state : group.joint_states)
     {
@@ -1915,26 +1956,26 @@ bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract
       for (const auto& js : state.joint_state)
         joint_state[js.first] = js.second;
 
-      manager.addGroupJointState(group.name, state.name, joint_state);
+      kin_info.group_states[group.name][state.name] = joint_state;
     }
   }
 
-  for (const auto& group : kin_info.group_tcps)
+  for (const auto& group : kin_info_msg.group_tcps)
   {
     for (const auto& pose : group.tcps)
     {
       Eigen::Isometry3d tcp{ Eigen::Isometry3d::Identity() };
       fromMsg(tcp, pose.tcp);
 
-      manager.addGroupTCP(group.name, pose.name, tcp);
+      kin_info.group_tcps[group.name][pose.name] = tcp;
     }
   }
 
-  for (const auto& d : kin_info.default_fwd_kin)
-    manager.setDefaultFwdKinematicSolver(d.first, d.second);
+  for (const auto& d : kin_info_msg.default_fwd_kin)
+    kin_info.group_default_fwd_kin[d.first] = d.second;
 
-  for (const auto& d : kin_info.default_inv_kin)
-    manager.setDefaultInvKinematicSolver(d.first, d.second);
+  for (const auto& d : kin_info_msg.default_inv_kin)
+    kin_info.group_default_inv_kin[d.first] = d.second;
 
   return true;
 }
@@ -1999,12 +2040,6 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
 bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract& tesseract)
 {
   if (!tesseract_rosutils::toMsg(tesseract_msg.command_history, tesseract.getEnvironment()->getCommandHistory(), 0))
-  {
-    return false;
-  }
-
-  auto manipulator_manager = tesseract.getEnvironment()->getManipulatorManager();
-  if (!tesseract_rosutils::toMsg(tesseract_msg.kinematics_information, *manipulator_manager))
   {
     return false;
   }

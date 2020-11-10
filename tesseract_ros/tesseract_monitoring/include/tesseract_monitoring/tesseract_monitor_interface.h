@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/commands.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract/tesseract.h>
-#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/constants.h>
 
@@ -150,8 +149,7 @@ public:
   static tesseract::Tesseract::Ptr getTesseract(const std::string& monitor_namespace)
   {
     tesseract_msgs::GetEnvironmentInformation res;
-    res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY |
-                        tesseract_msgs::GetEnvironmentInformationRequest::KINEMATICS_INFORMATION;
+    res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
 
     bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
     if (!status || !res.response.success)
@@ -175,17 +173,6 @@ public:
     if (!env->init<S>(commands))
     {
       ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize environment!");
-      return nullptr;
-    }
-
-    auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
-    auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    manip_manager->init(env->getSceneGraph(), srdf);
-
-    if (!tesseract_rosutils::fromMsg(*manip_manager, res.response.kinematics_information))
-    {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace,
-                             "getTesseract: Failed to populate manipulator manager from kinematics information!");
       return nullptr;
     }
 

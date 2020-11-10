@@ -52,7 +52,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 
 namespace tesseract_monitoring
 {
