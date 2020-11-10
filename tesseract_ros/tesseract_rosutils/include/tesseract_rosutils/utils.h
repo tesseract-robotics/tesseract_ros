@@ -74,12 +74,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
-#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
+#include <tesseract_environment/core/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_scene_graph/srdf/types.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/types.h>
@@ -323,15 +322,17 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
  * @param manager The Manipulator manager to convert to message
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info, const tesseract_environment::ManipulatorManager& manager);
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
+           const tesseract_scene_graph::KinematicsInformation& kin_info);
 
 /**
- * @brief This will populate the manipulator manager with data from the kinematics information
- * @param manager The manipulator manager
- * @param kin_info The kinematics information message
+ * @brief This will populate the kinematics information from the kinematics information message
+ * @param kin_info The kinematics information data structure to populate
+ * @param kin_info_msg The kinematics information message
  * @return True if successful, otherwise false
  */
-bool fromMsg(tesseract_environment::ManipulatorManager& manager, const tesseract_msgs::KinematicsInformation& kin_info);
+bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
+             const tesseract_msgs::KinematicsInformation& kin_info_msg);
 
 /**
  * @brief This will populate a transfrom map message
