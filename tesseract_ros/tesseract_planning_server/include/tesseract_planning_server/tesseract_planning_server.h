@@ -44,6 +44,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
+#include <tesseract_process_managers/process_managers/raster_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_global_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_global_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
+#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+
 namespace tesseract_planning_server
 {
 class TesseractPlanningServer
@@ -145,6 +154,46 @@ protected:
   void loadDefaultPlannerProfiles();
 
   Eigen::Isometry3d tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info);
+
+  tesseract_planning::SimpleProcessManager::Ptr
+  createTrajOptProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::SimpleProcessManager::Ptr
+  createDescartesProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::SimpleProcessManager::Ptr
+  createOMPLProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::SimpleProcessManager::Ptr
+  createCartesianProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::SimpleProcessManager::Ptr
+  createFreespaceProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+
+  tesseract_planning::RasterProcessManager::Ptr
+  createRasterProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterOnlyProcessManager::Ptr
+  createRasterOnlyProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterGlobalProcessManager::Ptr
+  createRasterGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterDTProcessManager::Ptr
+  createRasterDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterWAADProcessManager::Ptr
+  createRasterWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterWAADDTProcessManager::Ptr
+  createRasterWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
+  createRasterOnlyGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterProcessManager::Ptr
+  createRasterCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterOnlyProcessManager::Ptr
+  createRasterOnlyCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterDTProcessManager::Ptr
+  createRasterCTDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterWAADProcessManager::Ptr
+  createRasterCTWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterWAADDTProcessManager::Ptr
+  createRasterCTWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterGlobalProcessManager::Ptr
+  createRasterGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
+  createRasterOnlyGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
 };
 }  // namespace tesseract_planning_server
 #endif  // TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
