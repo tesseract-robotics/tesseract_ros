@@ -178,7 +178,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     seed = tesseract_planning::fromXMLString(goal->request.seed);
 
   tesseract_planning::GraphTaskflow::UPtr task = nullptr;
-  if (goal->request.name == goal->TRAJOPT_PLANNER_NAME)
+  if (goal->request.name == goal->request.TRAJOPT_PLANNER_NAME)
   {
     tesseract_planning::TrajOptTaskflowParams params;
     params.enable_simple_planner = goal->request.seed.empty();
@@ -188,7 +188,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     params.trajopt_composite_profiles = trajopt_composite_profiles_;
     task = tesseract_planning::createTrajOptTaskflow(params);
   }
-  else if (goal->request.name == goal->OMPL_PLANNER_NAME)
+  else if (goal->request.name == goal->request.OMPL_PLANNER_NAME)
   {
     tesseract_planning::OMPLTaskflowParams params;
     params.enable_simple_planner = goal->request.seed.empty();
@@ -197,7 +197,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     params.ompl_plan_profiles = ompl_plan_profiles_;
     task = tesseract_planning::createOMPLTaskflow(params);
   }
-  else if (goal->request.name == goal->DESCARTES_PLANNER_NAME)
+  else if (goal->request.name == goal->request.DESCARTES_PLANNER_NAME)
   {
     tesseract_planning::DescartesTaskflowParams params;
     params.enable_simple_planner = goal->request.seed.empty();
@@ -206,7 +206,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     params.descartes_plan_profiles = descartes_plan_profiles_;
     task = tesseract_planning::createDescartesTaskflow(params);
   }
-  else if (goal->request.name == goal->CARTESIAN_PLANNER_NAME)
+  else if (goal->request.name == goal->request.CARTESIAN_PLANNER_NAME)
   {
     tesseract_planning::CartesianTaskflowParams params;
     params.enable_simple_planner = goal->request.seed.empty();
@@ -217,7 +217,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     params.trajopt_composite_profiles = trajopt_composite_profiles_;
     task = tesseract_planning::createCartesianTaskflow(params);
   }
-  else if (goal->request.name == goal->FREESPACE_PLANNER_NAME)
+  else if (goal->request.name == goal->request.FREESPACE_PLANNER_NAME)
   {
     tesseract_planning::FreespaceTaskflowParams params;
     params.enable_simple_planner = goal->request.seed.empty();
@@ -310,70 +310,70 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     gtcparams.trajopt_composite_profiles = trajopt_composite_profiles_;
     gtasktc = tesseract_planning::createTrajOptTaskflow(gtcparams);
 
-    if (goal->request.name == goal->RASTER_FT_PLANNER_NAME)
+    if (goal->request.name == goal->request.RASTER_FT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_O_FT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_O_FT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ftask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_G_FT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_G_FT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
           std::move(gtask), std::move(gtaskf), std::move(gtasktf), std::move(gtaskc), nt);
     }
-    else if (goal->request.name == goal->RASTER_FT_DT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_FT_DT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterDTProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_FT_WAAD_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_FT_WAAD_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterWAADProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_FT_WAAD_DT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_FT_WAAD_DT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
           std::move(task), std::move(ftask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_O_G_FT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_O_G_FT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
           std::move(gtask), std::move(gtasktf), std::move(gtaskc), nt);
     }
-    else if (goal->request.name == goal->RASTER_CT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_CT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_O_CT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_O_CT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_CT_DT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_CT_DT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterDTProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_CT_WAAD_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_CT_WAAD_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterWAADProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_CT_WAAD_DT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_CT_WAAD_DT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
           std::move(task), std::move(ctask1), std::move(task2), nt);
     }
-    else if (goal->request.name == goal->RASTER_G_CT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_G_CT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
           std::move(gtask), std::move(gtaskf), std::move(gtasktc), std::move(gtaskc), nt);
     }
-    else if (goal->request.name == goal->RASTER_O_G_CT_PLANNER_NAME)
+    else if (goal->request.name == goal->request.RASTER_O_G_CT_PLANNER_NAME)
     {
       pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
           std::move(gtask), std::move(gtasktc), std::move(gtaskc), nt);
