@@ -64,23 +64,35 @@ bool ROSPlotting::isConnected() const { return true; }
 
 void ROSPlotting::waitForConnection(long seconds) const
 {
-  if (seconds == 0)
-    seconds = std::numeric_limits<long>::max();
-
-  for (int i = 0; i < seconds; ++i)
+  const ros::WallTime start_time = ros::WallTime::now();
+  const ros::WallDuration wall_timeout{ static_cast<double>(seconds) };
+  while (ros::ok())
   {
-    if (!isConnected())
-      sleep(1);
-    else
-      break;
+    if (isConnected())
+      return;
+
+    if (wall_timeout >= ros::WallDuration(0))
+    {
+      const ros::WallTime current_time = ros::WallTime::now();
+      if ((current_time - start_time) >= wall_timeout)
+        return;
+    }
+
+    ros::WallDuration(0.02).sleep();
   }
+
+  return;
 }
 
 void ROSPlotting::plotEnvironment(tesseract_environment::Environment::ConstPtr /*env*/) {}
 
 void ROSPlotting::plotEnvironmentState(tesseract_environment::EnvState::ConstPtr /*state*/) {}
 
-void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj) { trajectory_pub_.publish(traj); }
+void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj)
+{
+  trajectory_pub_.publish(traj);
+  ros::spinOnce();
+}
 
 void ROSPlotting::plotTrajectory(const std::vector<std::string>& joint_names,
                                  const Eigen::Ref<const tesseract_common::TrajArray>& traj)
@@ -300,6 +312,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
   }
 
   tool_path_pub_.publish(tool_path);
+  ros::spinOnce();
 }
 
 void ROSPlotting::plotContactResults(const std::vector<std::string>& link_names,
@@ -311,6 +324,7 @@ void ROSPlotting::plotContactResults(const std::vector<std::string>& link_names,
   if (!dist_results.empty())
   {
     collisions_pub_.publish(msg);
+    ros::spinOnce();
   }
 }
 
@@ -324,6 +338,7 @@ void ROSPlotting::plotArrow(const Eigen::Ref<const Eigen::Vector3d>& pt1,
       getMarkerArrowMsg(marker_counter_, root_link_, topic_namespace_, ros::Time::now(), pt1, pt2, rgba, scale);
   msg.markers.push_back(marker);
   arrows_pub_.publish(msg);
+  ros::spinOnce();
 }
 
 void ROSPlotting::plotAxis(const Eigen::Isometry3d& axis, double scale)
@@ -383,6 +398,7 @@ void ROSPlotting::clear()
   collisions_pub_.publish(msg);
   arrows_pub_.publish(msg);
   axes_pub_.publish(msg);
+  ros::spinOnce();
 }
 
 void ROSPlotting::waitForInput()
