@@ -110,6 +110,33 @@ EnvironmentMonitor::~EnvironmentMonitor()
   shutdown();
 }
 
+bool EnvironmentMonitor::waitForConnection(ros::Duration timeout) const
+{
+  const ros::WallTime start_time = ros::WallTime::now();
+  const ros::WallDuration wall_timeout{ timeout.toSec() };
+  bool is_connected{ false };
+  while (ros::ok())
+  {
+    {
+      auto lock = std::shared_lock(scene_update_mutex_);
+      is_connected = tesseract_->isInitialized();
+    }
+    if (is_connected)
+      return true;
+
+    if (wall_timeout >= ros::WallDuration(0))
+    {
+      const ros::WallTime current_time = ros::WallTime::now();
+      if ((current_time - start_time) >= wall_timeout)
+        return false;
+    }
+
+    ros::WallDuration(0.02).sleep();
+  }
+
+  return false;
+}
+
 void EnvironmentMonitor::shutdown()
 {
   monitored_environment_subscriber_.shutdown();
