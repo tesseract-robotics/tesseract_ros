@@ -37,15 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
-#include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_global_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_only_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_only_global_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
-
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
 #include <tesseract_process_managers/taskflows/descartes_taskflow.h>
 #include <tesseract_process_managers/taskflows/ompl_taskflow.h>
 #include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
@@ -177,218 +168,57 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   if (!goal->request.seed.empty())
     seed = tesseract_planning::fromXMLString(goal->request.seed);
 
-  tesseract_planning::GraphTaskflow::UPtr task = nullptr;
-  if (goal->request.name == goal->request.TRAJOPT_PLANNER_NAME)
-  {
-    tesseract_planning::TrajOptTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    task = tesseract_planning::createTrajOptTaskflow(params);
-  }
-  else if (goal->request.name == goal->request.OMPL_PLANNER_NAME)
-  {
-    tesseract_planning::OMPLTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.ompl_plan_profiles = ompl_plan_profiles_;
-    task = tesseract_planning::createOMPLTaskflow(params);
-  }
-  else if (goal->request.name == goal->request.DESCARTES_PLANNER_NAME)
-  {
-    tesseract_planning::DescartesTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.descartes_plan_profiles = descartes_plan_profiles_;
-    task = tesseract_planning::createDescartesTaskflow(params);
-  }
-  else if (goal->request.name == goal->request.CARTESIAN_PLANNER_NAME)
-  {
-    tesseract_planning::CartesianTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.descartes_plan_profiles = descartes_plan_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    task = tesseract_planning::createCartesianTaskflow(params);
-  }
-  else if (goal->request.name == goal->request.FREESPACE_PLANNER_NAME)
-  {
-    tesseract_planning::FreespaceTaskflowParams params;
-    params.enable_simple_planner = goal->request.seed.empty();
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.ompl_plan_profiles = ompl_plan_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    task = tesseract_planning::createFreespaceTaskflow(params);
-  }
-
   tesseract_msgs::GetMotionPlanResult result;
-  tesseract_planning::ManipulatorInfo mi = composite_program->getManipulatorInfo();
-  std::size_t nt = std::thread::hardware_concurrency();
-  if (goal->request.num_threads != 0)
-    nt = goal->request.num_threads;
-
   tesseract_planning::ProcessManager::Ptr pm;
-  if (task != nullptr)
-  {
-    pm = std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
-  }
+  if (goal->request.name == goal->request.TRAJOPT_PLANNER_NAME)
+    pm = createTrajOptProcessManager(goal);
+  else if (goal->request.name == goal->request.OMPL_PLANNER_NAME)
+    pm = createOMPLProcessManager(goal);
+  else if (goal->request.name == goal->request.DESCARTES_PLANNER_NAME)
+    pm = createDescartesProcessManager(goal);
+  else if (goal->request.name == goal->request.CARTESIAN_PLANNER_NAME)
+    pm = createCartesianProcessManager(goal);
+  else if (goal->request.name == goal->request.FREESPACE_PLANNER_NAME)
+    pm = createFreespaceProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_FT_PLANNER_NAME)
+    pm = createRasterProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_O_FT_PLANNER_NAME)
+    pm = createRasterOnlyProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_G_FT_PLANNER_NAME)
+    pm = createRasterGlobalProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_FT_DT_PLANNER_NAME)
+    pm = createRasterDTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_FT_WAAD_PLANNER_NAME)
+    pm = createRasterWAADProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_FT_WAAD_DT_PLANNER_NAME)
+    pm = createRasterWAADDTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_O_G_FT_PLANNER_NAME)
+    pm = createRasterOnlyGlobalProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_CT_PLANNER_NAME)
+    pm = createRasterDTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_O_CT_PLANNER_NAME)
+    pm = createRasterOnlyCTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_CT_DT_PLANNER_NAME)
+    pm = createRasterCTDTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_CT_WAAD_PLANNER_NAME)
+    pm = createRasterCTWAADProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_CT_WAAD_DT_PLANNER_NAME)
+    pm = createRasterCTWAADDTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_G_CT_PLANNER_NAME)
+    pm = createRasterGlobalCTProcessManager(goal);
+  else if (goal->request.name == goal->request.RASTER_O_G_CT_PLANNER_NAME)
+    pm = createRasterOnlyGlobalCTProcessManager(goal);
   else
   {
-    tesseract_planning::GraphTaskflow::UPtr gtask = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr gtaskf = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr gtaskc = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr gtasktf = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr gtasktc = nullptr;
-
-    tesseract_planning::GraphTaskflow::UPtr ctask1 = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr ftask1 = nullptr;
-    tesseract_planning::GraphTaskflow::UPtr task2 = nullptr;
-
-    tesseract_planning::FreespaceTaskflowParams fparams;
-    fparams.enable_simple_planner = goal->request.seed.empty();
-    fparams.simple_plan_profiles = simple_plan_profiles_;
-    fparams.simple_composite_profiles = simple_composite_profiles_;
-    fparams.ompl_plan_profiles = ompl_plan_profiles_;
-    fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-    fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-
-    tesseract_planning::CartesianTaskflowParams cparams;
-    cparams.enable_simple_planner = goal->request.seed.empty();
-    cparams.simple_plan_profiles = simple_plan_profiles_;
-    cparams.simple_composite_profiles = simple_composite_profiles_;
-    cparams.descartes_plan_profiles = descartes_plan_profiles_;
-    cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-    cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-
-    task = tesseract_planning::createFreespaceTaskflow(fparams);
-    ftask1 = tesseract_planning::createFreespaceTaskflow(fparams);
-    ctask1 = tesseract_planning::createCartesianTaskflow(cparams);
-    task2 = tesseract_planning::createCartesianTaskflow(cparams);
-
-    tesseract_planning::DescartesTaskflowParams gdparams;
-    gdparams.enable_simple_planner = goal->request.seed.empty();
-    gdparams.enable_post_contact_discrete_check = false;
-    gdparams.enable_post_contact_continuous_check = false;
-    gdparams.enable_time_parameterization = false;
-    gdparams.simple_plan_profiles = simple_plan_profiles_;
-    gdparams.simple_composite_profiles = simple_composite_profiles_;
-    gdparams.descartes_plan_profiles = descartes_plan_profiles_;
-    gtask = tesseract_planning::createDescartesTaskflow(gdparams);
-
-    tesseract_planning::FreespaceTaskflowParams gfparams;
-    gfparams.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
-    gfparams.enable_simple_planner = false;
-    gfparams.simple_plan_profiles = simple_plan_profiles_;
-    gfparams.simple_composite_profiles = simple_composite_profiles_;
-    gfparams.ompl_plan_profiles = ompl_plan_profiles_;
-    gfparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-    gfparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-    gtaskf = tesseract_planning::createFreespaceTaskflow(gfparams);
-    gtasktf = tesseract_planning::createFreespaceTaskflow(gfparams);
-
-    tesseract_planning::TrajOptTaskflowParams gcparams;
-    gcparams.enable_simple_planner = false;
-    gcparams.simple_plan_profiles = simple_plan_profiles_;
-    gcparams.simple_composite_profiles = simple_composite_profiles_;
-    gcparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-    gcparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-    gtaskc = tesseract_planning::createTrajOptTaskflow(gcparams);
-
-    tesseract_planning::TrajOptTaskflowParams gtcparams;
-    gtcparams.enable_simple_planner = false;
-    gtcparams.simple_plan_profiles = simple_plan_profiles_;
-    gtcparams.simple_composite_profiles = simple_composite_profiles_;
-    gtcparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-    gtcparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-    gtasktc = tesseract_planning::createTrajOptTaskflow(gtcparams);
-
-    if (goal->request.name == goal->request.RASTER_FT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterProcessManager>(
-          std::move(task), std::move(ftask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_O_FT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ftask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_G_FT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
-          std::move(gtask), std::move(gtaskf), std::move(gtasktf), std::move(gtaskc), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_FT_DT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterDTProcessManager>(
-          std::move(task), std::move(ftask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_FT_WAAD_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterWAADProcessManager>(
-          std::move(task), std::move(ftask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_FT_WAAD_DT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
-          std::move(task), std::move(ftask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_O_G_FT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
-          std::move(gtask), std::move(gtasktf), std::move(gtaskc), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_CT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterProcessManager>(
-          std::move(task), std::move(ctask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_O_CT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterOnlyProcessManager>(std::move(ctask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_CT_DT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterDTProcessManager>(
-          std::move(task), std::move(ctask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_CT_WAAD_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterWAADProcessManager>(
-          std::move(task), std::move(ctask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_CT_WAAD_DT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
-          std::move(task), std::move(ctask1), std::move(task2), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_G_CT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
-          std::move(gtask), std::move(gtaskf), std::move(gtasktc), std::move(gtaskc), nt);
-    }
-    else if (goal->request.name == goal->request.RASTER_O_G_CT_PLANNER_NAME)
-    {
-      pm = std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
-          std::move(gtask), std::move(gtasktc), std::move(gtaskc), nt);
-    }
-    else
-    {
-      result.response.successful = false;
-      ROS_ERROR("Requested motion planner is not supported!");
-      motion_plan_server_.setSucceeded(result);
-      return;
-    }
+    result.response.successful = false;
+    ROS_ERROR("Requested motion planner is not supported!");
+    motion_plan_server_.setSucceeded(result);
+    return;
   }
 
   assert(pm != nullptr);
   tesseract::Tesseract::Ptr tc = getCachedTesseract();
+  tesseract_planning::ManipulatorInfo mi = composite_program->getManipulatorInfo();
   if (!goal->request.commands.empty() && !processMsg(*(tc->getEnvironment()), goal->request.commands))
   {
     result.response.successful = false;
@@ -437,6 +267,567 @@ Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::M
 
   auto tcp_msg = tf_buffer_->lookupTransform(tip_link, tcp_name, ros::Time(0), ros::Duration(2));
   return tf2::transformToEigen(tcp_msg.transform);
+}
+
+tesseract_planning::SimpleProcessManager::Ptr
+TesseractPlanningServer::createTrajOptProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::TrajOptTaskflowParams params;
+  params.enable_simple_planner = goal->request.seed.empty();
+  params.simple_plan_profiles = simple_plan_profiles_;
+  params.simple_composite_profiles = simple_composite_profiles_;
+  params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr task = tesseract_planning::createTrajOptTaskflow(params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
+}
+
+tesseract_planning::SimpleProcessManager::Ptr
+TesseractPlanningServer::createDescartesProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::DescartesTaskflowParams params;
+  params.enable_simple_planner = goal->request.seed.empty();
+  params.simple_plan_profiles = simple_plan_profiles_;
+  params.simple_composite_profiles = simple_composite_profiles_;
+  params.descartes_plan_profiles = descartes_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr task = tesseract_planning::createDescartesTaskflow(params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
+}
+
+tesseract_planning::SimpleProcessManager::Ptr
+TesseractPlanningServer::createOMPLProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::OMPLTaskflowParams params;
+  params.enable_simple_planner = goal->request.seed.empty();
+  params.simple_plan_profiles = simple_plan_profiles_;
+  params.simple_composite_profiles = simple_composite_profiles_;
+  params.ompl_plan_profiles = ompl_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr task = tesseract_planning::createOMPLTaskflow(params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
+}
+
+tesseract_planning::SimpleProcessManager::Ptr
+TesseractPlanningServer::createCartesianProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::CartesianTaskflowParams params;
+  params.enable_simple_planner = goal->request.seed.empty();
+  params.simple_plan_profiles = simple_plan_profiles_;
+  params.simple_composite_profiles = simple_composite_profiles_;
+  params.descartes_plan_profiles = descartes_plan_profiles_;
+  params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr task = tesseract_planning::createCartesianTaskflow(params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
+}
+
+tesseract_planning::SimpleProcessManager::Ptr
+TesseractPlanningServer::createFreespaceProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::FreespaceTaskflowParams params;
+  params.enable_simple_planner = goal->request.seed.empty();
+  params.simple_plan_profiles = simple_plan_profiles_;
+  params.simple_composite_profiles = simple_composite_profiles_;
+  params.ompl_plan_profiles = ompl_plan_profiles_;
+  params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr task = tesseract_planning::createFreespaceTaskflow(params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::SimpleProcessManager>(std::move(task), nt);
+}
+
+tesseract_planning::RasterProcessManager::Ptr
+TesseractPlanningServer::createRasterProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = goal->request.seed.empty();
+  fparams.simple_plan_profiles = simple_plan_profiles_;
+  fparams.simple_composite_profiles = simple_composite_profiles_;
+  fparams.ompl_plan_profiles = ompl_plan_profiles_;
+  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task = tesseract_planning::createFreespaceTaskflow(fparams);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = goal->request.seed.empty();
+  cparams.simple_plan_profiles = simple_plan_profiles_;
+  cparams.simple_composite_profiles = simple_composite_profiles_;
+  cparams.descartes_plan_profiles = descartes_plan_profiles_;
+  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cparams);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterOnlyProcessManager::Ptr
+TesseractPlanningServer::createRasterOnlyProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams tparams;
+  tparams.enable_simple_planner = goal->request.seed.empty();
+  tparams.simple_plan_profiles = simple_plan_profiles_;
+  tparams.simple_composite_profiles = simple_composite_profiles_;
+  tparams.ompl_plan_profiles = ompl_plan_profiles_;
+  tparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  tparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createFreespaceTaskflow(tparams);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = goal->request.seed.empty();
+  cparams.simple_plan_profiles = simple_plan_profiles_;
+  cparams.simple_composite_profiles = simple_composite_profiles_;
+  cparams.descartes_plan_profiles = descartes_plan_profiles_;
+  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cparams);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterOnlyProcessManager>(
+      std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterGlobalProcessManager::Ptr
+TesseractPlanningServer::createRasterGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = goal->request.seed.empty();
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.simple_plan_profiles = simple_plan_profiles_;
+  global_params.simple_composite_profiles = simple_composite_profiles_;
+  global_params.descartes_plan_profiles = descartes_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr global_task = tesseract_planning::createDescartesTaskflow(global_params);
+
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  tesseract_planning::TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.simple_plan_profiles = simple_plan_profiles_;
+  raster_params.simple_composite_profiles = simple_composite_profiles_;
+  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
+      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterDTProcessManager::Ptr
+TesseractPlanningServer::createRasterDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = goal->request.seed.empty();
+  fparams.simple_plan_profiles = simple_plan_profiles_;
+  fparams.simple_composite_profiles = simple_composite_profiles_;
+  fparams.ompl_plan_profiles = ompl_plan_profiles_;
+  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task = tesseract_planning::createFreespaceTaskflow(fparams);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = goal->request.seed.empty();
+  cparams.simple_plan_profiles = simple_plan_profiles_;
+  cparams.simple_composite_profiles = simple_composite_profiles_;
+  cparams.descartes_plan_profiles = descartes_plan_profiles_;
+  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cparams);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterDTProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterWAADProcessManager::Ptr
+TesseractPlanningServer::createRasterWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = goal->request.seed.empty();
+  fparams.simple_plan_profiles = simple_plan_profiles_;
+  fparams.simple_composite_profiles = simple_composite_profiles_;
+  fparams.ompl_plan_profiles = ompl_plan_profiles_;
+  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task = tesseract_planning::createFreespaceTaskflow(fparams);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = goal->request.seed.empty();
+  cparams.simple_plan_profiles = simple_plan_profiles_;
+  cparams.simple_composite_profiles = simple_composite_profiles_;
+  cparams.descartes_plan_profiles = descartes_plan_profiles_;
+  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cparams);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterWAADProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterWAADDTProcessManager::Ptr
+TesseractPlanningServer::createRasterWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = goal->request.seed.empty();
+  fparams.simple_plan_profiles = simple_plan_profiles_;
+  fparams.simple_composite_profiles = simple_composite_profiles_;
+  fparams.ompl_plan_profiles = ompl_plan_profiles_;
+  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task = tesseract_planning::createFreespaceTaskflow(fparams);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = goal->request.seed.empty();
+  cparams.simple_plan_profiles = simple_plan_profiles_;
+  cparams.simple_composite_profiles = simple_composite_profiles_;
+  cparams.descartes_plan_profiles = descartes_plan_profiles_;
+  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cparams);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
+TesseractPlanningServer::createRasterOnlyGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = goal->request.seed.empty();
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.simple_plan_profiles = simple_plan_profiles_;
+  global_params.simple_composite_profiles = simple_composite_profiles_;
+  global_params.descartes_plan_profiles = descartes_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr global_task = tesseract_planning::createDescartesTaskflow(global_params);
+
+  tesseract_planning::FreespaceTaskflowParams transition_params;
+  transition_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  transition_params.enable_simple_planner = false;
+  transition_params.simple_plan_profiles = simple_plan_profiles_;
+  transition_params.simple_composite_profiles = simple_composite_profiles_;
+  transition_params.ompl_plan_profiles = ompl_plan_profiles_;
+  transition_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  transition_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createFreespaceTaskflow(transition_params);
+
+  tesseract_planning::TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.simple_plan_profiles = simple_plan_profiles_;
+  raster_params.simple_composite_profiles = simple_composite_profiles_;
+  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
+      std::move(global_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterProcessManager::Ptr
+TesseractPlanningServer::createRasterCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = goal->request.seed.empty();
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = goal->request.seed.empty();
+  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
+  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
+  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
+  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cartesian_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createCartesianTaskflow(cartesian_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterOnlyProcessManager::Ptr
+TesseractPlanningServer::createRasterOnlyCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Transition and Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = goal->request.seed.empty();
+  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
+  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
+  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
+  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cartesian_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createCartesianTaskflow(cartesian_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterOnlyProcessManager>(
+      std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterDTProcessManager::Ptr
+TesseractPlanningServer::createRasterCTDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = goal->request.seed.empty();
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = goal->request.seed.empty();
+  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
+  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
+  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
+  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cartesian_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createCartesianTaskflow(cartesian_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterDTProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterWAADProcessManager::Ptr
+TesseractPlanningServer::createRasterCTWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = goal->request.seed.empty();
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = goal->request.seed.empty();
+  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
+  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
+  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
+  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cartesian_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createCartesianTaskflow(cartesian_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterWAADProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterWAADDTProcessManager::Ptr
+TesseractPlanningServer::createRasterCTWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  // Create Freespace and Transition Taskflows
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = goal->request.seed.empty();
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  tesseract_planning::CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = goal->request.seed.empty();
+  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
+  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
+  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
+  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createCartesianTaskflow(cartesian_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task =
+      tesseract_planning::createCartesianTaskflow(cartesian_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterWAADDTProcessManager>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterGlobalProcessManager::Ptr
+TesseractPlanningServer::createRasterGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = goal->request.seed.empty();
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.simple_plan_profiles = simple_plan_profiles_;
+  global_params.simple_composite_profiles = simple_composite_profiles_;
+  global_params.descartes_plan_profiles = descartes_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr global_task = tesseract_planning::createDescartesTaskflow(global_params);
+
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+  freespace_params.simple_plan_profiles = simple_plan_profiles_;
+  freespace_params.simple_composite_profiles = simple_composite_profiles_;
+  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
+  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr freespace_task =
+      tesseract_planning::createFreespaceTaskflow(freespace_params);
+
+  tesseract_planning::TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.simple_plan_profiles = simple_plan_profiles_;
+  raster_params.simple_composite_profiles = simple_composite_profiles_;
+  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterGlobalProcessManager>(
+      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task), nt);
+}
+
+tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
+TesseractPlanningServer::createRasterOnlyGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+{
+  tesseract_planning::DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = goal->request.seed.empty();
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.simple_plan_profiles = simple_plan_profiles_;
+  global_params.simple_composite_profiles = simple_composite_profiles_;
+  global_params.descartes_plan_profiles = descartes_plan_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr global_task = tesseract_planning::createDescartesTaskflow(global_params);
+
+  tesseract_planning::TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.simple_plan_profiles = simple_plan_profiles_;
+  raster_params.simple_composite_profiles = simple_composite_profiles_;
+  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
+  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
+  tesseract_planning::GraphTaskflow::UPtr raster_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+  tesseract_planning::GraphTaskflow::UPtr transition_task = tesseract_planning::createTrajOptTaskflow(raster_params);
+
+  std::size_t nt = std::thread::hardware_concurrency();
+  if (goal->request.num_threads != 0)
+    nt = goal->request.num_threads;
+
+  return std::make_shared<tesseract_planning::RasterOnlyGlobalProcessManager>(
+      std::move(global_task), std::move(transition_task), std::move(raster_task), nt);
 }
 
 }  // namespace tesseract_planning_server
