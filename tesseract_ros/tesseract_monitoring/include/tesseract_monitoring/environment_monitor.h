@@ -158,6 +158,13 @@ public:
   const std::string& getName() const;
 
   /**
+   * @brief Wait for connection to upstream environment
+   * @param timeout The duration to wait before returning, if not timeout is provided it waits indefinitely
+   * @return True if it has connected to upstream environment, otherwise false
+   */
+  bool waitForConnection(ros::Duration timeout = ros::Duration(-1)) const;
+
+  /**
    * @brief Apply provided command to the environment owned by this monitor
    *
    * @details This should only be used if this monitor is the master. If this is monitoring another environment the
@@ -338,10 +345,10 @@ protected:
   ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;
 
   tesseract::Tesseract::Ptr tesseract_;
-  std::shared_mutex scene_update_mutex_;  /// mutex for stored scene
-  ros::Time last_update_time_;            /// Last time the state was updated
-  ros::Time last_robot_motion_time_;      /// Last time the robot has moved
-  bool enforce_next_state_update_;        /// flag to enforce immediate state update in onStateUpdate()
+  mutable std::shared_mutex scene_update_mutex_;  /// mutex for stored scene
+  ros::Time last_update_time_;                    /// Last time the state was updated
+  ros::Time last_robot_motion_time_;              /// Last time the robot has moved
+  bool enforce_next_state_update_;                /// flag to enforce immediate state update in onStateUpdate()
 
   ros::NodeHandle nh_;
   ros::NodeHandle root_nh_;
