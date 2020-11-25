@@ -132,7 +132,7 @@ void TesseractPlanningServer::refreshCache()
   else if (cache_.size() <= 2)
   {
     for (std::size_t i = (cache_.size() - 1); i < cache_size_; ++i)
-      cache_.push_back(thor->clone());
+      cache_.push_back(cache_.front()->clone());
   }
 }
 
