@@ -79,6 +79,7 @@ void ROSPlotting::waitForConnection(long seconds) const
     }
 
     ros::WallDuration(0.02).sleep();
+    ros::spinOnce();
   }
 
   return;
