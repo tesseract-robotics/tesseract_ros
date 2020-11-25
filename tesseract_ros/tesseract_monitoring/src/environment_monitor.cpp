@@ -132,6 +132,7 @@ bool EnvironmentMonitor::waitForConnection(ros::Duration timeout) const
     }
 
     ros::WallDuration(0.02).sleep();
+    ros::spinOnce();
   }
 
   return false;
