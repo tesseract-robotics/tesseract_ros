@@ -270,45 +270,6 @@ inline bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesser
   return true;
 }
 
-inline bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/,
-                        const tesseract_scene_graph::Visual& /*visual2*/)
-{
-  assert(false);
-}
-
-inline bool isIdentical(const tesseract_scene_graph::Collision& /*collision1*/,
-                        const tesseract_scene_graph::Collision& /*collision2*/)
-{
-  assert(false);
-}
-
-inline bool isIdentical(const tesseract_scene_graph::Link& link1, const tesseract_scene_graph::Link& link2)
-{
-  if (link1.getName() != link2.getName())
-    return false;
-
-  if (link1.collision.size() != link2.collision.size())
-    return false;
-
-  for (unsigned i = 0; i < link1.collision.size(); ++i)
-  {
-    if (!isIdentical(*link1.collision[i], *link2.collision[i]))
-      return false;
-  }
-
-  // Check Visual
-  if (link1.visual.size() != link2.visual.size())
-    return false;
-
-  for (unsigned i = 0; i < link1.visual.size(); ++i)
-  {
-    if (!isIdentical(*link1.visual[i], *link2.visual[i]))
-      return false;
-  }
-
-  return true;
-}
-
 /** \brief Construct the message that corresponds to the shape. Return false on failure. */
 inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Geometry& geometry)
 {
