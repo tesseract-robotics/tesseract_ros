@@ -40,11 +40,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
+#include <tesseract_process_managers/core/process_planning_server.h>
+#include <tesseract_process_managers/core/default_process_planners.h>
+#include <tesseract_planning_server/tesseract_planning_server.h>
 
-using namespace trajopt;
 using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -120,8 +121,12 @@ bool BasicCartesianExample::run()
   using tesseract_planning::ManipulatorInfo;
   using tesseract_planning::PlanInstruction;
   using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::ProcessPlanningFuture;
+  using tesseract_planning::ProcessPlanningRequest;
+  using tesseract_planning::ProcessPlanningServer;
   using tesseract_planning::StateWaypoint;
   using tesseract_planning::Waypoint;
+  using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -145,6 +150,8 @@ bool BasicCartesianExample::run()
   // Create plotting tool
   ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
   plotter->init(tesseract_);
+  if (rviz_)
+    plotter->waitForConnection();
 
   // Set the robot initial state
   std::vector<std::string> joint_names;
@@ -198,38 +205,30 @@ bool BasicCartesianExample::run()
   program.push_back(plan_c0);
   program.push_back(plan_f1);
 
-  // Create Seed data structure
-  const Instruction program_instruction{ program };
-  Instruction seed = tesseract_planning::generateSkeletonSeed(program);
-
-  // Define the Process Input
-  tesseract_planning::ProcessInput input(tesseract_, &program_instruction, program.getManipulatorInfo(), &seed);
-
-  // Initialize Process Manager
   ROS_INFO("basic cartesian plan example");
-  tesseract_planning::TrajOptTaskflowParams params;
-  tesseract_planning::GraphTaskflow::UPtr trajopt_taskflow = tesseract_planning::createTrajOptTaskflow(params);
-  tesseract_planning::SimpleProcessManager pm(std::move(trajopt_taskflow));
 
-  if (!pm.init(input))
-  {
-    ROS_ERROR("Initialization Failed");
-    return false;
-  }
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
+  planning_server.loadDefaultProcessPlanners();
 
-  // Solve
-  if (!pm.execute())
-  {
-    ROS_ERROR("Execution Failed");
-    return false;
-  }
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  request.instructions = Instruction(program);
 
-  // Plot Trajectory
-  if (plotter)
+  // Print Diagnostics
+  request.instructions.print("Program: ");
+
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
+
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotToolPath(*(input.getResults()));
-    plotter->plotTrajectory(*(input.getResults()));
+    plotter->plotToolPath(*(response.results));
+    plotter->plotTrajectory(*(response.results));
   }
 
   ROS_INFO("Final trajectory is collision free");

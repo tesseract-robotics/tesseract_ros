@@ -44,12 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
-#include <tesseract_process_managers/taskflows/descartes_taskflow.h>
-#include <tesseract_process_managers/taskflows/ompl_taskflow.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
-#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/deserialize.h>
 #include <tesseract_command_language/serialize.h>
@@ -225,7 +219,6 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   process_request.env_state = env_state;
   process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
-  process_request.debug = goal->request.debug;
   process_request.profile = goal->request.profile;
   process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(goal->request.plan_profile_remapping);
   process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
@@ -233,7 +226,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   tesseract_planning::ProcessPlanningFuture plan_future = planning_server_->run(process_request);
   plan_future.wait();  // Wait for results
 
-  result.response.successful = *(plan_future.success);
+  result.response.successful = plan_future.interface->isSuccessful();
   result.response.results = tesseract_planning::toXMLString(*(plan_future.results));
   plan_future.clear();
 
