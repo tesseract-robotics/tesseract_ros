@@ -35,10 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>
+#include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
+#include <tesseract_motion_planners/core/profile_dictionary.h>
 
 using namespace tesseract;
 using namespace tesseract_environment;
@@ -99,8 +100,12 @@ bool FreespaceHybridExample::run()
   using tesseract_planning::ManipulatorInfo;
   using tesseract_planning::PlanInstruction;
   using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::ProcessPlanningFuture;
+  using tesseract_planning::ProcessPlanningRequest;
+  using tesseract_planning::ProcessPlanningServer;
   using tesseract_planning::StateWaypoint;
   using tesseract_planning::Waypoint;
+  using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -125,6 +130,8 @@ bool FreespaceHybridExample::run()
   ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
   plotter->init(tesseract_);
+  if (rviz_)
+    plotter->waitForConnection();
 
   // Set the robot initial state
   std::vector<std::string> joint_names;
@@ -173,12 +180,11 @@ bool FreespaceHybridExample::run()
   // Add Instructions to program
   program.push_back(plan_f0);
 
-  // Create seed data structure
-  const Instruction program_instruction{ program };
-  Instruction seed = tesseract_planning::generateSkeletonSeed(program);
+  ROS_INFO("freespace hybrid plan example");
 
-  // Define the Process Input
-  tesseract_planning::ProcessInput input(tesseract_, &program_instruction, program.getManipulatorInfo(), &seed);
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create OMPL Profile
   auto ompl_profile = std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>();
@@ -187,32 +193,27 @@ bool FreespaceHybridExample::run()
   ompl_profile->planning_time = planning_time_;
   ompl_profile->planners = { ompl_planner_config, ompl_planner_config };
 
-  // Initialize Process Manager
-  ROS_INFO("Freespace plan example");
-  tesseract_planning::FreespaceTaskflowParams params;
-  params.ompl_plan_profiles["FREESPACE"] = ompl_profile;
-  tesseract_planning::GraphTaskflow::UPtr ompl_taskflow = tesseract_planning::createFreespaceTaskflow(params);
-  tesseract_planning::SimpleProcessManager pm(std::move(ompl_taskflow));
+  // Add profile to Dictionary
+  planning_server.getProfiles()->addProfile<tesseract_planning::OMPLPlanProfile>("FREESPACE", ompl_profile);
 
-  if (!pm.init(input))
-  {
-    ROS_ERROR("Initialization Failed");
-    return false;
-  }
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = tesseract_planning::process_planner_names::FREESPACE_PLANNER_NAME;
+  request.instructions = Instruction(program);
 
-  // Solve
-  if (!pm.execute())
-  {
-    ROS_ERROR("Execution Failed");
-    return false;
-  }
+  // Print Diagnostics
+  request.instructions.print("Program: ");
 
-  // Plot Trajectory
-  if (plotter)
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
+
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotToolPath(*(input.getResults()));
-    plotter->plotTrajectory(*(input.getResults()));
+    plotter->plotToolPath(*(response.results));
+    plotter->plotTrajectory(*(response.results));
   }
 
   ROS_INFO("Final trajectory is collision free");

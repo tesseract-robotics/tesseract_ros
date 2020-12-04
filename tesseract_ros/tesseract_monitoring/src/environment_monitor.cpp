@@ -511,10 +511,10 @@ void EnvironmentMonitor::newTesseractStateCallback(const tesseract_msgs::Tessera
       {
         commands = tesseract_rosutils::fromMsg(res.response.command_history);
       }
-      catch (...)
+      catch (const std::exception& e)
       {
-        ROS_ERROR_STREAM_NAMED(monitor_namespace_,
-                               "newTesseractStateCallback: Failed to convert command history message!");
+        ROS_ERROR_NAMED(
+            monitor_namespace_, "newTesseractStateCallback: Failed to convert command history message, %s!", e.what());
         return;
       }
 
