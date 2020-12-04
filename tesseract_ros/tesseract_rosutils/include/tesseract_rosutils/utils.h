@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/AllowedCollisionEntry.h>
 #include <tesseract_msgs/ChainGroup.h>
 #include <tesseract_msgs/CollisionGeometry.h>
+#include <tesseract_msgs/ContactMarginPair.h>
 #include <tesseract_msgs/ContactResultVector.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
 #include <tesseract_msgs/Geometry.h>
@@ -63,6 +64,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/ProcessPlan.h>
+#include <tesseract_msgs/PlannerProfileRemapping.h>
 
 #include <trajectory_msgs/JointTrajectory.h>
 
@@ -82,6 +84,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/types.h>
+#include <tesseract_motion_planners/core/types.h>
 
 namespace tesseract_rosutils
 {
@@ -158,6 +161,16 @@ bool fromMsg(tesseract_scene_graph::JointSafety::Ptr& joint_safety,
              const tesseract_msgs::JointSafety& joint_safety_msg);
 
 bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene_graph::Joint& joint);
+
+tesseract_planning::PlannerProfileRemapping
+fromMsg(const tesseract_msgs::PlannerProfileRemapping& profile_remapping_msg);
+tesseract_msgs::PlannerProfileRemapping toMsg(const tesseract_planning::PlannerProfileRemapping& profile_remapping);
+
+std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>
+fromMsg(const std::vector<tesseract_msgs::ContactMarginPair>& contact_margin_pairs_msg);
+std::vector<tesseract_msgs::ContactMarginPair>
+toMsg(const std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>&
+          contact_margin_pairs);
 
 tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg);
 
