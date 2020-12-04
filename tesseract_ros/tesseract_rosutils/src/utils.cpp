@@ -1424,9 +1424,22 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
 
       return std::make_shared<tesseract_environment::AddKinematicsInformationCommand>(kin_info);
     }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_DEFAULT_CONTACT_MARGIN:
+    {
+      return std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(
+          command_msg.default_contact_margin);
+    }
+    case tesseract_msgs::EnvironmentCommand::CHANGE_PAIR_CONTACT_MARGIN:
+    {
+      std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> pair_map;
+      for (const auto& pair_msg : command_msg.contact_margin_pairs)
+        pair_map[tesseract_common::LinkNamesPair(pair_msg.first.first, pair_msg.first.second)] = pair_msg.second;
+
+      return std::make_shared<tesseract_environment::ChangePairContactMarginCommand>(pair_map);
+    }
     default:
     {
-      throw std::runtime_error("Unsupported command type!");
+      throw std::runtime_error("Unsupported command type " + std::to_string(command_msg.command));
     }
   }
 }
@@ -2162,9 +2175,9 @@ tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg
   {
     commands = tesseract_rosutils::fromMsg(tesseract_msg.command_history);
   }
-  catch (...)
+  catch (const std::exception& e)
   {
-    ROS_ERROR_STREAM("Failed to convert command history message!");
+    ROS_ERROR("Failed to convert command history message: %s!", e.what());
     return nullptr;
   }
 

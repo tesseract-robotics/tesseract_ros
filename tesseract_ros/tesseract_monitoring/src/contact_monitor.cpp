@@ -71,7 +71,7 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
     return;
   }
   manager_->setActiveCollisionObjects(monitored_link_names);
-  manager_->setContactDistanceThreshold(contact_distance);
+  manager_->setDefaultCollisionMarginData(contact_distance);
 
   joint_states_sub_ = nh_.subscribe(joint_state_topic, 1, &ContactMonitor::callbackJointState, this);
   std::string contact_results_topic = R"(/)" + monitor_namespace_ + DEFAULT_PUBLISH_CONTACT_RESULTS_TOPIC;
@@ -122,12 +122,12 @@ void ContactMonitor::computeCollisionReportThread()
 
         // Create a new manager
         std::vector<std::string> active = manager_->getActiveCollisionObjects();
-        double contact_distance = manager_->getContactDistanceThreshold();
+        tesseract_collision::CollisionMarginData contact_margin_data = manager_->getCollisionMarginData();
         tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
 
         manager_ = tesseract_->getEnvironment()->getDiscreteContactManager();
         manager_->setActiveCollisionObjects(active);
-        manager_->setContactDistanceThreshold(contact_distance);
+        manager_->setCollisionMarginData(contact_margin_data);
         manager_->setIsContactAllowedFn(fn);
       }
 
@@ -207,12 +207,12 @@ bool ContactMonitor::callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmen
 
   // Create a new manager
   std::vector<std::string> active = manager_->getActiveCollisionObjects();
-  double contact_distance = manager_->getContactDistanceThreshold();
+  tesseract_collision::CollisionMarginData contact_margin_data = manager_->getCollisionMarginData();
   tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
 
   manager_ = tesseract_->getEnvironment()->getDiscreteContactManager();
   manager_->setActiveCollisionObjects(active);
-  manager_->setContactDistanceThreshold(contact_distance);
+  manager_->setCollisionMarginData(contact_margin_data);
   manager_->setIsContactAllowedFn(fn);
 
   return true;

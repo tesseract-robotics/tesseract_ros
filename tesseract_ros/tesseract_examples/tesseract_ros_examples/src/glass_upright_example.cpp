@@ -35,9 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
+#include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
@@ -97,8 +97,12 @@ bool GlassUprightExample::run()
   using tesseract_planning::ManipulatorInfo;
   using tesseract_planning::PlanInstruction;
   using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::ProcessPlanningFuture;
+  using tesseract_planning::ProcessPlanningRequest;
+  using tesseract_planning::ProcessPlanningServer;
   using tesseract_planning::StateWaypoint;
   using tesseract_planning::Waypoint;
+  using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -118,6 +122,8 @@ bool GlassUprightExample::run()
   ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
   plotter->init(tesseract_);
+  if (rviz_)
+    plotter->waitForConnection();
 
   // Add sphere to environment
   Command::Ptr cmd = addSphere();
@@ -175,12 +181,9 @@ bool GlassUprightExample::run()
   // Add Instructions to program
   program.push_back(plan_f0);
 
-  // Create Seed data structure
-  const Instruction program_instruction{ program };
-  Instruction seed = tesseract_planning::generateSkeletonSeed(program);
-
-  // Define the Process Input
-  tesseract_planning::ProcessInput input(tesseract_, &program_instruction, program.getManipulatorInfo(), &seed);
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create TrajOpt Profile
   auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
@@ -189,32 +192,27 @@ bool GlassUprightExample::run()
   trajopt_plan_profile->cartesian_coeff(1) = 0;
   trajopt_plan_profile->cartesian_coeff(2) = 0;
 
-  // Initialize Process Manager
-  ROS_INFO("basic cartesian plan example");
-  tesseract_planning::TrajOptTaskflowParams params;
-  params.trajopt_plan_profiles["UPRIGHT"] = trajopt_plan_profile;
-  tesseract_planning::GraphTaskflow::UPtr trajopt_taskflow = tesseract_planning::createTrajOptTaskflow(params);
-  tesseract_planning::SimpleProcessManager pm(std::move(trajopt_taskflow));
+  // Add profile to Dictionary
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("UPRIGHT", trajopt_plan_profile);
 
-  if (!pm.init(input))
-  {
-    ROS_ERROR("Initialization Failed");
-    return false;
-  }
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  request.instructions = Instruction(program);
 
-  // Solve
-  if (!pm.execute())
-  {
-    ROS_ERROR("Execution Failed");
-    return false;
-  }
+  // Print Diagnostics
+  request.instructions.print("Program: ");
 
-  // Plot Trajectory
-  if (plotter)
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
+
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotToolPath(*(input.getResults()));
-    plotter->plotTrajectory(*(input.getResults()));
+    plotter->plotToolPath(*(response.results));
+    plotter->plotTrajectory(*(response.results));
   }
 
   ROS_INFO("Final trajectory is collision free");

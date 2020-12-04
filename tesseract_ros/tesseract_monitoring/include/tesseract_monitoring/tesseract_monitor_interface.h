@@ -44,6 +44,9 @@ namespace tesseract_monitoring
 class TesseractMonitorInterface
 {
 public:
+  using Ptr = std::shared_ptr<TesseractMonitorInterface>;
+  using ConstPtr = std::shared_ptr<const TesseractMonitorInterface>;
+
   TesseractMonitorInterface(const std::string& env_name);
   virtual ~TesseractMonitorInterface() = default;
   TesseractMonitorInterface(const TesseractMonitorInterface&) = default;

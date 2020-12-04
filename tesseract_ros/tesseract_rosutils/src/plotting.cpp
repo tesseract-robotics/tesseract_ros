@@ -25,6 +25,8 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <future>
+#include <thread>
 #include <ros/console.h>
 #include <Eigen/Geometry>
 #include <ros/ros.h>
@@ -402,10 +404,18 @@ void ROSPlotting::clear()
   ros::spinOnce();
 }
 
-void ROSPlotting::waitForInput()
+static void waitForInputAsync()
 {
   ROS_ERROR("Hit enter key to step optimization!");
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+void ROSPlotting::waitForInput()
+{
+  std::chrono::microseconds timeout(1);
+  std::future<void> future = std::async(std::launch::async, waitForInputAsync);
+  while (future.wait_for(timeout) != std::future_status::ready)
+    ros::spinOnce();
 }
 
 const std::string& ROSPlotting::getRootLink() const { return root_link_; }

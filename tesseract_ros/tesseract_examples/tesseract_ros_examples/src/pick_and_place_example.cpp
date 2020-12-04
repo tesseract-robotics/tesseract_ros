@@ -32,14 +32,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_ros_examples/pick_and_place_example.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
+#include <tesseract_planning_server/tesseract_planning_server.h>
 
-using namespace trajopt;
 using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_kinematics;
@@ -102,12 +104,18 @@ bool PickAndPlaceExample::run()
   using tesseract_planning::MoveInstruction;
   using tesseract_planning::PlanInstruction;
   using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::ProcessPlanningFuture;
+  using tesseract_planning::ProcessPlanningRequest;
+  using tesseract_planning::ProcessPlanningServer;
   using tesseract_planning::StateWaypoint;
   using tesseract_planning::Waypoint;
+  using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   /////////////
   /// SETUP ///
   /////////////
+
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
   // Pull ROS params
   std::string urdf_xml_string, srdf_xml_string;
@@ -129,7 +137,7 @@ bool PickAndPlaceExample::run()
     monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
   // Set default contact distance
-  Command::Ptr cmd_default_dist = std::make_shared<tesseract_environment::ChangeDefaultContactDistanceCommand>(0.005);
+  Command::Ptr cmd_default_dist = std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(0.005);
   if (!monitor_->applyCommand(*cmd_default_dist))
     return false;
 
@@ -137,6 +145,8 @@ bool PickAndPlaceExample::run()
   ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
   plotter->init(tesseract_);
+  if (rviz_)
+    plotter->waitForConnection();
 
   // Set the robot initial state
   std::vector<std::string> joint_names;
@@ -180,7 +190,7 @@ bool PickAndPlaceExample::run()
   // Define the final pose (on top of the box)
   Eigen::Isometry3d pick_final_pose;
   pick_final_pose.linear() = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0).matrix();
-  pick_final_pose.translation() += Eigen::Vector3d(box_x, box_y, box_side + 0.77153 + OFFSET);  // Offset for the table
+  pick_final_pose.translation() = Eigen::Vector3d(box_x, box_y, box_side + 0.77153 + OFFSET);  // Offset for the table
   Waypoint pick_wp1 = CartesianWaypoint(pick_final_pose);
 
   // Define the approach pose
@@ -200,40 +210,48 @@ bool PickAndPlaceExample::run()
   pick_program.push_back(pick_plan_a0);
   pick_program.push_back(pick_plan_a1);
 
-  // Create seed data structure
-  const Instruction pick_program_instruction{ pick_program };
-  Instruction pick_seed = tesseract_planning::generateSkeletonSeed(pick_program);
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
+  planning_server.loadDefaultProcessPlanners();
 
-  // Define the Process Input
-  tesseract_planning::ProcessInput pick_input(
-      tesseract_, &pick_program_instruction, pick_program.getManipulatorInfo(), &pick_seed, true);
+  // Create TrajOpt Profile
+  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 10);
 
-  // Initialize Process Manager
+  auto trajopt_composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  trajopt_composite_profile->collision_constraint_config.enabled = false;
+  trajopt_composite_profile->collision_cost_config.safety_margin = 0.005;
+  trajopt_composite_profile->collision_cost_config.coeff = 50;
+
+  auto trajopt_solver_profile = std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>();
+  trajopt_solver_profile->opt_info.max_iter = 100;
+
+  // Add profile to Dictionary
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("CARTESIAN", trajopt_plan_profile);
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("DEFAULT",
+                                                                                         trajopt_composite_profile);
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptSolverProfile>("DEFAULT",
+                                                                                      trajopt_solver_profile);
+
   ROS_INFO("Pick plan");
-  tesseract_planning::TrajOptTaskflowParams pick_params;
-  tesseract_planning::GraphTaskflow::UPtr pick_trajopt_taskflow =
-      tesseract_planning::createTrajOptTaskflow(pick_params);
-  tesseract_planning::SimpleProcessManager pick_pm(std::move(pick_trajopt_taskflow));
+  // Create Process Planning Request
+  ProcessPlanningRequest pick_request;
+  pick_request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  pick_request.instructions = Instruction(pick_program);
 
-  if (!pick_pm.init(pick_input))
-  {
-    ROS_ERROR("Pick initialization Failed");
-    return false;
-  }
+  // Print Diagnostics
+  pick_request.instructions.print("Program: ");
 
-  // Solve
-  if (!pick_pm.execute())
-  {
-    ROS_ERROR("Pick execution Failed");
-    return false;
-  }
+  // Solve process plan
+  ProcessPlanningFuture pick_response = planning_server.run(pick_request);
+  planning_server.waitForAll();
 
-  // Plot Trajectory
-  if (plotter)
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotToolPath(*(pick_input.getResults()));
-    plotter->plotTrajectory(*(pick_input.getResults()));
+    plotter->plotToolPath(*(pick_response.results));
+    plotter->plotTrajectory(*(pick_response.results));
   }
 
   /////////////
@@ -258,13 +276,11 @@ bool PickAndPlaceExample::run()
       std::make_shared<tesseract_environment::AddAllowedCollisionCommand>(LINK_BOX_NAME, "iiwa_link_7", "Never"));
   cmds.push_back(
       std::make_shared<tesseract_environment::AddAllowedCollisionCommand>(LINK_BOX_NAME, "iiwa_link_6", "Never"));
-  cmds.push_back(
-      std::make_shared<tesseract_environment::AddAllowedCollisionCommand>(LINK_BOX_NAME, "end_effector", "Never"));
   monitor_->applyCommands(cmds);
 
   // Get the last move instruction
-  const CompositeInstruction* place_composite = pick_input.getResults()->cast_const<CompositeInstruction>();
-  const MoveInstruction* pick_final_state = tesseract_planning::getLastMoveInstruction(*place_composite);
+  const CompositeInstruction* pick_composite = pick_response.results->cast_const<CompositeInstruction>();
+  const MoveInstruction* pick_final_state = tesseract_planning::getLastMoveInstruction(*pick_composite);
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = pick_approach_pose;
@@ -286,7 +302,10 @@ bool PickAndPlaceExample::run()
   top_left_shelf.translation() = Eigen::Vector3d(-0.148856, 0.73085, 1.414);
 
   // Set the target pose to middle_left_shelf
-  Eigen::Isometry3d place_approach_pose = middle_left_shelf;
+  Eigen::Isometry3d place_pose = middle_left_shelf;
+
+  // Setup approach for place move
+  Eigen::Isometry3d place_approach_pose = place_pose;
   place_approach_pose.translation() += Eigen::Vector3d(0.0, -0.25, 0);
 
   // Create Program
@@ -298,56 +317,51 @@ bool PickAndPlaceExample::run()
   // Define the approach pose
   Waypoint place_wp0 = CartesianWaypoint(retreat_pose);
 
-  // Define the final pose (on top of the box)
+  // Define the final pose approach
   Waypoint place_wp1 = CartesianWaypoint(place_approach_pose);
 
-  // Plan freespace from start
-  PlanInstruction place_plan_a0(place_wp0, PlanInstructionType::FREESPACE, "FREESPACE");
-  place_plan_a0.setDescription("Place Freepsace");
+  // Define the final pose
+  Waypoint place_wp2 = CartesianWaypoint(place_pose);
 
-  // Plan cartesian approach
-  PlanInstruction place_plan_a1(place_wp1, PlanInstructionType::LINEAR, "CARTESIAN");
-  place_plan_a1.setDescription("Place Approach");
+  // Plan cartesian retraction from picking up the box
+  PlanInstruction place_plan_a0(place_wp0, PlanInstructionType::LINEAR, "CARTESIAN");
+  place_plan_a0.setDescription("Place retraction");
+
+  // Plan freespace to approach for box drop off
+  PlanInstruction place_plan_a1(place_wp1, PlanInstructionType::FREESPACE, "FREESPACE");
+  place_plan_a1.setDescription("Place Freespace");
+
+  // Plan cartesian approach to box drop location
+  PlanInstruction place_plan_a2(place_wp2, PlanInstructionType::LINEAR, "CARTESIAN");
+  place_plan_a2.setDescription("Place approach");
 
   // Add Instructions to program
   place_program.push_back(place_plan_a0);
   place_program.push_back(place_plan_a1);
+  place_program.push_back(place_plan_a2);
 
-  // Create seed data structure
-  const Instruction place_program_instruction{ place_program };
-  Instruction place_seed = tesseract_planning::generateSkeletonSeed(place_program);
+  // Create Process Planning Request
+  ProcessPlanningRequest place_request;
+  place_request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  place_request.instructions = Instruction(place_program);
 
-  // Define the Process Input
-  tesseract_planning::ProcessInput place_input(
-      tesseract_, &place_program_instruction, place_program.getManipulatorInfo(), &place_seed, true);
+  // Print Diagnostics
+  place_request.instructions.print("Program: ");
 
-  // Initialize Process Manager
-  ROS_INFO("Approach plan");
-  tesseract_planning::TrajOptTaskflowParams place_params;
-  tesseract_planning::GraphTaskflow::UPtr place_trajopt_taskflow =
-      tesseract_planning::createTrajOptTaskflow(place_params);
-  tesseract_planning::SimpleProcessManager place_pm(std::move(place_trajopt_taskflow));
+  // Solve process plan
+  ProcessPlanningFuture place_response = planning_server.run(place_request);
+  planning_server.waitForAll();
 
-  if (!place_pm.init(place_input))
-  {
-    ROS_ERROR("Initialization Failed");
-    return false;
-  }
-
-  // Solve
-  if (!place_pm.execute())
-  {
-    ROS_ERROR("Execution Failed");
-    return false;
-  }
-
-  // Plot Trajectory
-  if (plotter)
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotToolPath(*(place_input.getResults()));
-    plotter->plotTrajectory(*(place_input.getResults()));
+    plotter->plotToolPath(*(place_response.results));
+    plotter->plotTrajectory(*(place_response.results));
   }
+
+  if (rviz_)
+    plotter->waitForInput();
 
   ROS_INFO("Done");
   return true;
