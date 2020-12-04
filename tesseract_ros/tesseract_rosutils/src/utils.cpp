@@ -986,6 +986,73 @@ tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
   return joint;
 }
 
+tesseract_planning::PlannerProfileRemapping
+fromMsg(const tesseract_msgs::PlannerProfileRemapping& profile_remapping_msg)
+{
+  tesseract_planning::PlannerProfileRemapping profile_remapping;
+  for (std::size_t i = 0; i < profile_remapping_msg.planner.size(); ++i)
+  {
+    std::unordered_map<std::string, std::string> mapping;
+    for (const auto& pair : profile_remapping_msg.mapping[i].pairs)
+      mapping.emplace(pair.first, pair.second);
+
+    profile_remapping[profile_remapping_msg.planner[i]] = mapping;
+  }
+
+  return profile_remapping;
+}
+
+tesseract_msgs::PlannerProfileRemapping toMsg(const tesseract_planning::PlannerProfileRemapping& profile_remapping)
+{
+  tesseract_msgs::PlannerProfileRemapping profile_remapping_msg;
+  for (const auto& planner_remapping : profile_remapping)
+  {
+    profile_remapping_msg.planner.push_back(planner_remapping.first);
+    tesseract_msgs::ProfileMap mapping;
+    for (const auto& planner_pair : planner_remapping.second)
+    {
+      tesseract_msgs::StringPair p;
+      p.first = planner_pair.first;
+      p.second = planner_pair.second;
+      mapping.pairs.push_back(p);
+    }
+    profile_remapping_msg.mapping.push_back(mapping);
+  }
+  return profile_remapping_msg;
+}
+
+std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>
+fromMsg(const std::vector<tesseract_msgs::ContactMarginPair>& contact_margin_pairs_msg)
+{
+  std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> contact_margin_pairs;
+
+  for (const auto& pair : contact_margin_pairs_msg)
+  {
+    tesseract_common::LinkNamesPair lp;
+    lp.first = pair.first.first;
+    lp.second = pair.first.second;
+
+    contact_margin_pairs.emplace(lp, pair.second);
+  }
+  return contact_margin_pairs;
+}
+
+std::vector<tesseract_msgs::ContactMarginPair> toMsg(
+    const std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>& contact_margin_pairs)
+{
+  std::vector<tesseract_msgs::ContactMarginPair> contact_margin_pairs_msg;
+  for (const auto& pair : contact_margin_pairs)
+  {
+    tesseract_msgs::ContactMarginPair cmp;
+    cmp.first.first = pair.first.first;
+    cmp.first.second = pair.first.second;
+    cmp.second = pair.second;
+    contact_margin_pairs_msg.push_back(cmp);
+  }
+
+  return contact_margin_pairs_msg;
+}
+
 bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
            const tesseract_scene_graph::AllowedCollisionMatrix& acm)
 {
@@ -1206,6 +1273,24 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_KINEMATICS_INFORMATION;
       const auto& cmd = static_cast<const tesseract_environment::AddKinematicsInformationCommand&>(command);
       return toMsg(command_msg.add_kinematics_information, cmd.getKinematicsInformation());
+    }
+    case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_DEFAULT_CONTACT_MARGIN;
+      const auto& cmd = static_cast<const tesseract_environment::ChangeDefaultContactMarginCommand&>(command);
+      command_msg.default_contact_margin = cmd.getDefaultCollisionMargin();
+      return true;
+    }
+    case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_PAIR_CONTACT_MARGIN;
+      const auto& cmd = static_cast<const tesseract_environment::ChangePairContactMarginCommand&>(command);
+      command_msg.contact_margin_pairs = toMsg(cmd.getPairCollisionMarginData());
+      return true;
+    }
+    default:
+    {
+      CONSOLE_BRIDGE_logWarn("Unhandled CommandType '%d' in toMsg", command.getType());
     }
   }
 
@@ -1589,6 +1674,24 @@ bool processMsg(tesseract_environment::Environment& env,
 
         success &= env.addKinematicsInformation(kin_info);
         break;
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_DEFAULT_CONTACT_MARGIN:
+      {
+        tesseract_environment::ChangeDefaultContactMarginCommand cmd(command.default_contact_margin);
+        success &= env.applyCommand(cmd);
+        break;
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_PAIR_CONTACT_MARGIN:
+      {
+        std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> link_pair_margin =
+            fromMsg(command.contact_margin_pairs);
+        tesseract_environment::ChangePairContactMarginCommand cmd(link_pair_margin);
+        success &= env.applyCommand(cmd);
+        break;
+      }
+      default:
+      {
+        CONSOLE_BRIDGE_logWarn("Unhandled CommandType '%d' in toMsg", command.command);
       }
     }
   }

@@ -1,2 +1,1 @@
-string[] profile1
-string[] profile2
+tesseract_msgs/StringPair[] pairs

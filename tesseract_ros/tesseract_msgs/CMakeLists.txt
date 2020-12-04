@@ -36,6 +36,7 @@ add_message_files(
     AllowedCollisionEntry.msg
     ChainGroup.msg
     CollisionGeometry.msg
+    ContactMarginPair.msg
     ContactResult.msg
     ContactResultVector.msg
     EnvironmentCommand.msg

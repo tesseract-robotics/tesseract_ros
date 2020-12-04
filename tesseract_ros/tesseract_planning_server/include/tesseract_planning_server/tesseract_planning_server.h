@@ -38,23 +38,56 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/environment_monitor.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
-#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
-
-#include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_global_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_only_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_only_global_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
-#include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/core/process_planning_server.h>
 
 namespace tesseract_planning_server
 {
+class ROSProcessEnvironmentCache : public tesseract_planning::EnvironmentCache
+{
+public:
+  using Ptr = std::shared_ptr<ROSProcessEnvironmentCache>;
+  using ConstPtr = std::shared_ptr<const ROSProcessEnvironmentCache>;
+
+  ROSProcessEnvironmentCache(tesseract_monitoring::EnvironmentMonitor::Ptr env);
+
+  /**
+   * @brief Set the cache size used to hold tesseract objects for motion planning
+   * @param size The size of the cache.
+   */
+  void setCacheSize(long size) override;
+
+  /**
+   * @brief Get the cache size used to hold tesseract objects for motion planning
+   * @return The size of the cache.
+   */
+  long getCacheSize() const override;
+
+  /** @brief If the environment has changed it will rebuild the cache of tesseract objects */
+  void refreshCache() override;
+
+  /**
+   * @brief This will pop a Tesseract object from the queue
+   * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
+   */
+  tesseract::Tesseract::Ptr getCachedEnvironment() override;
+
+protected:
+  /** @brief The tesseract_object used to create the cache */
+  tesseract_monitoring::EnvironmentMonitor::Ptr environment_;
+
+  /** @brief The environment revision number at the time the cache was populated */
+  int cache_env_revision_{ 0 };
+
+  /** @brief The assigned cache size */
+  std::size_t cache_size_{ 5 };
+
+  /** @brief A vector of cached Tesseact objects */
+  std::deque<tesseract::Tesseract::Ptr> cache_;
+
+  /** @brief The mutex used when reading and writing to cache_ */
+  mutable std::shared_mutex cache_mutex_;
+};
+
 class TesseractPlanningServer
 {
 public:
@@ -81,55 +114,28 @@ public:
   tesseract_monitoring::EnvironmentMonitor& getEnvironmentMonitor();
   const tesseract_monitoring::EnvironmentMonitor& getEnvironmentMonitor() const;
 
+  tesseract_planning::ProcessPlanningServer& getProcessPlanningServer();
+  const tesseract_planning::ProcessPlanningServer& getProcessPlanningServer() const;
+
+  tesseract_planning::EnvironmentCache& getEnvironmentCache();
+  const tesseract_planning::EnvironmentCache& getEnvironmentCache() const;
+
   void onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-
-  /**
-   * @brief Set the cache size used to hold tesseract objects for motion planning
-   * @param size The size of the cache.
-   */
-  void setCacheSize(long size);
-
-  /**
-   * @brief Get the cache size used to hold tesseract objects for motion planning
-   * @return The size of the cache.
-   */
-  long getCacheSize() const;
-
-  /** @brief If the environment has changed it will rebuild the cache of tesseract objects */
-  void refreshCache();
-
-  /**
-   * @brief This will pop a Tesseract object from the queue
-   * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
-   */
-  tesseract::Tesseract::Ptr getCachedTesseract();
 
 protected:
   ros::NodeHandle nh_;
 
   /** @brief The environment monitor to keep the planning server updated with the latest */
-  tesseract_monitoring::EnvironmentMonitor environment_;
+  tesseract_monitoring::EnvironmentMonitor::Ptr environment_;
+
+  /** @brief The environment cache being used by the process planning server */
+  tesseract_planning::EnvironmentCache::Ptr environment_cache_;
+
+  /** @brief The process planning server */
+  tesseract_planning::ProcessPlanningServer::Ptr planning_server_;
 
   /** @brief The motion planning action server */
   actionlib::SimpleActionServer<tesseract_msgs::GetMotionPlanAction> motion_plan_server_;
-
-  /** @brief Trajopt available composite profiles */
-  tesseract_planning::TrajOptCompositeProfileMap trajopt_composite_profiles_;
-
-  /**@brief The trajopt available plan profiles */
-  tesseract_planning::TrajOptPlanProfileMap trajopt_plan_profiles_;
-
-  /** @brief The Descartes available plan profiles */
-  tesseract_planning::DescartesPlanProfileMap<double> descartes_plan_profiles_;
-
-  /** @brief The OMPL available plan profiles */
-  tesseract_planning::OMPLPlanProfileMap ompl_plan_profiles_;
-
-  /** @brief The Simple Planner available plan profiles */
-  tesseract_planning::SimplePlannerPlanProfileMap simple_plan_profiles_;
-
-  /** @brief The Simple Planner available composite profiles */
-  tesseract_planning::SimplePlannerCompositeProfileMap simple_composite_profiles_;
 
   /** @brief TF buffer to track TCP transforms */
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -137,63 +143,11 @@ protected:
   /** @brief TF listener to lookup TCP transforms */
   tf2_ros::TransformListener tf_listener_;
 
-  /** @brief The environment revision number at the time the cache was populated */
-  int cache_env_revision_{ 0 };
-
-  /** @brief The assigned cache size */
-  std::size_t cache_size_{ 5 };
-
-  /** @brief A vector of cached Tesseact objects */
-  std::deque<tesseract::Tesseract::Ptr> cache_;
-
-  /** @brief The mutex used when reading and writing to cache_ */
-  mutable std::shared_mutex cache_mutex_;
-
   void ctor();
 
   void loadDefaultPlannerProfiles();
 
   Eigen::Isometry3d tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info);
-
-  tesseract_planning::SimpleProcessManager::Ptr
-  createTrajOptProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::SimpleProcessManager::Ptr
-  createDescartesProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::SimpleProcessManager::Ptr
-  createOMPLProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::SimpleProcessManager::Ptr
-  createCartesianProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::SimpleProcessManager::Ptr
-  createFreespaceProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-
-  tesseract_planning::RasterProcessManager::Ptr
-  createRasterProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterOnlyProcessManager::Ptr
-  createRasterOnlyProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterGlobalProcessManager::Ptr
-  createRasterGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterDTProcessManager::Ptr
-  createRasterDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterWAADProcessManager::Ptr
-  createRasterWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterWAADDTProcessManager::Ptr
-  createRasterWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
-  createRasterOnlyGlobalProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterProcessManager::Ptr
-  createRasterCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterOnlyProcessManager::Ptr
-  createRasterOnlyCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterDTProcessManager::Ptr
-  createRasterCTDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterWAADProcessManager::Ptr
-  createRasterCTWAADProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterWAADDTProcessManager::Ptr
-  createRasterCTWAADDTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterGlobalProcessManager::Ptr
-  createRasterGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
-  tesseract_planning::RasterOnlyGlobalProcessManager::Ptr
-  createRasterOnlyGlobalCTProcessManager(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
 };
 }  // namespace tesseract_planning_server
 #endif  // TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
