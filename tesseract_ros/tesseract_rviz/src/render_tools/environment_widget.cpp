@@ -402,6 +402,30 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
       visualization_->removeAllowedCollision(cmd.getLinkName());
       break;
     }
+    case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
+    {
+      // Done
+      // const auto& cmd = static_cast<const tesseract_environment::ChangeJointPositionLimitsCommand&>(command);
+      break;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+    {
+      // Done
+      // const auto& cmd = static_cast<const tesseract_environment::ChangeJointVelocityLimitsCommand&>(command);
+      break;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+    {
+      // Done
+      // const auto& cmd = static_cast<const tesseract_environment::ChangeJointAccelerationLimitsCommand&>(command);
+      break;
+    }
+    case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
+    case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
+    case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+    {
+      break;
+    }
   }
   return true;
 }
