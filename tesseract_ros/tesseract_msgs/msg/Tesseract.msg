@@ -1,4 +1,2 @@
 tesseract_msgs/EnvironmentCommand[] command_history
-
 sensor_msgs/JointState joint_states
-tesseract_msgs/KinematicsInformation kinematics_information

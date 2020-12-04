@@ -37,7 +37,7 @@ using namespace tesseract_environment;
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 static std::shared_ptr<tesseract_planning_server::TesseractPlanningServer> planning_server;
 
-void updateCacheCallback(const ros::TimerEvent&) { planning_server->refreshCache(); }
+void updateCacheCallback(const ros::TimerEvent&) { planning_server->getEnvironmentCache().refreshCache(); }
 
 int main(int argc, char** argv)
 {
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
   planning_server = std::make_shared<tesseract_planning_server::TesseractPlanningServer>(
       robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
 
-  planning_server->setCacheSize(cache_size);
+  planning_server->getEnvironmentCache().setCacheSize(cache_size);
 
   if (publish_environment)
     planning_server->getEnvironmentMonitor().startPublishingEnvironment(
