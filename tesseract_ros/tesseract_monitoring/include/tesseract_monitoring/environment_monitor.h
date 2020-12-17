@@ -143,7 +143,7 @@ public:
   /** @brief Constructor
    *  @param monitor_namespace A name identifying this monitor, must be unique
    */
-  EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
+  EnvironmentMonitor(tesseract_environment::Environment::Ptr env,
                      std::string monitor_namespace,
                      std::string discrete_plugin = "",
                      std::string continuous_plugin = "");
@@ -210,25 +210,6 @@ public:
    * @see lockEnvironmentRead
    * @return A pointer to the current environment.*/
   tesseract_environment::Environment::ConstPtr getEnvironment() const;
-
-  /**
-   * @brief Returns an @b unsafe pointer to the current tesseract.
-   * @warning TesseractMonitor has a background thread which repeatedly updates and clobbers various contents of its
-   *          internal tesseract instance.  This function just returns a pointer to that dynamic internal object.
-   *          The correct thing is to call lockEnvironmentRead or lockEnvironmentWrite before accessing the contents.
-   * @see lockEnvironmentRead
-   * @see lockEnvironmentWrite
-   * @return A pointer to the current tesseract.*/
-  tesseract::Tesseract::Ptr getTesseract();
-
-  /**
-   * @brief Returns an @b unsafe const pointer to the current tesseract.
-   * @warning TesseractMonitor has a background thread which repeatedly updates and clobbers various contents of its
-   *          internal tesseract instance.  This function just returns a pointer to that dynamic internal object.
-   *          The correct thing is to call lockEnvironmentRead before accessing the contents.
-   * @see lockEnvironmentRead
-   * @return A pointer to the current tesseract.*/
-  tesseract::Tesseract::ConstPtr getTesseractConst() const;
 
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
@@ -344,7 +325,7 @@ protected:
   DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;
   ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;
 
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract_environment::Environment::Ptr env_;
   mutable std::shared_mutex scene_update_mutex_;  /// mutex for stored scene
   ros::Time last_update_time_;                    /// Last time the state was updated
   ros::Time last_robot_motion_time_;              /// Last time the robot has moved

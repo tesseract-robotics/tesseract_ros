@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 #endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -77,7 +77,7 @@ protected:
   // ROS Node Handle
   ros::NodeHandle nh_;
 
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract_environment::Environment::Ptr env_;
   VisualizationWidget::Ptr visualization_;
   JointStateMonitorWidget::Ptr state_monitor_;
   EnvironmentWidget::Ptr environment_monitor_;

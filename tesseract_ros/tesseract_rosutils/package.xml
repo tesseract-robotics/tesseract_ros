@@ -18,6 +18,7 @@
   <depend>tesseract_msgs</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_visualization</depend>
+  <depend>tesseract_command_language</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

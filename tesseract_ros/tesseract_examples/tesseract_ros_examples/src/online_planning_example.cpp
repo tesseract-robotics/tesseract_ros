@@ -50,7 +50,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_ros_examples/online_planning_example.h>
 
 using namespace trajopt;
-using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -80,20 +79,17 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
     assert(false);
 
   // Set up plotting
-  plotter_ =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
+  plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getSceneGraph()->getRoot());
 
   // Extract necessary kinematic information
-  manipulator_fk_ = tesseract_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+  manipulator_fk_ = env_->getManipulatorManager()->getFwdKinematicSolver("manipulator");
   manipulator_adjacency_map_ = std::make_shared<tesseract_environment::AdjacencyMap>(
-      tesseract_->getEnvironment()->getSceneGraph(),
-      manipulator_fk_->getActiveLinkNames(),
-      tesseract_->getEnvironment()->getCurrentState()->link_transforms);
-  manipulator_ik_ = tesseract_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver("manipulator");
+      env_->getSceneGraph(), manipulator_fk_->getActiveLinkNames(), env_->getCurrentState()->link_transforms);
+  manipulator_ik_ = env_->getManipulatorManager()->getInvKinematicSolver("manipulator");
 
   // Initialize the trajectory
   current_trajectory_ = trajopt::TrajArray::Zero(steps_, 10);
@@ -112,7 +108,7 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
 void OnlinePlanningExample::subscriberCallback(const sensor_msgs::JointState::ConstPtr& joint_state)
 {
   // Set the environment state to update the collision model
-  tesseract_->getEnvironment()->setState(joint_state->name, joint_state->position);
+  env_->setState(joint_state->name, joint_state->position);
 
   // Update current_trajectory_ so the live trajectory will be visualized correctly
   for (Eigen::Index i = 0; i < current_trajectory_.rows(); i++)
@@ -220,7 +216,7 @@ bool OnlinePlanningExample::setupProblem()
 
     auto collision_evaluator = std::make_shared<trajopt::SingleTimestepCollisionEvaluator>(
         manipulator_fk_,
-        tesseract_->getEnvironment(),
+        env_,
         manipulator_adjacency_map_,
         Eigen::Isometry3d::Identity(),
         margin_data,

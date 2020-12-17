@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED thread date_time system filesystem)
-find_package(tesseract REQUIRED)
+find_package(tesseract_environment REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -129,7 +129,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
-  tesseract::tesseract
+  tesseract::tesseract_environment_core
   tesseract::tesseract_visualization
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
@@ -198,7 +198,7 @@ add_library(${PROJECT_NAME}_trajectory_plugin_core SHARED src/tesseract_trajecto
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -218,7 +218,7 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin_core SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
     ${PROJECT_NAME}_trajectory_plugin_core
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajectory_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
@@ -238,7 +238,7 @@ add_library(${PROJECT_NAME}_planning_response_archive_plugin_core SHARED src/pla
 target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -258,7 +258,7 @@ target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core
 add_library(${PROJECT_NAME}_planning_response_archive_plugin SHARED src/planning_response_archive_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
     ${PROJECT_NAME}_planning_response_archive_plugin_core
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
@@ -278,7 +278,7 @@ qt_wrap_cpp(${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS include/tesseract_
 add_library(${PROJECT_NAME}_manipulation_plugin_core SHARED src/tesseract_manipulation_plugin/tesseract_manipulation_display.cpp ${${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -298,7 +298,7 @@ target_include_directories(${PROJECT_NAME}_manipulation_plugin_core SYSTEM PUBLI
 add_library(${PROJECT_NAME}_manipulation_plugin SHARED src/tesseract_manipulation_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin PRIVATE
     ${PROJECT_NAME}_manipulation_plugin_core
-    tesseract::tesseract
+    tesseract::tesseract_environment_core
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_manipulation_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})

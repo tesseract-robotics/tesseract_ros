@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 #include <tesseract_monitoring/environment_monitor.h>
 
 namespace tesseract_monitoring
@@ -49,7 +49,7 @@ class ContactMonitor
 {
 public:
   ContactMonitor(std::string monitor_namespace,
-                 const tesseract::Tesseract::Ptr& tesseract,
+                 const tesseract_environment::Environment::Ptr& env,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
@@ -109,7 +109,7 @@ private:
   std::string monitored_namespace_;
   int env_revision_{ 0 };
   tesseract_monitoring::EnvironmentMonitor::Ptr monitor_;
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;
