@@ -50,7 +50,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tf2_ros/transform_broadcaster.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
 
 namespace tesseract_monitoring
@@ -70,17 +69,14 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf A pointer to the tf transformer to use
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
    *  @param tf A pointer to the tf transformer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager,
-                      const ros::NodeHandle& nh);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
   CurrentStateMonitor(const CurrentStateMonitor&) = delete;
@@ -190,7 +186,6 @@ private:
   tesseract_environment::Environment::ConstPtr env_;
   tesseract_environment::EnvState env_state_;
   int last_environment_revision_;
-  tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state

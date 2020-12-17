@@ -36,7 +36,7 @@ namespace tesseract_rviz
 {
 TesseractManipulationDisplay::TesseractManipulationDisplay()
 {
-  tesseract_ = std::make_shared<tesseract::Tesseract>();
+  env_ = std::make_shared<tesseract_environment::Environment>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   manipulation_ = std::make_shared<ManipulationWidget>(this, this);
 }
@@ -50,11 +50,11 @@ void TesseractManipulationDisplay::onInitialize()
   visualization_->setCurrentStateVisible(false);
   visualization_->setStartStateVisible(true);
 
-  environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_, true);
+  environment_monitor_->onInitialize(visualization_, env_, context_, nh_, true);
   manipulation_->onInitialize(scene_node_,
                               context_,
                               visualization_,
-                              tesseract_,
+                              env_,
                               nh_,
                               ManipulationWidget::ManipulatorState::START,
                               "/tesseract/manipulation_start_state");

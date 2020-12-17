@@ -68,7 +68,7 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   : widget_(widget)
   , display_(display)
   , visualization_(nullptr)
-  , tesseract_(nullptr)
+  , env_(nullptr)
   , cached_visible_(false)
   , animating_path_(false)
   , drop_displaying_trajectory_(false)
@@ -127,13 +127,13 @@ TrajectoryMonitorWidget::~TrajectoryMonitorWidget()
 }
 
 void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
-                                           tesseract::Tesseract::Ptr tesseract,
+                                           tesseract_environment::Environment::Ptr env,
                                            rviz::DisplayContext* context,
                                            const ros::NodeHandle& update_nh)
 {
   // Save pointers for later use
   visualization_ = std::move(visualization);
-  tesseract_ = std::move(tesseract);
+  env_ = std::move(env);
   context_ = context;
   nh_ = update_nh;
 
@@ -211,7 +211,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     tesseract_planning::MoveInstruction mi = trajectory_player_.getByIndex(waypoint_i);
     const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
     const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-    states_data.push_back(tesseract_->getEnvironment()->getState(joint_names, joint_values));
+    states_data.push_back(env_->getState(joint_names, joint_values));
   }
 
   // If current state is not visible must set trajectory for all links for a single state so static
@@ -226,7 +226,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   }
 
   // Set Trajectory for active links
-  for (const auto& link_name : tesseract_->getEnvironment()->getActiveLinkNames())
+  for (const auto& link_name : env_->getActiveLinkNames())
   {
     std::vector<Eigen::Isometry3d> link_trajectory;
     link_trajectory.reserve(states_data.size());
@@ -296,7 +296,7 @@ void TrajectoryMonitorWidget::interruptCurrentDisplay()
 void TrajectoryMonitorWidget::dropTrajectory() { drop_displaying_trajectory_ = true; }
 void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 {
-  if (!tesseract_->isInitialized() || !visualization_)
+  if (!env_->isInitialized() || !visualization_)
     return;
 
   if (drop_displaying_trajectory_)
@@ -367,7 +367,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(0);
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-      tesseract_environment::EnvState::Ptr state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+      tesseract_environment::EnvState::Ptr state = env_->getState(joint_names, joint_values);
       visualization_->setStartState(state->link_transforms);
 
       if (trajectory_slider_panel_)
@@ -384,14 +384,14 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(duration);
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-      state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+      state = env_->getState(joint_names, joint_values);
     }
     else
     {
       tesseract_planning::MoveInstruction mi = trajectory_player_.getNext();
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-      state = tesseract_->getEnvironment()->getState(joint_names, joint_values);
+      state = env_->getState(joint_names, joint_values);
 
       if (trajectory_slider_panel_ != nullptr)
       {
@@ -407,7 +407,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Trajectory::ConstPtr& msg)
 {
   // Error check
-  if (!tesseract_->isInitialized())
+  if (!env_->isInitialized())
   {
     ROS_ERROR_STREAM_NAMED("trajectory_visualization", "No environment");
     return;
@@ -423,11 +423,11 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
       visualization_->setStartStateVisible(true);
   }
 
-  if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != tesseract_->getEnvironment()->getName())
+  if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != env_->getName())
     ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
              "was expected",
              msg->tesseract_state.id.c_str(),
-             tesseract_->getEnvironment()->getName().c_str());
+             env_->getName().c_str());
 
   if (!msg->instructions.empty())
   {

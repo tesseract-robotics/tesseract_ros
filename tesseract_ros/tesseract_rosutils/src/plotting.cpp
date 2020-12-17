@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/conversions.h>
 
 #include <tesseract_command_language/utils/flatten_utils.h>
+#include <tesseract_command_language/utils/filter_functions.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_command_language/command_language.h>
 
@@ -56,9 +57,9 @@ ROSPlotting::ROSPlotting(std::string root_link, std::string topic_namespace)
   tool_path_pub_ = nh.advertise<geometry_msgs::PoseArray>(topic_namespace + "/display_tool_path", 1, true);
 }
 
-bool ROSPlotting::init(tesseract::Tesseract::ConstPtr thor)
+bool ROSPlotting::init(tesseract_environment::Environment::ConstPtr env)
 {
-  tesseract_ = thor;
+  env_ = env;
   return true;
 }
 
@@ -126,8 +127,8 @@ void ROSPlotting::plotTrajectory(const tesseract_planning::Instruction& instruct
   tesseract_msgs::Trajectory msg;
 
   // Set tesseract state information
-  if (tesseract_ != nullptr)
-    toMsg(msg.tesseract_state, *(tesseract_->getEnvironment()));
+  if (env_ != nullptr)
+    toMsg(msg.tesseract_state, *(env_));
 
   // Set the joint trajectory message
   toJointTrajectory(msg.joint_trajectory, instruction);
@@ -154,15 +155,15 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
 {
   using namespace tesseract_planning;
 
-  if (tesseract_ == nullptr)
+  if (env_ == nullptr)
   {
     ROS_ERROR("plotToolPath: requires that the plotter be initialized with a tesseract!");
     return;
   }
 
   geometry_msgs::PoseArray tool_path;
-  tool_path.header.frame_id = tesseract_->getEnvironment()->getRootLinkName();
-  tesseract_environment::StateSolver::Ptr state_solver = tesseract_->getEnvironment()->getStateSolver();
+  tool_path.header.frame_id = env_->getRootLinkName();
+  tesseract_environment::StateSolver::Ptr state_solver = env_->getStateSolver();
   if (isCompositeInstruction(instruction))
   {
     const auto* ci = instruction.cast_const<CompositeInstruction>();
@@ -171,8 +172,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
     assert(!ci->getManipulatorInfo().empty());
     const ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
 
-    auto composite_mi_fwd_kin =
-        tesseract_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ROS_ERROR_STREAM("plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!");
@@ -204,7 +204,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
       }
 
       // Extract TCP
-      Eigen::Isometry3d tcp = tesseract_->findTCP(manip_info);
+      Eigen::Isometry3d tcp = env_->findTCP(manip_info);
 
       if (isStateWaypoint(wp))
       {
@@ -235,7 +235,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
         }
         else
         {
-          tesseract_environment::EnvState::ConstPtr state = tesseract_->getEnvironment()->getCurrentState();
+          tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
           geometry_msgs::Pose p;
           tesseract_rosutils::toMsg(p, state->link_transforms.at(manip_info.working_frame) * (*cwp));
           tool_path.poses.push_back(p);
@@ -257,8 +257,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
     const ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
     ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
 
-    auto composite_mi_fwd_kin =
-        tesseract_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ROS_ERROR_STREAM("plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!");
@@ -267,7 +266,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
     const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
 
     // Extract TCP
-    Eigen::Isometry3d tcp = tesseract_->findTCP(manip_info);
+    Eigen::Isometry3d tcp = env_->findTCP(manip_info);
 
     if (isStateWaypoint(pi->getWaypoint()))
     {
@@ -298,7 +297,7 @@ void ROSPlotting::plotToolPath(const tesseract_planning::Instruction& instructio
       }
       else
       {
-        tesseract_environment::EnvState::ConstPtr state = tesseract_->getEnvironment()->getCurrentState();
+        tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
         geometry_msgs::Pose p;
         tesseract_rosutils::toMsg(p, state->link_transforms.at(manip_info.working_frame) * (*cwp));
         tool_path.poses.push_back(p);

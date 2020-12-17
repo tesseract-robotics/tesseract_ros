@@ -48,7 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 #include <tesseract_visualization/trajectory_player.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #endif
@@ -86,7 +86,7 @@ public:
   virtual ~TrajectoryMonitorWidget();
 
   void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract::Tesseract::Ptr tesseract,
+                    tesseract_environment::Environment::Ptr env,
                     rviz::DisplayContext* context,
                     const ros::NodeHandle& update_nh);
 
@@ -119,7 +119,7 @@ protected:
   rviz::Display* display_;
   rviz::DisplayContext* context_;
   VisualizationWidget::Ptr visualization_;
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle nh_;
   bool cached_visible_; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 

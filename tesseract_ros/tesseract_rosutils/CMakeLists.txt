@@ -20,6 +20,7 @@ find_package(tesseract_geometry REQUIRED) # This should not be required, must be
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_visualization REQUIRED)
+find_package(tesseract_command_language REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -43,6 +44,7 @@ catkin_package(
     tesseract_collision
     tesseract_common
     tesseract_motion_planners
+    tesseract_command_language
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
@@ -50,13 +52,15 @@ tesseract_variables()
 
 add_library(${PROJECT_NAME} SHARED src/plotting.cpp src/conversions.cpp src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  tesseract::tesseract_collision_core
-  tesseract::tesseract_common
   tesseract::tesseract_environment_core
-  tesseract::tesseract_geometry
-  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_environment_ofkt
   tesseract::tesseract_scene_graph
+  tesseract::tesseract_geometry
+  tesseract::tesseract_collision_core
   tesseract::tesseract_visualization
+  tesseract::tesseract_common
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_command_language
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})

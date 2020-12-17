@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/commands.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/constants.h>
 
@@ -141,52 +141,6 @@ public:
     env->init<S>(commands);
 
     return env;
-  }
-
-  /**
-   * @brief Pull information from the environment in the provided namespace and create a Environment Object
-   * @param monitor_namespace The namespace to extract the environment from.
-   * @return Environment Shared Pointer, if nullptr it failed
-   */
-  template <typename S>
-  static tesseract::Tesseract::Ptr getTesseract(const std::string& monitor_namespace)
-  {
-    tesseract_msgs::GetEnvironmentInformation res;
-    res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
-
-    bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
-    if (!status || !res.response.success)
-    {
-      ROS_ERROR_NAMED(monitor_namespace, "getTesseract: Failed to get monitor environment information!");
-      return nullptr;
-    }
-
-    tesseract_environment::Commands commands;
-    try
-    {
-      commands = tesseract_rosutils::fromMsg(res.response.command_history);
-    }
-    catch (...)
-    {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to convert command history message!");
-      return nullptr;
-    }
-
-    auto env = std::make_shared<tesseract_environment::Environment>();
-    if (!env->init<S>(commands))
-    {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize environment!");
-      return nullptr;
-    }
-
-    auto thor = std::make_shared<tesseract::Tesseract>();
-    if (!thor->init(*env))
-    {
-      ROS_ERROR_STREAM_NAMED(monitor_namespace, "getTesseract: Failed to initialize tesseract!");
-      return nullptr;
-    }
-
-    return thor;
   }
 
 protected:

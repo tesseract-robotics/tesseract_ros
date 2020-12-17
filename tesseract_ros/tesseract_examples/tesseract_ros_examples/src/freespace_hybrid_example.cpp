@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 
-using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -113,11 +112,11 @@ bool FreespaceHybridExample::run()
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
-  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, EXAMPLE_MONITOR_NAMESPACE);
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env_, EXAMPLE_MONITOR_NAMESPACE);
   if (rviz_)
     monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
@@ -127,9 +126,8 @@ bool FreespaceHybridExample::run()
     return false;
 
   // Create plotting tool
-  ROSPlottingPtr plotter =
-      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
-  plotter->init(tesseract_);
+  ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getSceneGraph()->getRoot());
+  plotter->init(env_);
   if (rviz_)
     plotter->waitForConnection();
 
@@ -161,7 +159,7 @@ bool FreespaceHybridExample::run()
   joint_end_pos(5) = 1.4959;
   joint_end_pos(6) = 0.0;
 
-  tesseract_->getEnvironment()->setState(joint_names, joint_start_pos);
+  env_->setState(joint_names, joint_start_pos);
 
   // Create Program
   CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));

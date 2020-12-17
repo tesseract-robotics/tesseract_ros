@@ -56,7 +56,7 @@ const std::string ARCHIVE_TOPIC_NAME = "/planning_response_archive";
 
 PlanningResponseArchiveDisplay::PlanningResponseArchiveDisplay()
 {
-  tesseract_ = std::make_shared<tesseract::Tesseract>();
+  env_ = std::make_shared<tesseract_environment::Environment>();
   trajectory_monitor_ = std::make_shared<TrajectoryMonitorWidget>(this, this);
 }
 
@@ -68,7 +68,7 @@ void PlanningResponseArchiveDisplay::onInitialize()
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
   visualization_->setCurrentStateVisible(false);
 
-  trajectory_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
+  trajectory_monitor_->onInitialize(visualization_, env_, context_, nh_);
 
   archive_topic_sub_ = nh_.subscribe(ARCHIVE_TOPIC_NAME, 5, &PlanningResponseArchiveDisplay::callback, this);
 
@@ -82,18 +82,25 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
 
   // Convert to objects
   tesseract_msgs::PlanningRequestArchive request_archive = msg->planning_request;
-  auto tesseract = fromMsg(request_archive.tesseract);
+  auto env = fromMsg(request_archive.tesseract);
   Instruction results = fromXMLString(msg->results);
 
   // Disable
   visualization_->clear();
   trajectory_monitor_->onDisable();
 
+  // Get the current find tcp callbacks
+  std::vector<tesseract_environment::FindTCPCallbackFn> env_cb;
+  if (env_ != nullptr)
+    env_cb = env_->getFindTCPCallbacks();
+
   // Load Tesseract
-  tesseract_->init(*tesseract->getEnvironment());
+  env_.swap(env);
+  for (auto& f : env_cb)
+    env_->addFindTCPCallback(f);
 
   // Enable
-  visualization_->addSceneGraph(*(tesseract_->getEnvironment()->getSceneGraph()));
+  visualization_->addSceneGraph(*(env_->getSceneGraph()));
   trajectory_monitor_->onEnable();
 
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();

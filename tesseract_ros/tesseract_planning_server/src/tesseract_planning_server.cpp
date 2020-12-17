@@ -72,22 +72,22 @@ long ROSProcessEnvironmentCache::getCacheSize() const { return static_cast<long>
 void ROSProcessEnvironmentCache::refreshCache()
 {
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr thor;
+  tesseract_environment::Environment::Ptr env;
   {
     auto lock = environment_->lockEnvironmentRead();
     int rev = environment_->getEnvironment()->getRevision();
     if (rev != cache_env_revision_ || cache_.empty())
     {
-      thor = environment_->getTesseract()->clone();
+      env = environment_->getEnvironment()->clone();
       cache_env_revision_ = rev;
     }
   }
 
-  if (thor != nullptr)
+  if (env != nullptr)
   {
     cache_.clear();
     for (std::size_t i = 0; i < cache_size_; ++i)
-      cache_.push_back(thor->clone());
+      cache_.push_back(env->clone());
   }
   else if (cache_.size() <= 2)
   {
@@ -96,7 +96,7 @@ void ROSProcessEnvironmentCache::refreshCache()
   }
 }
 
-tesseract::Tesseract::Ptr ROSProcessEnvironmentCache::getCachedEnvironment()
+tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnvironment()
 {
   // This is to make sure the cached items are updated if needed
   refreshCache();
@@ -108,14 +108,14 @@ tesseract::Tesseract::Ptr ROSProcessEnvironmentCache::getCachedEnvironment()
   }
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr t = cache_.back();
+  tesseract_environment::Environment::Ptr env = cache_.back();
 
   // Update to the current joint values
-  t->getEnvironment()->setState(current_state.joints);
+  env->setState(current_state.joints);
 
   cache_.pop_back();
 
-  return t;
+  return env;
 }
 
 TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_description,
@@ -139,13 +139,13 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
   ctor();
 }
 
-TesseractPlanningServer::TesseractPlanningServer(std::shared_ptr<tesseract::Tesseract> tesseract,
+TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environment::Ptr env,
                                                  std::string name,
                                                  std::string discrete_plugin,
                                                  std::string continuous_plugin)
   : nh_("~")
   , environment_(
-        std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract, name, discrete_plugin, continuous_plugin))
+        std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env, name, discrete_plugin, continuous_plugin))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
   , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_))
   , motion_plan_server_(nh_,
@@ -163,7 +163,7 @@ void TesseractPlanningServer::ctor()
   planning_server_->loadDefaultProcessPlanners();
   loadDefaultPlannerProfiles();
   auto lock = environment_->lockEnvironmentWrite();
-  environment_->getTesseract()->addFindTCPCallback(
+  environment_->getEnvironment()->addFindTCPCallback(
       std::bind(&TesseractPlanningServer::tfFindTCP, this, std::placeholders::_1));
 }
 
@@ -257,8 +257,7 @@ Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::M
     throw std::runtime_error("tfFindTCP: TCP is not a string!");
 
   auto composite_mi_fwd_kin =
-      environment_->getTesseract()->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(
-          manip_info.manipulator);
+      environment_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
   if (composite_mi_fwd_kin == nullptr)
     throw std::runtime_error("tfFindTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
 
