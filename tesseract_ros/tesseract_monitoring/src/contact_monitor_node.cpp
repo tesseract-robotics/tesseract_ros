@@ -32,7 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost/thread/thread.hpp>
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/srdf_model.h>
@@ -88,9 +89,9 @@ int main(int argc, char** argv)
   nh.getParam(robot_description, urdf_xml_string);
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
-  tesseract::Tesseract::Ptr tess = std::make_shared<tesseract::Tesseract>();
+  auto env = std::make_shared<tesseract_environment::Environment>();
   tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!tess->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!env->init<tesseract_environment::OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;
@@ -100,12 +101,12 @@ int main(int argc, char** argv)
   pnh.param<double>("contact_distance", contact_distance, DEFAULT_CONTACT_DISTANCE);
 
   std::vector<std::string> monitored_link_names;
-  monitored_link_names = tess->getEnvironment()->getLinkNames();
+  monitored_link_names = env->getLinkNames();
   if (pnh.hasParam("monitor_links"))
     pnh.getParam("monitor_links", monitored_link_names);
 
   if (monitored_link_names.empty())
-    monitored_link_names = tess->getEnvironment()->getLinkNames();
+    monitored_link_names = env->getLinkNames();
 
   int contact_test_type = 2;
   if (pnh.hasParam("contact_test_type"))
@@ -119,7 +120,7 @@ int main(int argc, char** argv)
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
   tesseract_monitoring::ContactMonitor cm(
-      monitor_namespace, tess, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
+      monitor_namespace, env, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
 
   if (publish_environment)
     cm.startPublishingEnvironment();

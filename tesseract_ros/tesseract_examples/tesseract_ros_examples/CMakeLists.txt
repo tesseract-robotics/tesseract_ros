@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
 )
 
-find_package(tesseract REQUIRED)
+find_package(tesseract_environment REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_process_managers REQUIRED)
@@ -27,7 +27,7 @@ catkin_package()
 tesseract_variables()
 
 add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.cpp)
-target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_process_managers ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_basic_cartesian_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_basic_cartesian_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_basic_cartesian_example PUBLIC VERSION 17)
@@ -64,7 +64,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM P
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_freespace_ompl_example src/freespace_ompl_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_ompl_example tesseract::tesseract tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_freespace_ompl_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_freespace_ompl_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_freespace_ompl_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_freespace_ompl_example PUBLIC VERSION 17)
@@ -86,7 +86,7 @@ target_include_directories(${PROJECT_NAME}_freespace_ompl_example_node SYSTEM PR
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_freespace_hybrid_example src/freespace_hybrid_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_hybrid_example tesseract::tesseract tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_freespace_hybrid_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_freespace_hybrid_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_freespace_hybrid_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_freespace_hybrid_example PUBLIC VERSION 17)
@@ -108,7 +108,7 @@ target_include_directories(${PROJECT_NAME}_freespace_hybrid_example_node SYSTEM 
     ${catkin_INCLUDE_DIRS})
 
 #add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
-#target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 #target_compile_options(${PROJECT_NAME}_car_seat_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 #target_clang_tidy(${PROJECT_NAME}_car_seat_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 #target_cxx_version(${PROJECT_NAME}_car_seat_example PUBLIC VERSION 17)
@@ -130,7 +130,7 @@ target_include_directories(${PROJECT_NAME}_freespace_hybrid_example_node SYSTEM 
 #    ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_glass_upright_example src/glass_upright_example.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_upright_example tesseract::tesseract tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_glass_upright_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_glass_upright_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_glass_upright_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_glass_upright_example PUBLIC VERSION 17)
@@ -154,7 +154,7 @@ target_include_directories(${PROJECT_NAME}_glass_upright_example_node SYSTEM PRI
 ## OMPL Constraint planning is not available in version less than 1.4
 #if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
 #  add_library(${PROJECT_NAME}_glass_upright_ompl_example src/glass_upright_ompl_example.cpp)
-#  target_link_libraries(${PROJECT_NAME}_glass_upright_ompl_example tesseract::tesseract trajopt::trajopt tesseract::tesseract_motion_planners_ompl tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+#  target_link_libraries(${PROJECT_NAME}_glass_upright_ompl_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt trajopt::trajopt tesseract::tesseract_motion_planners_ompl tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 #  target_compile_options(${PROJECT_NAME}_glass_upright_ompl_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 #  target_clang_tidy(${PROJECT_NAME}_glass_upright_ompl_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 #  target_cxx_version(${PROJECT_NAME}_glass_upright_ompl_example PUBLIC VERSION 17)
@@ -177,7 +177,7 @@ target_include_directories(${PROJECT_NAME}_glass_upright_example_node SYSTEM PRI
 #endif()
 
 add_library(${PROJECT_NAME}_online_planning_example src/online_planning_example.cpp)
-target_link_libraries(${PROJECT_NAME}_online_planning_example tesseract::tesseract trajopt::trajopt_ifopt trajopt::trajopt_sqp ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_online_planning_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt trajopt::trajopt_ifopt trajopt::trajopt_sqp ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_online_planning_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_online_planning_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_online_planning_example PUBLIC VERSION 17)
@@ -199,7 +199,7 @@ target_include_directories(${PROJECT_NAME}_online_planning_example_node SYSTEM P
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_pick_and_place_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_pick_and_place_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_pick_and_place_example PUBLIC VERSION 17)
@@ -221,7 +221,7 @@ target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PR
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_puzzle_piece_example src/puzzle_piece_example.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_example tesseract::tesseract tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_puzzle_piece_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_puzzle_piece_example PUBLIC VERSION 17)
@@ -243,7 +243,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIV
     ${catkin_INCLUDE_DIRS})
 
 #add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
-#target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 #target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 #target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 #target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC VERSION 17)
@@ -265,7 +265,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIV
 #    ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_scene_graph_example src/scene_graph_example.cpp)
-target_link_libraries(${PROJECT_NAME}_scene_graph_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_scene_graph_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_scene_graph_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_scene_graph_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_scene_graph_example PUBLIC VERSION 17)

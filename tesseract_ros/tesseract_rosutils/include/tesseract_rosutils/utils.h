@@ -75,7 +75,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
@@ -380,19 +379,19 @@ bool toMsg(sensor_msgs::JointState& joint_state_msg, const std::unordered_map<st
 bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_msgs::JointState& joint_state_msg);
 
 /**
- * @brief Converts a Tesseract object to a Tesseract msg
+ * @brief Converts a Environment object to a Tesseract msg
  * @param tesseract_msg Resulting Message
- * @param tesseract Input Tesseract object
+ * @param env Input Environment object
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract& tesseract);
+bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract_environment::Environment::ConstPtr& env);
 
 /**
- * @brief Converts a Tesseract msg to a Tesseract object
+ * @brief Converts a Tesseract msg to a Environment object
  * @param tesseract_msg Input Tesseract msg
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
-tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg);
+tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

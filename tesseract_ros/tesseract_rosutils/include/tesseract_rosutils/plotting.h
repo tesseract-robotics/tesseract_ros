@@ -44,7 +44,7 @@ class ROSPlotting : public tesseract_visualization::Visualization
 public:
   ROSPlotting(std::string root_link = "world", std::string topic_namespace = "tesseract");
 
-  bool init(tesseract::Tesseract::ConstPtr thor) override;
+  bool init(tesseract_environment::Environment::ConstPtr env) override;
 
   void plotTrajectory(const tesseract_msgs::Trajectory& traj);
 
@@ -114,16 +114,16 @@ public:
                                   const Eigen::Ref<const Eigen::VectorXd>& safety_distances);
 
 private:
-  tesseract::Tesseract::ConstPtr tesseract_; /**< The tesseract object */
-  std::string root_link_;                    /**< Root link of markers */
-  std::string topic_namespace_;              /**< Namespace used when publishing markers */
-  int marker_counter_;                       /**< Counter when plotting */
-  ros::Publisher scene_pub_;                 /**< Scene publisher */
-  ros::Publisher trajectory_pub_;            /**< Trajectory publisher */
-  ros::Publisher collisions_pub_;            /**< Collision Data publisher */
-  ros::Publisher arrows_pub_;                /**< Used for publishing arrow markers */
-  ros::Publisher axes_pub_;                  /**< Used for publishing axis markers */
-  ros::Publisher tool_path_pub_;             /**< Used for publishing tool path markers */
+  tesseract_environment::Environment::ConstPtr env_; /**< The tesseract object */
+  std::string root_link_;                            /**< Root link of markers */
+  std::string topic_namespace_;                      /**< Namespace used when publishing markers */
+  int marker_counter_;                               /**< Counter when plotting */
+  ros::Publisher scene_pub_;                         /**< Scene publisher */
+  ros::Publisher trajectory_pub_;                    /**< Trajectory publisher */
+  ros::Publisher collisions_pub_;                    /**< Collision Data publisher */
+  ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
+  ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
+  ros::Publisher tool_path_pub_;                     /**< Used for publishing tool path markers */
 };
 using ROSPlottingPtr = std::shared_ptr<ROSPlotting>;
 using ROSPlottingConstPtr = std::shared_ptr<const ROSPlotting>;
