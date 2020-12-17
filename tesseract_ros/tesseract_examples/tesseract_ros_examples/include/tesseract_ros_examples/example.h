@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/conversions.h>
 #include <tesseract_monitoring/environment_monitor.h>
@@ -54,7 +54,7 @@ class Example
 {
 public:
   Example(bool plotting, bool rviz)
-    : plotting_(plotting), rviz_(rviz), tesseract_(std::make_shared<tesseract::Tesseract>())
+    : plotting_(plotting), rviz_(rviz), env_(std::make_shared<tesseract_environment::Environment>())
   {
   }
   virtual ~Example() = default;
@@ -66,9 +66,9 @@ public:
   virtual bool run() = 0;
 
 protected:
-  bool plotting_;                       /**< @brief Enable plotting so data is published for rviz if available */
-  bool rviz_;                           /**< @brief Enable rviz updating */
-  tesseract::Tesseract::Ptr tesseract_; /**< @brief Tesseract Manager Class */
+  bool plotting_; /**< @brief Enable plotting so data is published for rviz if available */
+  bool rviz_;     /**< @brief Enable rviz updating */
+  tesseract_environment::Environment::Ptr env_;           /**< @brief Tesseract Manager Class */
   tesseract_monitoring::EnvironmentMonitor::Ptr monitor_; /**< @brief Tesseract Monitor */
 };
 

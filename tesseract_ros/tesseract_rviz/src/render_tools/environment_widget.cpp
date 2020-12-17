@@ -14,6 +14,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/utils.h>
+
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/link_widget.h>
 #include <tesseract_rviz/render_tools/environment_widget.h>
@@ -27,7 +31,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
   : widget_(widget)
   , display_(display)
   , visualization_(nullptr)
-  , tesseract_(nullptr)
+  , env_(nullptr)
   , update_required_(false)
   , update_state_(true)
   , load_tesseract_(true)
@@ -114,13 +118,13 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
 EnvironmentWidget::~EnvironmentWidget() = default;
 
 void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
-                                     tesseract::Tesseract::Ptr tesseract,
+                                     tesseract_environment::Environment::Ptr env,
                                      rviz::DisplayContext* /*context*/,
                                      const ros::NodeHandle& update_nh,
                                      bool update_state)
 {
   visualization_ = std::move(visualization);
-  tesseract_ = std::move(tesseract);
+  env_ = std::move(env);
   nh_ = update_nh;
   update_state_ = update_state;
 
@@ -160,12 +164,12 @@ void EnvironmentWidget::onUpdate()
   if (monitor_ != nullptr)
     lock = monitor_->lockEnvironmentRead();
 
-  if (visualization_ && tesseract_->isInitialized())
+  if (visualization_ && env_->isInitialized())
   {
-    int monitor_revision = tesseract_->getEnvironment()->getRevision();
+    int monitor_revision = env_->getRevision();
     if (monitor_revision > revision_)
     {
-      tesseract_environment::Commands commands = tesseract_->getEnvironment()->getCommandHistory();
+      tesseract_environment::Commands commands = env_->getCommandHistory();
       for (std::size_t i = static_cast<std::size_t>(revision_); i < static_cast<std::size_t>(monitor_revision); ++i)
         applyEnvironmentCommands(*commands[i]);
 
@@ -173,10 +177,10 @@ void EnvironmentWidget::onUpdate()
     }
   }
 
-  if (visualization_ && update_required_ && tesseract_->isInitialized())
+  if (visualization_ && update_required_ && env_->isInitialized())
   {
     update_required_ = false;
-    visualization_->update(tesseract_->getEnvironment()->getCurrentState()->link_transforms);
+    visualization_->update(env_->getCurrentState()->link_transforms);
   }
 }
 
@@ -477,7 +481,7 @@ void EnvironmentWidget::loadEnvironment()
 {
   load_tesseract_ = false;
 
-  tesseract_->clear();
+  env_->clear();
   visualization_->clear();
   if (display_mode_property_->getOptionInt() == 0)
   {
@@ -496,13 +500,13 @@ void EnvironmentWidget::loadEnvironment()
     else
     {
       tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-      if (tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
+      if (env_->init<tesseract_environment::OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
       {
         if (monitor_ != nullptr)
           monitor_->shutdown();
 
-        monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(tesseract_, widget_ns_);
-        revision_ = tesseract_->getEnvironment()->getRevision();
+        monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(env_, widget_ns_);
+        revision_ = env_->getRevision();
         //        setStatus(rviz::StatusProperty::Ok, "Tesseract", "Tesseract Environment Loaded Successfully");
       }
       else
@@ -517,9 +521,9 @@ void EnvironmentWidget::loadEnvironment()
     if (monitor_ != nullptr)
       monitor_->shutdown();
 
-    monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(tesseract_, widget_ns_);
-    if (tesseract_->isInitialized())
-      revision_ = tesseract_->getEnvironment()->getRevision();
+    monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(env_, widget_ns_);
+    if (env_->isInitialized())
+      revision_ = env_->getRevision();
     else
       revision_ = 0;
 
@@ -527,11 +531,11 @@ void EnvironmentWidget::loadEnvironment()
       monitor_->startMonitoringEnvironment(display_mode_string_property_->getStdString());
   }
 
-  if (load_tesseract_ == false && tesseract_->isInitialized())
+  if (load_tesseract_ == false && env_->isInitialized())
   {
-    visualization_->addSceneGraph(*(tesseract_->getEnvironment()->getSceneGraph()));
+    visualization_->addSceneGraph(*(env_->getSceneGraph()));
     bool oldState = root_link_name_property_->blockSignals(true);
-    root_link_name_property_->setStdString(tesseract_->getEnvironment()->getRootLinkName());
+    root_link_name_property_->setStdString(env_->getRootLinkName());
     root_link_name_property_->blockSignals(oldState);
     update_required_ = true;
 

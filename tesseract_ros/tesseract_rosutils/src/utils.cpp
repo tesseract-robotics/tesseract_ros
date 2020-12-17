@@ -2153,14 +2153,14 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
   return true;
 }
 
-bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract& tesseract)
+bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract_environment::Environment::ConstPtr& env)
 {
-  if (!tesseract_rosutils::toMsg(tesseract_msg.command_history, tesseract.getEnvironment()->getCommandHistory(), 0))
+  if (!tesseract_rosutils::toMsg(tesseract_msg.command_history, env->getCommandHistory(), 0))
   {
     return false;
   }
 
-  if (!tesseract_rosutils::toMsg(tesseract_msg.joint_states, tesseract.getEnvironment()->getCurrentState()->joints))
+  if (!tesseract_rosutils::toMsg(tesseract_msg.joint_states, env->getCurrentState()->joints))
   {
     return false;
   }
@@ -2168,7 +2168,7 @@ bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract::Tesseract&
   return true;
 }
 
-tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg)
+tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg)
 {
   tesseract_environment::Commands commands;
   try
@@ -2196,25 +2196,7 @@ tesseract::Tesseract::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg
   }
   env->setState(env_state->joints);
 
-  // TODO: Levi, I assume this needs to go somewhere else now. Where would that be?
-  //  auto manip_manager = std::make_shared<tesseract_environment::ManipulatorManager>();
-  //  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  //  manip_manager->init(env->getSceneGraph(), srdf);
-
-  //  if (!tesseract_rosutils::fromMsg(*manip_manager, tesseract_msg.kinematics_information))
-  //  {
-  //    ROS_ERROR_STREAM("Failed to populate manipulator manager from kinematics information!");
-  //    return nullptr;
-  //  }
-
-  auto thor = std::make_shared<tesseract::Tesseract>();
-  if (!thor->init(*env))
-  {
-    ROS_ERROR_STREAM("Failed to initialize tesseract!");
-    return nullptr;
-  }
-
-  return thor;
+  return env;
 }
 
 }  // namespace tesseract_rosutils

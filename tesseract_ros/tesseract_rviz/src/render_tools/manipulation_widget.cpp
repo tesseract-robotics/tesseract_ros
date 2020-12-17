@@ -57,7 +57,7 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   , widget_(widget)
   , display_(display)
   , visualization_(nullptr)
-  , tesseract_(nullptr)
+  , env_(nullptr)
   , state_(ManipulatorState::START)
   , env_revision_(0)
   , env_state_(nullptr)
@@ -136,34 +136,32 @@ ManipulationWidget::~ManipulationWidget()
 void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
                                       rviz::DisplayContext* context,
                                       VisualizationWidget::Ptr visualization,
-                                      tesseract::Tesseract::Ptr tesseract,
+                                      tesseract_environment::Environment::Ptr env,
                                       const ros::NodeHandle& update_nh,
                                       ManipulatorState state,
                                       const QString& joint_state_topic)
 {
   // Save pointers for later use
   visualization_ = std::move(visualization);
-  tesseract_ = std::move(tesseract);
+  env_ = std::move(env);
   context_ = context;
   nh_ = update_nh;
   state_ = state;
 
   root_interactive_node_ = root_node->createChildSceneNode();
-  if (tesseract_->isInitialized())
+  if (env_->isInitialized())
   {
     int cnt = 0;
     available_manipulators_.clear();
-    for (const auto& manip :
-         tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators())
+    for (const auto& manip : env_->getManipulatorManager()->getAvailableInvKinematicsManipulators())
     {
       available_manipulators_.push_back(QString::fromStdString(manip));
       manipulator_property_->addOptionStd(manip, cnt);
       ++cnt;
     }
 
-    auto env = tesseract_->getEnvironment();
-    env_revision_ = env->getRevision();
-    env_state_ = std::make_shared<tesseract_environment::EnvState>(*(env->getCurrentState()));
+    env_revision_ = env_->getRevision();
+    env_state_ = std::make_shared<tesseract_environment::EnvState>(*(env_->getCurrentState()));
     joints_ = env_state_->joints;
   }
 
@@ -262,16 +260,15 @@ void ManipulationWidget::resetToCurrentState() { env_state_ = nullptr; }
 
 bool ManipulationWidget::changeManipulator(const QString& manipulator)
 {
-  if (tesseract_->isInitialized())
+  if (env_->isInitialized())
   {
-    inv_kin_ = tesseract_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manipulator.toStdString());
+    inv_kin_ = env_->getManipulatorManager()->getInvKinematicSolver(manipulator.toStdString());
     if (inv_kin_ == nullptr)
       return false;
 
     manipulator_property_->setString(manipulator);
 
-    auto env = tesseract_->getEnvironment();
-    const auto& scene_graph = env->getSceneGraph();
+    const auto& scene_graph = env_->getSceneGraph();
     std::vector<std::string> joint_names = inv_kin_->getJointNames();
     const Eigen::MatrixX2d& limits = inv_kin_->getLimits().joint_limits;
     inv_seed_.resize(inv_kin_->numJoints());
@@ -298,7 +295,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     }
 
     // Need to update state information (transforms) because manipulator changes and
-    env_state_ = env->getState(joints_);
+    env_state_ = env_->getState(joints_);
 
     // Get available TCP's
     QString current_tcp = tcp_property_->getString();
@@ -330,7 +327,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     // Add 6 DOF interactive marker at the end of the manipulator
     interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF",
                                                                 "Move Robot",
-                                                                env->getRootLinkName(),
+                                                                env_->getRootLinkName(),
                                                                 root_interactive_node_,
                                                                 context_,
                                                                 true,
@@ -362,7 +359,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
       InteractiveMarker::Ptr interactive_marker =
           boost::make_shared<InteractiveMarker>(name,
                                                 disc,
-                                                env->getRootLinkName(),
+                                                env_->getRootLinkName(),
                                                 root_interactive_node_,
                                                 context_,
                                                 true,
@@ -561,7 +558,7 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
         ++i;
       }
 
-      env_state_ = tesseract_->getEnvironment()->getState(joints_);
+      env_state_ = env_->getState(joints_);
       updateEnvironmentVisualization();
       updateCartesianMarkerVisualization();
       udpateJointMarkerVisualization();
@@ -580,7 +577,7 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
                                              const Eigen::Vector3d& /*mouse_point*/,
                                              bool /*mouse_point_valid*/)
 {
-  const auto& scene_graph = tesseract_->getEnvironment()->getSceneGraph();
+  const auto& scene_graph = env_->getSceneGraph();
   const auto& joint = scene_graph->getJoint(joint_name);
   double current_joint_value = env_state_->joints[joint_name];
   Eigen::Isometry3d child_pose = env_state_->link_transforms[joint->child_link_name];
@@ -651,7 +648,7 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
     ++i;
   }
 
-  env_state_ = tesseract_->getEnvironment()->getState(joints_);
+  env_state_ = env_->getState(joints_);
   updateEnvironmentVisualization();
   updateCartesianMarkerVisualization();
   udpateJointMarkerVisualization();
@@ -674,7 +671,7 @@ void ManipulationWidget::userInputJointValuesChanged()
     ++i;
   }
 
-  env_state_ = tesseract_->getEnvironment()->getState(joints_);
+  env_state_ = env_->getState(joints_);
   updateEnvironmentVisualization();
   updateCartesianMarkerVisualization();
   udpateJointMarkerVisualization();
@@ -683,16 +680,15 @@ void ManipulationWidget::userInputJointValuesChanged()
 
 void ManipulationWidget::onUpdate(float wall_dt)
 {
-  if (!tesseract_->isInitialized() || !visualization_)
+  if (!env_->isInitialized() || !visualization_)
     return;
 
-  if (tesseract_->isInitialized())
+  if (env_->isInitialized())
   {
-    auto env = tesseract_->getEnvironment();
-    if (env_revision_ != env->getRevision() || !env_state_)
+    if (env_revision_ != env_->getRevision() || !env_state_)
     {
-      env_revision_ = env->getRevision();
-      env_state_ = std::make_shared<tesseract_environment::EnvState>(*(env->getCurrentState()));
+      env_revision_ = env_->getRevision();
+      env_state_ = std::make_shared<tesseract_environment::EnvState>(*(env_->getCurrentState()));
       joints_ = env_state_->joints;
       updateEnvironmentVisualization();
 
@@ -718,16 +714,14 @@ void ManipulationWidget::onUpdate(float wall_dt)
       changedManipulator();
 
     std::string current_manipulator = manipulator_property_->getStdString();
-    std::vector<std::string> manipulators =
-        tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators();
+    std::vector<std::string> manipulators = env_->getManipulatorManager()->getAvailableInvKinematicsManipulators();
 
     if (manipulators_.size() != manipulators.size() && !manipulators.empty())
     {
       int cnt = 0;
       manipulator_property_->clearOptions();
       available_manipulators_.clear();
-      for (const auto& manip :
-           tesseract_->getEnvironment()->getManipulatorManager()->getAvailableInvKinematicsManipulators())
+      for (const auto& manip : env_->getManipulatorManager()->getAvailableInvKinematicsManipulators())
       {
         available_manipulators_.push_back(QString::fromStdString(manip));
         manipulator_property_->addOptionStd(manip, cnt);
@@ -791,7 +785,7 @@ void ManipulationWidget::updateCartesianMarkerVisualization()
 
 void ManipulationWidget::udpateJointMarkerVisualization()
 {
-  const auto& scene_graph = tesseract_->getEnvironment()->getSceneGraph();
+  const auto& scene_graph = env_->getSceneGraph();
   for (auto& joint_marker : joint_interactive_markers_)
   {
     const auto& joint = scene_graph->getJoint(joint_marker.first);

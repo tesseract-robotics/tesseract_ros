@@ -11,7 +11,7 @@
   <build_depend>cmake_common_scripts</build_depend>
 
   <depend>tesseract_msgs</depend>
-  <depend>tesseract</depend>
+  <depend>tesseract_environment</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_monitoring</depend>

@@ -46,20 +46,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager)
-  : CurrentStateMonitor(env, std::move(manipulator_manager), ros::NodeHandle())
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env)
+  : CurrentStateMonitor(env, ros::NodeHandle())
 {
 }
 
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         tesseract_environment::ManipulatorManager::ConstPtr manipulator_manager,
                                          const ros::NodeHandle& nh)
   : nh_(nh)
   , env_(env)
   , env_state_(*env->getCurrentState())
   , last_environment_revision_(env_->getRevision())
-  , manipulator_manager_(std::move(manipulator_manager))
   , state_monitor_started_(false)
   , copy_dynamics_(false)
   , error_(std::numeric_limits<double>::epsilon())
@@ -292,7 +289,7 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
   std::vector<std::string> missing_joints;
   if (!haveCompleteState(missing_joints))
   {
-    const tesseract_kinematics::ForwardKinematics::ConstPtr& jmg = manipulator_manager_->getFwdKinematicSolver(manip);
+    tesseract_kinematics::ForwardKinematics::ConstPtr jmg = env_->getManipulatorManager()->getFwdKinematicSolver(manip);
     if (jmg)
     {
       std::set<std::string> mj;

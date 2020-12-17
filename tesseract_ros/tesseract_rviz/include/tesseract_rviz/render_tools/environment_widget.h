@@ -14,7 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/subscriber.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <std_msgs/ColorRGBA.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #endif
@@ -43,7 +43,7 @@ public:
   virtual ~EnvironmentWidget();
 
   void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract::Tesseract::Ptr tesseract,
+                    tesseract_environment::Environment::Ptr env,
                     rviz::DisplayContext* context,
                     const ros::NodeHandle& update_nh,
                     bool update_state);
@@ -70,7 +70,7 @@ protected:
   rviz::Property* widget_;
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle nh_;
   std::unique_ptr<tesseract_monitoring::EnvironmentMonitor> monitor_;
   int revision_{ 0 }; /**< The current revision of the visualization environment */

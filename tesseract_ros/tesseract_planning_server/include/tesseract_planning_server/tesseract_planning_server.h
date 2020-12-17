@@ -69,7 +69,7 @@ public:
    * @brief This will pop a Tesseract object from the queue
    * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
    */
-  tesseract::Tesseract::Ptr getCachedEnvironment() override;
+  tesseract_environment::Environment::Ptr getCachedEnvironment() override;
 
 protected:
   /** @brief The tesseract_object used to create the cache */
@@ -82,7 +82,7 @@ protected:
   std::size_t cache_size_{ 5 };
 
   /** @brief A vector of cached Tesseact objects */
-  std::deque<tesseract::Tesseract::Ptr> cache_;
+  std::deque<tesseract_environment::Environment::Ptr> cache_;
 
   /** @brief The mutex used when reading and writing to cache_ */
   mutable std::shared_mutex cache_mutex_;
@@ -100,7 +100,7 @@ public:
                           std::string discrete_plugin = "",
                           std::string continuous_plugin = "");
 
-  TesseractPlanningServer(std::shared_ptr<tesseract::Tesseract> tesseract,
+  TesseractPlanningServer(tesseract_environment::Environment::Ptr env,
                           std::string name,
                           std::string discrete_plugin = "",
                           std::string continuous_plugin = "");

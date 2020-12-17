@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 
-using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_rosutils;
@@ -59,23 +58,23 @@ bool SceneGraphExample::run()
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
-  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(tesseract_, EXAMPLE_MONITOR_NAMESPACE);
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env_, EXAMPLE_MONITOR_NAMESPACE);
   if (rviz_)
     monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
 
   ros::spinOnce();
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example.dot");
+    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example.dot");
   }
 
   // Create plotting tool
   ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
-  plotter->init(tesseract_);
+  plotter->init(env_);
 
   if (plotting_)
   {
@@ -92,7 +91,7 @@ bool SceneGraphExample::run()
   // Save the scene graph to a file and publish the change
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
+    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
   }
 
   if (plotting_)
@@ -117,7 +116,7 @@ bool SceneGraphExample::run()
   // Save the scene graph to a file and publish the change
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getTesseract()->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
+    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
   }
 
   if (plotting_)
