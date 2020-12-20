@@ -45,6 +45,7 @@ catkin_package(
     tesseract_common
     tesseract_motion_planners
     tesseract_command_language
+    tesseract_environment
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
