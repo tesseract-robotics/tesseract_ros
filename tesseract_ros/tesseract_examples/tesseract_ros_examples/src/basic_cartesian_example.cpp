@@ -223,7 +223,7 @@ bool BasicCartesianExample::run()
   planning_server.waitForAll();
 
   // Plot Process Trajectory
-  if (plotter != nullptr && plotter->isConnected())
+  if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
     plotter->plotToolPath(*(response.results));
