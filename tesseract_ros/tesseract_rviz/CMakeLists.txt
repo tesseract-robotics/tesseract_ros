@@ -71,7 +71,7 @@ catkin_package(
     Boost
     OGRE
     QT
-    tesseract
+    tesseract_environment
     tesseract_common
     tesseract_visualization
 )

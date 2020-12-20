@@ -245,7 +245,7 @@ bool PickAndPlaceExample::run()
   planning_server.waitForAll();
 
   // Plot Process Trajectory
-  if (plotter != nullptr && plotter->isConnected())
+  if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
     plotter->plotToolPath(*(pick_response.results));
@@ -351,7 +351,7 @@ bool PickAndPlaceExample::run()
   planning_server.waitForAll();
 
   // Plot Process Trajectory
-  if (plotter != nullptr && plotter->isConnected())
+  if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
     plotter->plotToolPath(*(place_response.results));
