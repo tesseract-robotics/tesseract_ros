@@ -30,6 +30,7 @@ catkin_package(
   DEPENDS
     tesseract_command_language
     tesseract_process_managers
+    tesseract_common
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
