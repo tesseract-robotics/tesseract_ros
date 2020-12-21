@@ -1,6 +1,12 @@
-# Tesseract
+# Tesseract ROS
 
-[![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/CI/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions?query=branch%3Amaster+)
+Platform             | CI Status
+---------------------|:---------
+Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
+Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
+Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
+Lint  (Clang Tidy)   | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
+
 [![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract_ros.svg)](http://github.com/ros-industrial-consortium/tesseract_ros/issues)
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -16,6 +22,7 @@
 * **tesseract_msgs** – This package contains the ROS message types used by Tesseract ROS.
 * **tesseract_rviz** – This package contains the ROS visualization plugins for Rviz to visualize Tesseract. All of the features have been composed in libraries to enable to the ability to create custom displays quickly.
 * **tesseract_monitoring** – This package contains different types of environment monitors. It currently contains a contact monitor and environment monitor. The contact monitor will monitor the active environment state and publish contact information. This is useful if the robot is being controlled outside of ROS, but you want to make sure it does not collide with objects in the environment. The second is the environment monitor, which is the main environment which facilitates requests to add, remove, disable and enable collision objects, while publishing its current state to keep other ROS nodes updated with the latest environment.
+* **tesseract_planning_server** - This package contains a planning server supporting asynchronous execution of multiple planning requests.
 
 ## TODO's
 
