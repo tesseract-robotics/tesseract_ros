@@ -60,9 +60,6 @@ private:
   ros::NodeHandle nh_;
   std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_positions_;
 
-  std::shared_ptr<trajopt::ProblemConstructionInfo> cppMethod(const std::string& start, const std::string& finish);
-  void addSeats();
-  void addCar();
   std::unordered_map<std::string, std::unordered_map<std::string, double>> getPredefinedPosition();
   std::vector<double> getPositionVector(const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
                                         const std::unordered_map<std::string, double>& pos);

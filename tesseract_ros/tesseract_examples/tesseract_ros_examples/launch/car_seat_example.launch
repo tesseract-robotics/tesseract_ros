@@ -2,13 +2,9 @@
 <launch>
  <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
-  <arg name="trajopt_description" default="trajopt_description"/>
   <arg name="plotting" default="true"/>
   <arg name="rviz" default="true"/>
   <arg name="testing" default="false"/>
-
-  <!-- Load universal robot description format (URDF) -->
-<!--  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/basic_cartesian_plan.json"/>-->
 
   <!-- Load universal robot description format (URDF) -->
   <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find tesseract_ros_examples)/urdf/car_seat_demo.xacro'" />
