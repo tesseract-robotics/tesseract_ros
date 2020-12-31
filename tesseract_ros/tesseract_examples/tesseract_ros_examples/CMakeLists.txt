@@ -242,27 +242,27 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
-#add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
-#target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-#target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-#target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-#target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC VERSION 17)
-#target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include>")
-#target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example SYSTEM PUBLIC
-#    ${catkin_INCLUDE_DIRS})
+add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
 
-#add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node src/puzzle_piece_auxillary_axes_example_node.cpp)
-#target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
-#target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-#target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-#target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PUBLIC VERSION 17)
-#target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include>")
-#target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node SYSTEM PRIVATE
-#    ${catkin_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node src/puzzle_piece_auxillary_axes_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_scene_graph_example src/scene_graph_example.cpp)
 target_link_libraries(${PROJECT_NAME}_scene_graph_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
@@ -310,8 +310,8 @@ install(
     ${PROJECT_NAME}_pick_and_place_example_node
     ${PROJECT_NAME}_puzzle_piece_example
     ${PROJECT_NAME}_puzzle_piece_example_node
-#    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
-#    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
+    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
+    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
     ${PROJECT_NAME}_scene_graph_example
     ${PROJECT_NAME}_scene_graph_example_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -390,15 +390,16 @@ if(CATKIN_ENABLE_TESTING)
     target_include_directories(${PROJECT_NAME}_puzzle_piece_example_unit SYSTEM PRIVATE
         ${catkin_INCLUDE_DIRS})
 
-#    add_rostest_gtest(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit test/puzzle_piece_auxillary_axes_example_unit.test test/puzzle_piece_auxillary_axes_example_unit.cpp)
-#    target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
-#    tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE)
-#    tesseract_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit)
-#    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE
-#        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#        "$<INSTALL_INTERFACE:include>")
-#    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit SYSTEM PRIVATE
-#        ${catkin_INCLUDE_DIRS})
+    add_rostest_gtest(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit test/puzzle_piece_auxillary_axes_example_unit.test test/puzzle_piece_auxillary_axes_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+    target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+    target_cxx_version(${PROJECT_NAME}_puzzle_piece_example_unit PUBLIC VERSION 17)
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit SYSTEM PRIVATE
+        ${catkin_INCLUDE_DIRS})
 
     add_rostest_gtest(${PROJECT_NAME}_pick_and_place_example_unit test/pick_and_place_example_unit.test test/pick_and_place_example_unit.cpp)
     target_link_libraries(${PROJECT_NAME}_pick_and_place_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})

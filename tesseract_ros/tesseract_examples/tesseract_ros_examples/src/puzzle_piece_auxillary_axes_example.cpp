@@ -33,23 +33,31 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <trajopt/plot_callback.hpp>
-#include <trajopt/problem_description.hpp>
-#include <trajopt_utils/config.hpp>
-#include <trajopt_utils/logging.hpp>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/types.h>
+#include <tesseract_command_language/utils/utils.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
+#include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_planning_server/tesseract_planning_server.h>
 
 using namespace trajopt;
-using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM =
-    "robot_description_semantic"; /**< Default ROS parameter for robot description */
-const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
-const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief RViz Example Namespace */
+const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
@@ -113,185 +121,168 @@ tesseract_common::VectorIsometry3d PuzzlePieceAuxillaryAxesExample::makePuzzleTo
   return path;
 }
 
-ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
-{
-  ProblemConstructionInfo pci(tesseract_);
-
-  tesseract_common::VectorIsometry3d tool_poses = makePuzzleToolPoses();
-
-  // Populate Basic Info
-  pci.basic_info.n_steps = static_cast<int>(tool_poses.size());
-  pci.basic_info.manip = "manipulator_aux";
-  pci.basic_info.start_fixed = false;
-  pci.basic_info.use_time = false;
-  pci.basic_info.convex_solver = sco::ModelType::BPMPD;
-
-  // Create Kinematic Object
-  pci.kin = pci.getManipulator(pci.basic_info.manip);
-
-  pci.opt_info.max_iter = 200;
-  pci.opt_info.min_approx_improve = 1e-3;
-  pci.opt_info.min_trust_box_size = 1e-3;
-
-  // Populate Init Info
-  Eigen::VectorXd start_pos = pci.env->getCurrentJointValues(pci.kin->getJointNames());
-
-  pci.init_info.type = InitInfo::GIVEN_TRAJ;
-  pci.init_info.data = start_pos.transpose().replicate(pci.basic_info.n_steps, 1);
-  //  pci.init_info.data.col(6) = VectorXd::LinSpaced(steps_, start_pos[6],
-  //  end_pos[6]);
-
-  // Populate Cost Info
-  auto joint_vel = std::make_shared<JointVelTermInfo>();
-  joint_vel->coeffs = std::vector<double>(9, 1.0);
-  joint_vel->targets = std::vector<double>(9, 0.0);
-  joint_vel->first_step = 0;
-  joint_vel->last_step = pci.basic_info.n_steps - 1;
-  joint_vel->name = "joint_vel";
-  joint_vel->term_type = TT_COST;
-  pci.cost_infos.push_back(joint_vel);
-
-  auto joint_acc = std::make_shared<JointAccTermInfo>();
-  joint_acc->coeffs = std::vector<double>(9, 2.0);
-  joint_acc->targets = std::vector<double>(9, 0.0);
-  joint_acc->first_step = 0;
-  joint_acc->last_step = pci.basic_info.n_steps - 1;
-  joint_acc->name = "joint_acc";
-  joint_acc->term_type = TT_COST;
-  pci.cost_infos.push_back(joint_acc);
-
-  auto joint_jerk = std::make_shared<JointJerkTermInfo>();
-  joint_jerk->coeffs = std::vector<double>(9, 5.0);
-  joint_jerk->targets = std::vector<double>(9, 0.0);
-  joint_jerk->first_step = 0;
-  joint_jerk->last_step = pci.basic_info.n_steps - 1;
-  joint_jerk->name = "joint_jerk";
-  joint_jerk->term_type = TT_COST;
-  pci.cost_infos.push_back(joint_jerk);
-
-  auto collision = std::make_shared<CollisionTermInfo>();
-  collision->name = "collision";
-  collision->term_type = TT_COST;
-  collision->evaluator_type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
-  collision->first_step = 0;
-  collision->last_step = pci.basic_info.n_steps - 1;
-  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 1);
-  pci.cost_infos.push_back(collision);
-
-  // Populate Constraints
-  for (auto i = 0; i < pci.basic_info.n_steps; ++i)
-  {
-    auto pose = std::make_shared<DynamicCartPoseTermInfo>();
-    pose->term_type = TT_CNT;
-    pose->name = "waypoint_cart_" + std::to_string(i);
-    pose->target = "grinder_frame";
-    pose->timestep = i;
-
-    pose->link = "part";
-    pose->tcp = tool_poses[static_cast<size_t>(i)];
-    pose->pos_coeffs = Eigen::Vector3d(5, 5, 5);
-    pose->rot_coeffs = Eigen::Vector3d(2, 2, 0);
-
-    pci.cnt_infos.push_back(pose);
-  }
-
-  return pci;
-}
-
 bool PuzzlePieceAuxillaryAxesExample::run()
 {
+  using tesseract_planning::CartesianWaypoint;
+  using tesseract_planning::CompositeInstruction;
+  using tesseract_planning::CompositeInstructionOrder;
+  using tesseract_planning::Instruction;
+  using tesseract_planning::ManipulatorInfo;
+  using tesseract_planning::PlanInstruction;
+  using tesseract_planning::PlanInstructionType;
+  using tesseract_planning::ProcessPlanningFuture;
+  using tesseract_planning::ProcessPlanningRequest;
+  using tesseract_planning::ProcessPlanningServer;
+  using tesseract_planning::StateWaypoint;
+  using tesseract_planning::ToolCenterPoint;
+  using tesseract_planning::Waypoint;
+  using tesseract_planning_server::ROSProcessEnvironmentCache;
+
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
+  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
+  // Create monitor
+  monitor_ = std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env_, EXAMPLE_MONITOR_NAMESPACE);
+  if (rviz_)
+    monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
+
   // Create plotting tool
-  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment()->getSceneGraph()->getRoot());
-
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
+  plotter->init(env_);
   if (rviz_)
-  {
-    // These are used to keep visualization updated
-    modify_env_rviz_ = nh_.serviceClient<tesseract_msgs::ModifyEnvironment>(MODIFY_ENVIRONMENT_SERVICE, false);
-    get_env_changes_rviz_ =
-        nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
+    plotter->waitForConnection();
 
-    // Check RViz to make sure nothing has changed
-    if (!checkRviz())
-      return false;
-  }
   // Set the robot initial state
-  std::unordered_map<std::string, double> ipos;
-  ipos["joint_a1"] = -0.785398;
-  ipos["joint_a2"] = 0.4;
-  ipos["joint_a3"] = 0.0;
-  ipos["joint_a4"] = -1.9;
-  ipos["joint_a5"] = 0.0;
-  ipos["joint_a6"] = 1.0;
-  ipos["joint_a7"] = 0.0;
-  ipos["joint_aux1"] = 0.0;
-  ipos["joint_aux2"] = 0.0;
-  tesseract_->getEnvironment()->setState(ipos);
+  std::vector<std::string> joint_names;
+  joint_names.push_back("joint_a1");
+  joint_names.push_back("joint_a2");
+  joint_names.push_back("joint_a3");
+  joint_names.push_back("joint_a4");
+  joint_names.push_back("joint_a5");
+  joint_names.push_back("joint_a6");
+  joint_names.push_back("joint_a7");
+  joint_names.push_back("joint_aux1");
+  joint_names.push_back("joint_aux2");
 
-  if (rviz_)
+  Eigen::VectorXd joint_pos(9);
+  joint_pos(0) = -0.785398;
+  joint_pos(1) = 0.4;
+  joint_pos(2) = 0.0;
+  joint_pos(3) = -1.9;
+  joint_pos(4) = 0.0;
+  joint_pos(5) = 1.0;
+  joint_pos(6) = 0.0;
+  joint_pos(7) = 0.0;
+  joint_pos(8) = 0.0;
+
+  env_->setState(joint_names, joint_pos);
+
+  // Get Tool Poses
+  tesseract_common::VectorIsometry3d tool_poses = makePuzzleToolPoses();
+
+  // Create manipulator information for program
+  ManipulatorInfo mi;
+  mi.manipulator = "manipulator_aux";
+  mi.working_frame = "part";
+  mi.tcp = ToolCenterPoint("grinder_frame", true);  // true - indicates this is an external TCP
+
+  // Create Program
+  CompositeInstruction program("DEFAULT", CompositeInstructionOrder::ORDERED, mi);
+
+  // Create cartesian waypoint
+  Waypoint wp = CartesianWaypoint(tool_poses[0]);
+  PlanInstruction plan_instruction(wp, PlanInstructionType::START, "CARTESIAN");
+  plan_instruction.setDescription("from_start_plan");
+  program.setStartInstruction(plan_instruction);
+
+  for (std::size_t i = 1; i < tool_poses.size(); ++i)
   {
-    // Now update rviz environment
-    if (!sendRvizChanges(0))
-      return false;
+    Waypoint wp = CartesianWaypoint(tool_poses[i]);
+    PlanInstruction plan_instruction(wp, PlanInstructionType::LINEAR, "CARTESIAN");
+    plan_instruction.setDescription("waypoint_" + std::to_string(i));
+    program.push_back(plan_instruction);
   }
 
-  // Set Log Level
-  util::gLogLevel = util::LevelError;
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
+  planning_server.loadDefaultProcessPlanners();
 
-  // Setup Problem
-  ProblemConstructionInfo pci = cppMethod();
-  TrajOptProb::Ptr prob = ConstructProblem(pci);
+  // Create a trajopt taskflow without post collision checking
+  /** @todo This matches the original example, but should update to include post collision check */
+  const std::string new_planner_name = "TRAJOPT_NO_POST_CHECK";
+  tesseract_planning::TrajOptTaskflowParams params;
+  params.enable_post_contact_discrete_check = false;
+  params.enable_post_contact_continuous_check = false;
+  planning_server.registerProcessPlanner(new_planner_name,
+                                         std::make_unique<tesseract_planning::TrajOptTaskflow>(params));
 
-  // Solve Trajectory
-  ROS_INFO("puzzle piece plan");
+  // Create TrajOpt Profile
+  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
+  trajopt_plan_profile->cartesian_coeff(3) = 2;
+  trajopt_plan_profile->cartesian_coeff(4) = 2;
+  trajopt_plan_profile->cartesian_coeff(5) = 0;
 
-  std::vector<ContactResultMap> collisions;
-  tesseract_environment::StateSolver::Ptr state_solver = prob->GetEnv()->getStateSolver();
-  ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMap::Ptr adjacency_map =
-      std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
-                                                            prob->GetKin()->getActiveLinkNames(),
-                                                            prob->GetEnv()->getCurrentState()->link_transforms);
+  auto trajopt_composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  trajopt_composite_profile->collision_constraint_config.enabled = false;
+  trajopt_composite_profile->collision_cost_config.enabled = true;
+  trajopt_composite_profile->collision_cost_config.safety_margin = 0.025;
+  trajopt_composite_profile->collision_cost_config.type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
+  trajopt_composite_profile->collision_cost_config.coeff = 1;
 
-  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  manager->setContactDistanceThreshold(0);
-  collisions.clear();
-  bool found =
-      checkTrajectory(collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), prob->GetInitTraj());
+  auto trajopt_solver_profile = std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>();
+  trajopt_solver_profile->convex_solver = sco::ModelType::BPMPD;
+  trajopt_solver_profile->opt_info.max_iter = 200;
+  trajopt_solver_profile->opt_info.min_approx_improve = 1e-3;
+  trajopt_solver_profile->opt_info.min_trust_box_size = 1e-3;
 
-  ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
+  // Add profile to Dictionary
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("CARTESIAN", trajopt_plan_profile);
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("DEFAULT",
+                                                                                         trajopt_composite_profile);
+  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptSolverProfile>("DEFAULT",
+                                                                                      trajopt_solver_profile);
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = new_planner_name;
+  request.instructions = Instruction(program);
 
-  sco::BasicTrustRegionSQP opt(prob);
-  opt.setParameters(pci.opt_info);
-  if (plotting_)
-    opt.addCallback(PlotCallback(*prob, plotter));
+  // Create Naive Seed
+  /** @todo Need to improve simple planners to support external tcp definitions */
+  tesseract_planning::CompositeInstruction naive_seed;
+  {
+    auto lock = monitor_->lockEnvironmentRead();
+    naive_seed = tesseract_planning::generateNaiveSeed(program, *(monitor_->getEnvironment()));
+  }
+  request.seed = Instruction(naive_seed);
 
-  opt.initialize(trajToDblVec(prob->GetInitTraj()));
-  ros::Time tStart = ros::Time::now();
-  sco::OptStatus status = opt.optimize();
-  ROS_INFO("Optimization Status: %s, Planning time: %.3f",
-           sco::statusToString(status).c_str(),
-           (ros::Time::now() - tStart).toSec());
+  // Print Diagnostics
+  request.instructions.print("Program: ");
+  request.seed.print("Seed: ");
 
-  if (plotting_)
-    plotter->clear();
+  if (rviz_)
+    plotter->waitForInput();
 
-  collisions.clear();
-  found = checkTrajectory(
-      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
 
-  ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
+  // Plot Process Trajectory
+  if (rviz_ && plotter != nullptr && plotter->isConnected())
+  {
+    plotter->waitForInput();
+    plotter->plotTrajectory(*(response.results));
+  }
 
-  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
-
+  ROS_INFO("Final trajectory is collision free");
   return true;
 }
 }  // namespace tesseract_ros_examples
