@@ -11,14 +11,14 @@ using namespace tesseract_ros_examples;
 TEST(TesseractROSExamples, GlassUprightCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
-  GlassUprightExample example(nh, false, false, 5, false, "cpp");
+  GlassUprightExample example(nh, false, false, false);
   EXPECT_TRUE(example.run());
 }
 
 TEST(TesseractROSExamples, GlassUprightJsonExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
-  GlassUprightExample example(nh, false, false, 5, false, "json");
+  GlassUprightExample example(nh, false, false, false);
   EXPECT_TRUE(example.run());
 }
 

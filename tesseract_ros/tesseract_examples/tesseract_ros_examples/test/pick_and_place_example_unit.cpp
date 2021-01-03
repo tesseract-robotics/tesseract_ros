@@ -11,7 +11,7 @@ using namespace tesseract_ros_examples;
 TEST(TesseractROSExamples, PickAndPlaceCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
-  PickAndPlaceExample example(nh, false, false, 5, false);
+  PickAndPlaceExample example(nh, false, false);
   EXPECT_TRUE(example.run());
 }
 
