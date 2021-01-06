@@ -138,7 +138,6 @@ void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualizatio
   nh_ = update_nh;
 
   previous_display_mode_ = display_mode_property_->getOptionInt();
-  trajectory_player_.enableLoop(display_mode_property_->getOptionInt() == 1);
 
   rviz::WindowManagerInterface* window_context = context_->getWindowManager();
   if (window_context)
@@ -247,7 +246,6 @@ void TrajectoryMonitorWidget::changedDisplayMode()
 
     visualization_->setStartStateVisible(true);
     visualization_->setTrajectoryVisible(false);
-    trajectory_player_.enableLoop(display_mode_property_->getOptionInt() == 1);
 
     clearTrajectoryTrail();
 
@@ -320,8 +318,8 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       if (display_mode_property_->getOptionInt() == 2)
         animating_path_ = false;
 
-      trajectory_player_.setProgram(
-          *trajectory_to_display_instruction_.cast_const<tesseract_planning::CompositeInstruction>());
+      displaying_instruction_ = trajectory_to_display_instruction_;
+      trajectory_player_.setProgram(*displaying_instruction_.cast_const<tesseract_planning::CompositeInstruction>());
       slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
@@ -364,6 +362,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 
     if (animating_path_)
     {
+      trajectory_player_.reset();
       tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(0);
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
@@ -377,30 +376,40 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 
   if (animating_path_)
   {
-    tesseract_environment::EnvState::Ptr state;
-    if (trajectory_slider_panel_ != nullptr && trajectory_slider_panel_->isPaused())
+    if (trajectory_slider_panel_ != nullptr && trajectory_slider_panel_->isVisible() &&
+        trajectory_slider_panel_->isPaused())
     {
       double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) * SLIDER_RESOLUTION;
       tesseract_planning::MoveInstruction mi = trajectory_player_.setCurrentDuration(duration);
       const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
       const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-      state = env_->getState(joint_names, joint_values);
+      tesseract_environment::EnvState::Ptr state = env_->getState(joint_names, joint_values);
+      visualization_->setStartState(state->link_transforms);
     }
     else
     {
-      tesseract_planning::MoveInstruction mi = trajectory_player_.getNext();
-      const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
-      const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
-      state = env_->getState(joint_names, joint_values);
-
-      if (trajectory_slider_panel_ != nullptr)
+      if (trajectory_player_.isFinished())
       {
-        int slider_index = static_cast<int>(std::ceil(trajectory_player_.currentDuration() / SLIDER_RESOLUTION));
-        trajectory_slider_panel_->setSliderPosition(slider_index);
+        animating_path_ = false;  // animation finished
+        if ((display_mode_property_->getOptionInt() != 1) && trajectory_slider_panel_)
+          trajectory_slider_panel_->pauseButton(true);
+      }
+      else
+      {
+        tesseract_planning::MoveInstruction mi = trajectory_player_.getNext();
+        const Eigen::VectorXd& joint_values = tesseract_planning::getJointPosition(mi.getWaypoint());
+        const std::vector<std::string>& joint_names = tesseract_planning::getJointNames(mi.getWaypoint());
+        tesseract_environment::EnvState::Ptr state = env_->getState(joint_names, joint_values);
+
+        if (trajectory_slider_panel_ != nullptr)
+        {
+          int slider_index = static_cast<int>(std::ceil(trajectory_player_.currentDuration() / SLIDER_RESOLUTION));
+          trajectory_slider_panel_->setSliderPosition(slider_index);
+        }
+
+        visualization_->setStartState(state->link_transforms);
       }
     }
-
-    visualization_->setStartState(state->link_transforms);
   }
 }
 
