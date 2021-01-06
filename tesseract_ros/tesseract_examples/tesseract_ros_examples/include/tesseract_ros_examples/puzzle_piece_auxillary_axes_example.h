@@ -63,8 +63,6 @@ public:
 private:
   ros::NodeHandle nh_;
 
-  trajopt::ProblemConstructionInfo cppMethod();
-
   tesseract_common::VectorIsometry3d makePuzzleToolPoses();
 };
 

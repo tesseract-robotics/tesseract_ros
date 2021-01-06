@@ -486,7 +486,6 @@ bool VisualizationWidget::moveLink(const tesseract_scene_graph::Joint& joint)
     return false;
 
   scene_graph_->removeJoint(joints[0]->getName());
-  scene_graph_->addJoint(joint.clone());
 
   return true;
 }
