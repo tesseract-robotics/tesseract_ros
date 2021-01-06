@@ -210,21 +210,13 @@ bool OnlinePlanningExample::setupProblem()
   {
     double margin_coeff = .1;
     double margin = 0.1;
-    trajopt::SafetyMarginData::ConstPtr margin_data = std::make_shared<trajopt::SafetyMarginData>(margin, margin_coeff);
-    double safety_margin_buffer = 0.10;
-    sco::VarVector var_vector;  // unused
+    trajopt::TrajOptCollisionConfig collision_config(margin, margin_coeff);
+    collision_config.contact_request.type = tesseract_collision::ContactTestType::CLOSEST;
+    collision_config.type = CollisionEvaluatorType::DISCRETE;
+    collision_config.collision_margin_buffer = 0.10;
 
-    auto collision_evaluator = std::make_shared<trajopt::SingleTimestepCollisionEvaluator>(
-        manipulator_fk_,
-        env_,
-        manipulator_adjacency_map_,
-        Eigen::Isometry3d::Identity(),
-        margin_data,
-        tesseract_collision::ContactTestType::CLOSEST,
-        var_vector,
-        trajopt::CollisionExpressionEvaluatorType::SINGLE_TIME_STEP,
-        safety_margin_buffer,
-        true);
+    auto collision_evaluator = std::make_shared<trajopt::DiscreteCollisionEvaluator>(
+        manipulator_fk_, env_, manipulator_adjacency_map_, Eigen::Isometry3d::Identity(), collision_config, true);
 
     auto collision_constraint = std::make_shared<trajopt::CollisionConstraintIfopt>(collision_evaluator, vars[i]);
     collision_constraint->LinkWithVariables(nlp_.GetOptVariables());
