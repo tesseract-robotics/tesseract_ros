@@ -38,7 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
-#include <tesseract_process_managers/core/process_input.h>
 #include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 
