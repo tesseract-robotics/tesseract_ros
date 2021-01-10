@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/CommandLanguage
   pull_request:
   schedule:
     - cron: '0 5 * * *'
@@ -17,11 +16,11 @@ jobs:
       CI_NAME: Clang-Tidy
       OS_NAME: ubuntu
       OS_CODE_NAME: bionic
-      ROS_DISTRO: melodic
+      ROS_DISTRO: noetic
       ROS_REPO: main
-      UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master'
-      ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts fcl iwyu taskflow"
-      DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
+      UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+      ROSDEP_SKIP_KEYS: "bullet bullet-extras cmake_common_scripts fcl iwyu taskflow"
+      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Clang-Tidy/.ccache"
       NOT_TEST_BUILD: true
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"

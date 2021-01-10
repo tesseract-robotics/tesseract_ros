@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/CommandLanguage
   pull_request:
   schedule:
     - cron: '0 5 * * *'
@@ -19,8 +18,8 @@ jobs:
       OS_CODE_NAME: bionic
       ROS_DISTRO: melodic
       ROS_REPO: main
-      UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:ros-industrial-consortium/tesseract#feature/CommandLanguage github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master'
-      ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts fcl iwyu taskflow"
+      UPSTREAM_WORKSPACE: 'dependencies_with_ext.rosinstall'
+      ROSDEP_SKIP_KEYS: "bullet bullet-extras cmake_common_scripts fcl iwyu taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
       PARALLEL_TESTS: false
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Bionic-Build/.ccache"
