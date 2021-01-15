@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_plan_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
@@ -247,8 +247,7 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
   profiles->addProfile<tesseract_planning::OMPLPlanProfile>(
       tesseract_planning::DEFAULT_PROFILE_KEY, std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
   profiles->addProfile<tesseract_planning::SimplePlannerPlanProfile>(
-      tesseract_planning::DEFAULT_PROFILE_KEY,
-      std::make_shared<tesseract_planning::SimplePlannerDefaultLVSPlanProfile>());
+      tesseract_planning::DEFAULT_PROFILE_KEY, std::make_shared<tesseract_planning::SimplePlannerLVSPlanProfile>());
 }
 
 Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info)
