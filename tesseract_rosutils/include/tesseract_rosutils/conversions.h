@@ -33,9 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
-#include <trajectory_msgs/JointTrajectory.h>
-#include <tesseract_msgs/ProcessPlanSegment.h>
-#include <tesseract_msgs/ProcessPlan.h>
+#include <tesseract_msgs/JointState.h>
 #include <tesseract_command_language/core/instruction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -59,41 +57,13 @@ Eigen::VectorXd toEigen(const std::vector<double>& vector);
 Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const std::vector<std::string>& joint_names);
 
 /**
- * @brief Append a Move Instruction to an existing joint_trajectory
- * @param joint_trajectory Trajectory to add the process segment
- * @param instruction Process instruction
- * @return
- */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_planning::Instruction& instruction);
-
-/**
- * @brief Append a process segment to an existing joint_trajectory
- * @param joint_trajectory Trajectory to add the process segment
- * @param process_plan_segment Process plan segment
- * @return
- */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_msgs::ProcessPlanSegment& process_plan_segment);
-
-/**
- * @brief Convert a Process Plan to a single Joint Trajectory for visualization
- * This does not clear the trajectory passed in it appends.
- * @param joint_trajectory Joint Trajectory Message
- * @param process_plan Process Plan
- * @return True if successful, otherwise false
- */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_msgs::ProcessPlan& process_plan);
-
-/**
  * @brief Convert a joint trajector to csv formate and write to file
- * @param joint_trajectory Joint trajectory to be writen to file
+ * @param trajectory Trajectory to be writen to file
  * @param file_path The location to save the file
  * @param separator The separator to use
  * @return true if successful
  */
-bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
+bool toCSVFile(const std::vector<tesseract_msgs::JointState>& trajectory_msg,
                const std::string& file_path,
                char separator = ',');
 
@@ -103,15 +73,7 @@ bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory,
  * @param separator The separator to use
  * @return Joint Trajectory
  */
-trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator = ',');
-
-/**
- * @brief Convert a Tesseract Trajectory to Process Plan Path
- * @param trajectory Tesseract Trajectory
- * @param joint_names Joint names corresponding to the tesseract trajectory
- * @return A process plan path
- */
-tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::JointTrajectory& joint_trajectory);
+std::vector<tesseract_msgs::JointState> trajectoryFromCSVFile(const std::string& file_path, char separator = ',');
 
 }  // namespace tesseract_rosutils
 #endif  // TESSERACT_ROSUTILS_CONVERSIONS_H

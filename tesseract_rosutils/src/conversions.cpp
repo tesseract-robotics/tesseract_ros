@@ -62,229 +62,84 @@ Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const std::v
   return position;
 }
 
-tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::JointTrajectory& joint_trajectory)
-{
-  tesseract_msgs::ProcessPlanPath path;
-  if (joint_trajectory.trajectory.size() != 0)
-    tesseract_rosutils::toMsg(path.trajectory, joint_trajectory);
-  return path;
-}
-
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_planning::Instruction& instruction)
-{
-  if (tesseract_planning::isCompositeInstruction(instruction))
-  {
-    const auto* ci = instruction.cast_const<tesseract_planning::CompositeInstruction>();
-    auto fi = tesseract_planning::flatten(*ci, tesseract_planning::moveFilter);
-
-    double t = 0;
-    if (!joint_trajectory.points.empty())
-      t = joint_trajectory.points.back().time_from_start.toSec();
-
-    double last_time = t;
-    double current_time = 0;
-    for (const auto& i : fi)
-    {
-      if (tesseract_planning::isMoveInstruction(i))
-      {
-        auto mi = i.get().cast_const<tesseract_planning::MoveInstruction>();
-
-        if (isStateWaypoint(mi->getWaypoint()))
-        {
-          trajectory_msgs::JointTrajectoryPoint point;
-          const auto* swp = mi->getWaypoint().cast_const<tesseract_planning::StateWaypoint>();
-          assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
-          if (joint_trajectory.joint_names.empty())
-            joint_trajectory.joint_names = swp->joint_names;
-
-          /** @todo should check order for every point */
-
-          point.positions.reserve(swp->joint_names.size());
-          for (long j = 0; j < swp->position.size(); ++j)
-            point.positions.push_back(swp->position(j));
-
-          current_time = swp->time;
-          // It is possible for sub composites to start back from zero, this accounts for it
-          if (current_time < last_time)
-            last_time = 0;
-
-          t += (current_time - last_time);
-          point.time_from_start = ros::Duration(t);
-          last_time = current_time;
-          joint_trajectory.points.push_back(point);
-        }
-        else
-        {
-          CONSOLE_BRIDGE_logError("toJointTrajectory: Move Instruction waypoint is not a State Waypoint!");
-          continue;
-        }
-      }
-    }
-  }
-  else
-  {
-    CONSOLE_BRIDGE_logError("toJointTrajectory: Instruction is not a Composite Instruction!");
-    return false;
-  }
-
-  return true;
-}
-
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
-{
-  double t = 0;
-  if (!joint_trajectory.points.empty())
-    t = joint_trajectory.points.back().time_from_start.toSec();
-
-  for (const auto& point : process_plan_segment.approach.trajectory.points)
-  {
-    joint_trajectory.points.push_back(point);
-    joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-  }
-  t = joint_trajectory.points.back().time_from_start.toSec();
-
-  for (const auto& point : process_plan_segment.process.trajectory.points)
-  {
-    joint_trajectory.points.push_back(point);
-    joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-  }
-  t = joint_trajectory.points.back().time_from_start.toSec();
-
-  for (const auto& point : process_plan_segment.departure.trajectory.points)
-  {
-    joint_trajectory.points.push_back(point);
-    joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-  }
-
-  return true;
-}
-
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
-                       const tesseract_msgs::ProcessPlan& process_plan)
-{
-  double t = 0;
-  if (!joint_trajectory.points.empty())
-    t = joint_trajectory.points.back().time_from_start.toSec();
-
-  for (const auto& point : process_plan.from_start.trajectory.points)
-  {
-    joint_trajectory.points.push_back(point);
-    joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-  }
-  t = joint_trajectory.points.back().time_from_start.toSec();
-
-  if (!process_plan.from_start.trajectory.points.empty())
-  {
-    joint_trajectory.joint_names = process_plan.segments[0].process.trajectory.joint_names;
-    joint_trajectory.header = process_plan.segments[0].process.trajectory.header;
-  }
-
-  // Append process segments and transitions
-  for (size_t i = 0; i < process_plan.segments.size(); ++i)
-  {
-    toJointTrajectory(joint_trajectory, process_plan.segments[i]);
-    t = joint_trajectory.points.back().time_from_start.toSec();
-
-    if (i < (process_plan.segments.size() - 1))
-    {
-      for (const auto& point : process_plan.transitions[i].from_end.trajectory.points)
-      {
-        joint_trajectory.points.push_back(point);
-        joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-      }
-      t = joint_trajectory.points.back().time_from_start.toSec();
-    }
-  }
-
-  // Append path to home
-  for (const auto& point : process_plan.to_end.trajectory.points)
-  {
-    joint_trajectory.points.push_back(point);
-    joint_trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
-  }
-
-  return true;
-}
-
-bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path, char separator)
+bool toCSVFile(const std::vector<tesseract_msgs::JointState>& trajectory_msg,
+               const std::string& file_path,
+               char separator)
 {
   std::ofstream myfile;
   myfile.open(file_path);
 
-  // Write Joint names as header
-  std::copy(joint_trajectory.joint_names.begin(),
-            joint_trajectory.joint_names.end(),
-            std::ostream_iterator<std::string>(myfile, &separator));
-  myfile << ",\n";
-  for (const auto& point : joint_trajectory.points)
+  for (const auto& js : trajectory_msg)
   {
-    std::copy(point.positions.begin(), point.positions.end(), std::ostream_iterator<double>(myfile, &separator));
-    myfile << "," + std::to_string(point.time_from_start.toSec()) + ",\n";
+    myfile << js.joint_names.size();
+    std::copy(js.joint_names.begin(), js.joint_names.end(), std::ostream_iterator<std::string>(myfile, &separator));
+    std::copy(js.position.begin(), js.position.end(), std::ostream_iterator<double>(myfile, &separator));
+    myfile << "," + std::to_string(js.time_from_start.toSec()) + ",\n";
   }
   myfile.close();
   return true;
 }
 
-trajectory_msgs::JointTrajectory jointTrajectoryFromCSVFile(const std::string& file_path, char separator)
+std::vector<tesseract_msgs::JointState> trajectoryFromCSVFile(const std::string& file_path, char separator)
 {
-  trajectory_msgs::JointTrajectory joint_trajectory;
+  std::vector<tesseract_msgs::JointState> trajectory;
   std::ifstream csv_file(file_path);
 
   // Make sure the file is open
   if (!csv_file.is_open())
     throw std::runtime_error("Could not open csv file");
 
-  // Helper vars
-  std::string line, column_name;
-  int num_joints = 0;
-
-  // Read the column names
-  if (csv_file.good())
-  {
-    // Extract the first line in the file
-    std::getline(csv_file, line);
-
-    // Create a stringstream from line
-    std::stringstream ss(line);
-
-    // Extract joint name
-    std::vector<std::string> column_names;
-    while (std::getline(ss, column_name, separator))
-      column_names.push_back(column_name);
-
-    for (std::size_t i = 0; i < column_names.size() - 1; ++i)
-      joint_trajectory.joint_names.push_back(column_names[i]);
-
-    num_joints = static_cast<int>(column_names.size()) - 1;
-  }
-
   // Read data, line by line
+  std::string line;
   while (std::getline(csv_file, line))
   {
     std::vector<std::string> tokens;
     boost::split(tokens, line, boost::is_any_of(std::string(&separator)), boost::token_compress_on);
-    if (!tesseract_common::isNumeric(tokens))
+
+    if (!tesseract_common::isNumeric(tokens[0]))
       throw std::runtime_error("jointTrajectoryFromCSVFile: Invalid format");
 
-    trajectory_msgs::JointTrajectoryPoint point;
-    double tfs = 0;
-    tesseract_common::toNumeric<double>(tokens.back(), tfs);
-    point.time_from_start.fromSec(tfs);
-    for (std::size_t i = 0; i < static_cast<std::size_t>(num_joints); ++i)
+    std::size_t num_vals;
+    std::size_t cnt = 0;
+    tesseract_common::toNumeric<std::size_t>(tokens[cnt++], num_vals);
+
+    tesseract_msgs::JointState js;
+    js.joint_names.reserve(num_vals);
+    js.position.reserve(num_vals);
+
+    // Get Joint Names
+    for (std::size_t i = 0; i < num_vals; ++i)
     {
-      double val = 0;
-      tesseract_common::toNumeric<double>(tokens[i], val);
-      point.positions.push_back(val);
+      std::string jn = tokens[cnt++];
+      tesseract_common::trim(jn);
+      js.joint_names.push_back(jn);
     }
-    joint_trajectory.points.push_back(point);
+
+    // Get Positions
+    for (std::size_t i = 0; i < num_vals; ++i)
+    {
+      if (!tesseract_common::isNumeric(tokens[cnt++]))
+        throw std::runtime_error("jointTrajectoryFromCSVFile: Invalid format");
+
+      double val = 0;
+      tesseract_common::toNumeric<double>(tokens[cnt], val);
+      js.position.push_back(val);
+    }
+
+    if (!tesseract_common::isNumeric(tokens[cnt++]))
+      throw std::runtime_error("jointTrajectoryFromCSVFile: Invalid format");
+
+    double val = 0;
+    tesseract_common::toNumeric<double>(tokens[cnt], val);
+    js.time_from_start = ros::Duration(val);
+
+    trajectory.push_back(js);
   }
 
   // Close file
   csv_file.close();
 
-  return joint_trajectory;
+  return trajectory;
 }
 
 }  // namespace tesseract_rosutils

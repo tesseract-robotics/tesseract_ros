@@ -56,6 +56,7 @@ add_message_files(
     JointLimits.msg
     JointMimic.msg
     JointSafety.msg
+    JointState.msg
     KinematicsInformation.msg
     Link.msg
     LinkGroup.msg
@@ -68,10 +69,6 @@ add_message_files(
     PlanningRequestArchive.msg
     PlanningResponse.msg
     PlanningResponseArchive.msg
-    ProcessPlan.msg
-    ProcessPlanPath.msg
-    ProcessPlanSegment.msg
-    ProcessPlanTransitionPair.msg
     ProfileMap.msg
     SceneGraph.msg
     StringDoublePair.msg

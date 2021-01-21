@@ -1460,86 +1460,58 @@ void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_e
   toMsg(*state_msg, env);
 }
 
-void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
-           const tesseract_environment::EnvState& start_state,
-           const std::vector<std::string>& joint_names,
-           const Eigen::Ref<const tesseract_common::TrajArray>& traj)
+void toMsg(std::vector<tesseract_msgs::JointState>& traj_msg, const tesseract_common::JointTrajectory& traj)
 {
-  assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
-
-  // Initialze the whole traject with the current state.
-  std::map<std::string, int> jn_to_index;
-  traj_msg.joint_names.resize(start_state.joints.size());
-  traj_msg.points.resize(static_cast<size_t>(traj.rows()));
-  for (int i = 0; i < traj.rows(); ++i)
+  for (const auto& js : traj)
   {
-    trajectory_msgs::JointTrajectoryPoint jtp;
-    jtp.positions.resize(start_state.joints.size());
+    assert(js.joint_names.size() == static_cast<unsigned>(js.position.size()));
 
-    int j = 0;
-    for (const auto& joint : start_state.joints)
-    {
-      if (i == 0)
-      {
-        traj_msg.joint_names[static_cast<size_t>(j)] = joint.first;
-        jn_to_index[joint.first] = j;
-      }
-      jtp.positions[static_cast<size_t>(j)] = joint.second;
+    tesseract_msgs::JointState js_msg;
+    js_msg.joint_names = js.joint_names;
+    js_msg.position.resize(static_cast<size_t>(js.position.size()));
+    js_msg.velocity.resize(static_cast<size_t>(js.velocity.size()));
+    js_msg.acceleration.resize(static_cast<size_t>(js.acceleration.size()));
 
-      ++j;
-    }
-    jtp.time_from_start = ros::Duration(i);
-    traj_msg.points[static_cast<size_t>(i)] = jtp;
-  }
-  std::size_t jn_to_index_size = jn_to_index.size();
+    for (int i = 0; i < js.position.size(); ++i)
+      js_msg.position[static_cast<size_t>(i)] = js.position(i);
 
-  // Update only the joints which were provided.
-  for (int i = 0; i < traj.rows(); ++i)
-  {
-    for (int j = 0; j < traj.cols(); ++j)
-    {
-      traj_msg.points[static_cast<size_t>(i)]
-          .positions[static_cast<size_t>(jn_to_index[joint_names[static_cast<size_t>(j)]])] = traj(i, j);
-    }
-  }
-  // This will be the case if joint_names[static_cast<size_t>(j)] was not already in the map
-  if (jn_to_index_size != jn_to_index.size())
-    ROS_WARN("Trying to set joints that are not in the environment. Check that the joint_names are correct");
-}
+    for (int i = 0; i < js.velocity.size(); ++i)
+      js_msg.velocity[static_cast<size_t>(i)] = js.velocity(i);
 
-void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
-           const tesseract_environment::EnvState& start_state,
-           const std::vector<std::string>& joint_names,
-           const Eigen::Ref<const tesseract_common::TrajArray>& traj)
-{
-  toMsg(*traj_msg, start_state, joint_names, traj);
-}
+    for (int i = 0; i < js.acceleration.size(); ++i)
+      js_msg.acceleration[static_cast<size_t>(i)] = js.acceleration(i);
 
-void toMsg(trajectory_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj)
-{
-  assert(traj.joint_names.size() == static_cast<unsigned>(traj.trajectory.cols()));
-
-  // Initialze the whole traject with the current state.
-  std::map<std::string, int> jn_to_index;
-  traj_msg.joint_names = traj.joint_names;
-  traj_msg.points.resize(static_cast<size_t>(traj.trajectory.rows()));
-
-  for (int i = 0; i < traj.trajectory.rows(); ++i)
-  {
-    trajectory_msgs::JointTrajectoryPoint jtp;
-    jtp.positions.resize(static_cast<size_t>(traj.trajectory.cols()));
-
-    for (int j = 0; j < traj.trajectory.cols(); ++j)
-      jtp.positions[static_cast<size_t>(j)] = traj.trajectory(i, j);
-
-    jtp.time_from_start = ros::Duration(i);
-    traj_msg.points[static_cast<size_t>(i)] = jtp;
+    js_msg.time_from_start = ros::Duration(js.time);
+    traj_msg.push_back(js_msg);
   }
 }
 
-void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg, const tesseract_common::JointTrajectory& traj)
+tesseract_common::JointTrajectory fromMsg(const std::vector<tesseract_msgs::JointState>& traj_msg)
 {
-  toMsg(*traj_msg, traj);
+  tesseract_common::JointTrajectory trajectory;
+  for (const auto& js_msg : traj_msg)
+  {
+    assert(js_msg.joint_names.size() == static_cast<unsigned>(js_msg.position.size()));
+
+    tesseract_common::JointState js;
+    js.joint_names = js_msg.joint_names;
+    js.position.resize(static_cast<long>(js_msg.position.size()));
+    js.velocity.resize(static_cast<long>(js_msg.velocity.size()));
+    js.acceleration.resize(static_cast<long>(js_msg.acceleration.size()));
+
+    for (std::size_t i = 0; i < js_msg.position.size(); ++i)
+      js.position(static_cast<long>(i)) = js_msg.position[i];
+
+    for (std::size_t i = 0; i < js_msg.velocity.size(); ++i)
+      js.velocity(static_cast<long>(i)) = js_msg.velocity[i];
+
+    for (std::size_t i = 0; i < js_msg.acceleration.size(); ++i)
+      js.acceleration(static_cast<long>(i)) = js_msg.acceleration[i];
+
+    js.time = js_msg.time_from_start.toSec();
+    trajectory.push_back(js);
+  }
+  return trajectory;
 }
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)

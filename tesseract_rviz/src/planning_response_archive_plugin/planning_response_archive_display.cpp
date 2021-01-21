@@ -48,6 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/deserialize.h>
+#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_msgs/Trajectory.h>
 
 namespace tesseract_rviz
@@ -103,10 +104,12 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   visualization_->addSceneGraph(*(env_->getSceneGraph()));
   trajectory_monitor_->onEnable();
 
+  tesseract_common::JointTrajectory traj =
+      tesseract_planning::toJointTrajectory(*(results.cast_const<tesseract_planning::CompositeInstruction>()));
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();
-  toJointTrajectory(traj_msg->joint_trajectory, results);
+  tesseract_rosutils::toMsg(traj_msg->joint_trajectory, traj);
 
-  // Manually call callback
+  // Manually call the callback
   visualization_->setVisible(true);
   trajectory_monitor_->incomingDisplayTrajectory(traj_msg);
 }

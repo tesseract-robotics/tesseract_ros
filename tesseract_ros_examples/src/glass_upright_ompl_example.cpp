@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/config/utils.h>
 #include <tesseract_motion_planners/ompl/config/ompl_planner_constrained_config.h>
+#include <tesseract_visualization/markers/toolpath_marker.h>
 
 using namespace trajopt;
 using namespace tesseract;
@@ -48,6 +49,7 @@ using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
+using namespace tesseract_visualization;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot

@@ -42,13 +42,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
 #include <tesseract_motion_planners/core/profile_dictionary.h>
+#include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
+#include <tesseract_visualization/markers/toolpath_marker.h>
 
 using namespace tesseract_environment;
 using namespace tesseract_kinematics;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
+using namespace tesseract_visualization;
 
 /**@ Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -256,7 +259,6 @@ bool CarSeatExample::run()
 
   // Create plotting tool
   ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
-  plotter->init(env_);
   if (rviz_)
     plotter->waitForConnection();
 
@@ -331,8 +333,11 @@ bool CarSeatExample::run()
     // Plot Process Trajectory
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
-      plotter->plotToolPath(*(response.results));
-      plotter->plotTrajectory(*(response.results));
+      const auto* ci = response.results->cast_const<tesseract_planning::CompositeInstruction>();
+      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(*ci, env_);
+      tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(*ci);
+      plotter->plotMarker(ToolpathMarker(toolpath));
+      plotter->plotTrajectory(trajectory, env_->getStateSolver());
       plotter->waitForInput();
     }
   }
@@ -399,8 +404,11 @@ bool CarSeatExample::run()
     // Plot Process Trajectory
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
-      plotter->plotToolPath(*(response.results));
-      plotter->plotTrajectory(*(response.results));
+      const auto* ci = response.results->cast_const<tesseract_planning::CompositeInstruction>();
+      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(*ci, env_);
+      tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(*ci);
+      plotter->plotMarker(ToolpathMarker(toolpath));
+      plotter->plotTrajectory(trajectory, env_->getStateSolver());
       plotter->waitForInput();
     }
   }

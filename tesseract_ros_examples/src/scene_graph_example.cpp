@@ -74,7 +74,6 @@ bool SceneGraphExample::run()
 
   // Create plotting tool
   ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(monitor_->getSceneGraph()->getRoot());
-  plotter->init(env_);
 
   if (plotting_)
   {
