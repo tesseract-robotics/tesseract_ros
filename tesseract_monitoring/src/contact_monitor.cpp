@@ -154,11 +154,9 @@ void ContactMonitor::computeCollisionReportThread()
 
     tesseract_collision::ContactResultVector contacts_vector;
     tesseract_collision::flattenResults(std::move(contacts), contacts_vector);
-    Eigen::VectorXd safety_distance(contacts_vector.size());
     contacts_msg.contacts.reserve(contacts_vector.size());
     for (std::size_t i = 0; i < contacts_vector.size(); ++i)
     {
-      safety_distance[static_cast<long>(i)] = contact_distance_;
       tesseract_msgs::ContactResult contact_msg;
       tesseract_rosutils::toMsg(contact_msg, contacts_vector[i], msg->header.stamp);
       contacts_msg.contacts.push_back(contact_msg);
@@ -168,14 +166,10 @@ void ContactMonitor::computeCollisionReportThread()
     if (publish_contact_markers_)
     {
       int id_counter = 0;
-      visualization_msgs::MarkerArray marker_msg =
-          tesseract_rosutils::ROSPlotting::getContactResultsMarkerArrayMsg(id_counter,
-                                                                           env_->getSceneGraph()->getRoot(),
-                                                                           "contact_monitor",
-                                                                           msg->header.stamp,
-                                                                           monitored_link_names_,
-                                                                           contacts_vector,
-                                                                           safety_distance);
+      tesseract_visualization::ContactResultsMarker marker(
+          monitored_link_names_, contacts_vector, manager_->getCollisionMarginData());
+      visualization_msgs::MarkerArray marker_msg = tesseract_rosutils::ROSPlotting::getContactResultsMarkerArrayMsg(
+          id_counter, env_->getSceneGraph()->getRoot(), "contact_monitor", msg->header.stamp, marker);
       contact_marker_pub_.publish(marker_msg);
     }
   }

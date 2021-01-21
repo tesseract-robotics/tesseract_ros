@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_visualization/trajectory_player.h>
+#include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #endif
 
@@ -121,11 +122,11 @@ protected:
   VisualizationWidget::Ptr visualization_;
   tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle nh_;
-  bool cached_visible_; /**< @brief This caches if the trajectory was visible for enable and disble calls */
+  bool cached_visible_{ false }; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 
   tesseract_visualization::TrajectoryPlayer trajectory_player_;
-  tesseract_planning::Instruction displaying_instruction_{ tesseract_planning::NullInstruction() };
-  tesseract_planning::Instruction trajectory_to_display_instruction_{ tesseract_planning::NullInstruction() };
+  tesseract_common::JointTrajectory displaying_instruction_;
+  tesseract_common::JointTrajectory trajectory_to_display_instruction_;
 
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;

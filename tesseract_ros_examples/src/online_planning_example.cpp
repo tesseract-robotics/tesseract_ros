@@ -48,12 +48,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/online_planning_example.h>
+#include <tesseract_visualization/markers/axis_marker.h>
 
 using namespace trajopt;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
+using namespace tesseract_visualization;
 
 /** @brief Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -125,7 +127,9 @@ void OnlinePlanningExample::subscriberCallback(const sensor_msgs::JointState::Co
     target_pose_constraint_->SetTargetPose(target_pose_base_frame_ * target_pose_delta_);
 
     plotter_->clear();
-    plotter_->plotAxis(target_pose_base_frame_ * target_pose_delta_, 0.3);
+    tesseract_visualization::AxisMarker am(target_pose_base_frame_ * target_pose_delta_);
+    am.setScale(Eigen::Vector3d::Constant(0.3));
+    plotter_->plotMarker(am);
   }
 }
 
@@ -279,8 +283,14 @@ bool OnlinePlanningExample::onlinePlan()
     Eigen::Map<trajopt::TrajArray> trajectory(x.data(), steps_, 8);
     current_trajectory_.block(0, 0, steps_, 8) = trajectory;
 
+    // Convert to joint trajectory
+    tesseract_common::JointTrajectory joint_traj;
+    joint_traj.reserve(current_trajectory_.rows());
+    for (long i = 0; i < current_trajectory_.rows(); ++i)
+      joint_traj.emplace_back(joint_names_, current_trajectory_.row(i));
+
     // Display Results
-    plotter_->plotTrajectory(joint_names_, current_trajectory_);
+    plotter_->plotTrajectory(joint_traj, env_->getStateSolver());
 
     std::string message =
         "Solver Frequency (Hz): " + std::to_string(1.0 / static_cast<double>(duration.count()) * 1000000.) +

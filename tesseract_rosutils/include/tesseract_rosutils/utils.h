@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/JointLimits.h>
 #include <tesseract_msgs/JointMimic.h>
 #include <tesseract_msgs/JointSafety.h>
+#include <tesseract_msgs/JointState.h>
 #include <tesseract_msgs/KinematicsInformation.h>
 #include <tesseract_msgs/Link.h>
 #include <tesseract_msgs/LinkGroup.h>
@@ -61,12 +62,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/StringPair.h>
 #include <tesseract_msgs/Tesseract.h>
 #include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
-#include <tesseract_msgs/ProcessPlan.h>
 #include <tesseract_msgs/PlannerProfileRemapping.h>
-
-#include <trajectory_msgs/JointTrajectory.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -203,44 +202,19 @@ void toMsg(tesseract_msgs::TesseractState& state_msg,
 void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env);
 
 /**
- * @brief Generate a JointTrajectory Message that contains all joints in the environment
- * @param traj_msg The output JointTrajectory Message
- * @param start_state The Environment start/current state
- * @param joint_names The joint names corresponding to the trajectory
- * @param traj The joint trajectory
- */
-void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
-           const tesseract_environment::EnvState& start_state,
-           const std::vector<std::string>& joint_names,
-           const Eigen::Ref<const tesseract_common::TrajArray>& traj);
-
-/**
- * @brief Generate a JointTrajectory Message that contains all joints in the environment
- * @param traj_msg The output JointTrajectory Message
- * @param start_state The Environment start/current state
- * @param joint_names The joint names corresponding to the trajectory
- * @param traj The joint trajectory
- */
-void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
-           const tesseract_environment::EnvState& start_state,
-           const std::vector<std::string>& joint_names,
-           const Eigen::Ref<const tesseract_common::TrajArray>& traj);
-
-/**
  * @brief Generate a JointTrajectory Message that contains only trajectory joints
  * @param traj_msg The output JointTrajectory Message
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-void toMsg(trajectory_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj);
+void toMsg(std::vector<tesseract_msgs::JointState>& traj_msg, const tesseract_common::JointTrajectory& traj);
 
 /**
- * @brief Generate a JointTrajectory Message that contains only trajectory joints
- * @param traj_msg The output JointTrajectory Message
- * @param joint_names The joint names corresponding to the trajectory
+ * @brief Generate a JointTrajectory from message
+ * @param traj_msg The trajectory message to convert
  * @param traj The joint trajectory
  */
-void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg, const tesseract_common::JointTrajectory& traj);
+tesseract_common::JointTrajectory fromMsg(const std::vector<tesseract_msgs::JointState>& traj_msg);
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
 bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg);

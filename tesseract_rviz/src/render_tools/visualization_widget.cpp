@@ -1085,6 +1085,8 @@ void VisualizationWidget::update(const TransformMap& transforms)
     if (it != transforms.end())
     {
       link->setCurrentTransform(it->second);
+      link->setStartTransform(it->second);
+      link->setEndTransform(it->second);
     }
     else
     {
