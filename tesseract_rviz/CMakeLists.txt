@@ -18,7 +18,7 @@ find_package(tesseract_environment REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
 
 # Ogre
 find_package(PkgConfig REQUIRED)

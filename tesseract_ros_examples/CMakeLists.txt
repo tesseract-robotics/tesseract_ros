@@ -18,7 +18,7 @@ find_package(tesseract_process_managers REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(trajopt_sqp REQUIRED)
 find_package(trajopt_ifopt REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 
 catkin_package()
