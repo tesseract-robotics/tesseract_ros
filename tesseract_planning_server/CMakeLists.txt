@@ -13,7 +13,7 @@ find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_process_managers REQUIRED)
-find_package(cmake_common_scripts REQUIRED)
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
 find_package(tesseract_common REQUIRED)
 
 catkin_package(

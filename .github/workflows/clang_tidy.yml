@@ -19,7 +19,7 @@ jobs:
       ROS_DISTRO: noetic
       ROS_REPO: main
       UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
-      ROSDEP_SKIP_KEYS: "bullet bullet-extras cmake_common_scripts fcl iwyu taskflow"
+      ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Clang-Tidy/.ccache"
       NOT_TEST_BUILD: true
