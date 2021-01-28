@@ -97,11 +97,13 @@ public:
 
   TesseractPlanningServer(const std::string& robot_description,
                           std::string name,
+                          size_t n = std::thread::hardware_concurrency(),
                           std::string discrete_plugin = "",
                           std::string continuous_plugin = "");
 
   TesseractPlanningServer(tesseract_environment::Environment::Ptr env,
                           std::string name,
+                          size_t n = std::thread::hardware_concurrency(),
                           std::string discrete_plugin = "",
                           std::string continuous_plugin = "");
 

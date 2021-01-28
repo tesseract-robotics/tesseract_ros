@@ -120,6 +120,7 @@ tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnv
 
 TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_description,
                                                  std::string name,
+                                                 size_t n,
                                                  std::string discrete_plugin,
                                                  std::string continuous_plugin)
   : nh_("~")
@@ -128,7 +129,7 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
                                                                             discrete_plugin,
                                                                             continuous_plugin))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
-  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_))
+  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
@@ -141,13 +142,14 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
 
 TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environment::Ptr env,
                                                  std::string name,
+                                                 size_t n,
                                                  std::string discrete_plugin,
                                                  std::string continuous_plugin)
   : nh_("~")
   , environment_(
         std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env, name, discrete_plugin, continuous_plugin))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
-  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_))
+  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
