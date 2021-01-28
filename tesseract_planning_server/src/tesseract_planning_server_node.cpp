@@ -53,6 +53,7 @@ int main(int argc, char** argv)
   bool publish_environment{ false };
   int cache_size{ 5 };
   double cache_refresh_rate{ 0.1 };
+  int threads = static_cast<int>(std::thread::hardware_concurrency());
 
   if (!pnh.getParam("monitor_namespace", monitor_namespace))
   {
@@ -67,9 +68,10 @@ int main(int argc, char** argv)
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
   pnh.param<int>("cache_size", cache_size, cache_size);
   pnh.param<double>("cache_refresh_rate", cache_refresh_rate, cache_refresh_rate);
+  pnh.param<int>("threads", threads, threads);
 
   planning_server = std::make_shared<tesseract_planning_server::TesseractPlanningServer>(
-      robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
+      robot_description, monitor_namespace, static_cast<std::size_t>(threads), discrete_plugin, continuous_plugin);
 
   planning_server->getEnvironmentCache().setCacheSize(cache_size);
 
