@@ -58,7 +58,7 @@ void addSphere(const std::string& name, const std::string& id, unsigned long& re
 
   // Create add command
   tesseract_msgs::EnvironmentCommand add_sphere_command;
-  add_sphere_command.command = tesseract_msgs::EnvironmentCommand::ADD;
+  add_sphere_command.command = tesseract_msgs::EnvironmentCommand::ADD_LINK;
 
   // Create the link
   add_sphere_command.add_link.name = name;

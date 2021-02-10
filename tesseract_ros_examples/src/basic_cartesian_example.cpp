@@ -87,25 +87,25 @@ Command::Ptr BasicCartesianExample::addPointCloud()
   octree->insertPointCloud(octomap_data, octomap::point3d(0, 0, 0));
 
   // Add octomap to environment
-  auto link_octomap = std::make_shared<Link>("octomap_attached");
+  Link link_octomap("octomap_attached");
 
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(1, 0, 0);
   visual->geometry = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::BOX);
-  link_octomap->visual.push_back(visual);
+  link_octomap.visual.push_back(visual);
 
   Collision::Ptr collision = std::make_shared<Collision>();
   collision->origin = visual->origin;
   collision->geometry = visual->geometry;
-  link_octomap->collision.push_back(collision);
+  link_octomap.collision.push_back(collision);
 
-  auto joint_octomap = std::make_shared<Joint>("joint_octomap_attached");
-  joint_octomap->parent_link_name = "base_link";
-  joint_octomap->child_link_name = link_octomap->getName();
-  joint_octomap->type = JointType::FIXED;
+  Joint joint_octomap("joint_octomap_attached");
+  joint_octomap.parent_link_name = "base_link";
+  joint_octomap.child_link_name = link_octomap.getName();
+  joint_octomap.type = JointType::FIXED;
 
-  return std::make_shared<tesseract_environment::AddCommand>(link_octomap, joint_octomap);
+  return std::make_shared<tesseract_environment::AddLinkCommand>(link_octomap, joint_octomap);
 }
 
 BasicCartesianExample::BasicCartesianExample(const ros::NodeHandle& nh, bool plotting, bool rviz)
@@ -145,7 +145,7 @@ bool BasicCartesianExample::run()
 
   // Create octomap and add it to the local environment
   Command::Ptr cmd = addPointCloud();
-  if (!monitor_->applyCommand(*cmd))
+  if (!monitor_->applyCommand(cmd))
     return false;
 
   // Create plotting tool

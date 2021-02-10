@@ -83,7 +83,7 @@ bool SceneGraphExample::run()
 
   // Attach the iiwa to the end of the ABB using moveJoint. Notice that the joint transform stays the same.
   // Only the parent changes.
-  tesseract_environment::MoveJointCommand move_joint_cmd("to_iiwa_mount", "tool0");
+  auto move_joint_cmd = std::make_shared<tesseract_environment::MoveJointCommand>("to_iiwa_mount", "tool0");
   monitor_->applyCommand(move_joint_cmd);
   ros::spinOnce();
 
@@ -101,14 +101,14 @@ bool SceneGraphExample::run()
 
   // Attach the iiwa to the end of the ABB using moveLink.
   // The link to be moved is inferred to be the given Joint child
-  auto new_joint = std::make_shared<tesseract_scene_graph::Joint>("to_iiwa_mount");
-  new_joint->parent_link_name = "tool0";
-  new_joint->child_link_name = "iiwa_mount";
-  new_joint->type = tesseract_scene_graph::JointType::FIXED;
-  new_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  new_joint->parent_to_joint_origin_transform.rotate(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
-  new_joint->parent_to_joint_origin_transform.translate(Eigen::Vector3d(0.15, 0.0, 0.0));
-  tesseract_environment::MoveLinkCommand move_link_cmd(new_joint);
+  tesseract_scene_graph::Joint new_joint("to_iiwa_mount");
+  new_joint.parent_link_name = "tool0";
+  new_joint.child_link_name = "iiwa_mount";
+  new_joint.type = tesseract_scene_graph::JointType::FIXED;
+  new_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  new_joint.parent_to_joint_origin_transform.rotate(Eigen::AngleAxisd(-M_PI / 2, Eigen::Vector3d(0, 1, 0)));
+  new_joint.parent_to_joint_origin_transform.translate(Eigen::Vector3d(0.15, 0.0, 0.0));
+  auto move_link_cmd = std::make_shared<tesseract_environment::MoveLinkCommand>(new_joint);
   monitor_->applyCommand(move_link_cmd);
   ros::spinOnce();
 

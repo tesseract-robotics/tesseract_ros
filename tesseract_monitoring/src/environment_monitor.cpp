@@ -282,7 +282,7 @@ bool EnvironmentMonitor::initialize()
 
 const std::string& EnvironmentMonitor::getName() const { return monitor_namespace_; }
 
-bool EnvironmentMonitor::applyCommand(const tesseract_environment::Command& command)
+bool EnvironmentMonitor::applyCommand(const tesseract_environment::Command::ConstPtr& command)
 {
   bool result = false;
   {
@@ -294,17 +294,6 @@ bool EnvironmentMonitor::applyCommand(const tesseract_environment::Command& comm
 }
 
 bool EnvironmentMonitor::applyCommands(const tesseract_environment::Commands& commands)
-{
-  bool result = false;
-  {
-    auto lock = lockEnvironmentWrite();
-    result = env_->applyCommands(commands);
-  }
-  triggerEnvironmentUpdateEvent(UPDATE_ENVIRONMENT);
-  return result;
-}
-
-bool EnvironmentMonitor::applyCommands(const std::vector<tesseract_environment::Command>& commands)
 {
   bool result = false;
   {
@@ -896,6 +885,8 @@ bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyEnviron
 bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                                        tesseract_msgs::GetEnvironmentChangesResponse& res)
 {
+  auto lock_read = lockEnvironmentRead();
+
   if (static_cast<int>(req.revision) > env_->getRevision())
   {
     res.success = false;

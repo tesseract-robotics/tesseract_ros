@@ -73,26 +73,26 @@ PickAndPlaceExample::PickAndPlaceExample(const ros::NodeHandle& nh, bool plottin
 
 Command::Ptr PickAndPlaceExample::addBox(double box_x, double box_y, double box_side)
 {
-  auto link_box = std::make_shared<Link>(LINK_BOX_NAME);
+  Link link_box(LINK_BOX_NAME);
 
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->geometry = std::make_shared<tesseract_geometry::Box>(box_side, box_side, box_side);
-  link_box->visual.push_back(visual);
+  link_box.visual.push_back(visual);
 
   Collision::Ptr collision = std::make_shared<Collision>();
   collision->origin = visual->origin;
   collision->geometry = visual->geometry;
-  link_box->collision.push_back(collision);
+  link_box.collision.push_back(collision);
 
-  auto joint_box = std::make_shared<Joint>("joint_box");
-  joint_box->parent_link_name = "workcell_base";
-  joint_box->child_link_name = LINK_BOX_NAME;
-  joint_box->type = JointType::FIXED;
-  joint_box->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  joint_box->parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, (box_side / 2.0) + OFFSET);
+  Joint joint_box("joint_box");
+  joint_box.parent_link_name = "workcell_base";
+  joint_box.child_link_name = LINK_BOX_NAME;
+  joint_box.type = JointType::FIXED;
+  joint_box.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, (box_side / 2.0) + OFFSET);
 
-  return std::make_shared<tesseract_environment::AddCommand>(link_box, joint_box);
+  return std::make_shared<tesseract_environment::AddLinkCommand>(link_box, joint_box);
 }
 
 bool PickAndPlaceExample::run()
@@ -139,7 +139,7 @@ bool PickAndPlaceExample::run()
 
   // Set default contact distance
   Command::Ptr cmd_default_dist = std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(0.005);
-  if (!monitor_->applyCommand(*cmd_default_dist))
+  if (!monitor_->applyCommand(cmd_default_dist))
     return false;
 
   // Create plotting tool
@@ -170,7 +170,7 @@ bool PickAndPlaceExample::run()
 
   // Add simulated box to environment
   Command::Ptr cmd = addBox(box_x, box_y, box_side);
-  if (!monitor_->applyCommand(*cmd))
+  if (!monitor_->applyCommand(cmd))
     return false;
 
   ////////////
@@ -265,12 +265,12 @@ bool PickAndPlaceExample::run()
 
   // Detach the simulated box from the world and attach to the end effector
   tesseract_environment::Commands cmds;
-  auto joint_box2 = std::make_shared<Joint>("joint_box2");
-  joint_box2->parent_link_name = LINK_END_EFFECTOR_NAME;
-  joint_box2->child_link_name = LINK_BOX_NAME;
-  joint_box2->type = JointType::FIXED;
-  joint_box2->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  joint_box2->parent_to_joint_origin_transform.translation() += Eigen::Vector3d(0, 0, box_side / 2.0);
+  Joint joint_box2("joint_box2");
+  joint_box2.parent_link_name = LINK_END_EFFECTOR_NAME;
+  joint_box2.child_link_name = LINK_BOX_NAME;
+  joint_box2.type = JointType::FIXED;
+  joint_box2.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(0, 0, box_side / 2.0);
   cmds.push_back(std::make_shared<tesseract_environment::MoveLinkCommand>(joint_box2));
   cmds.push_back(
       std::make_shared<tesseract_environment::AddAllowedCollisionCommand>(LINK_BOX_NAME, "iiwa_link_ee", "Never"));

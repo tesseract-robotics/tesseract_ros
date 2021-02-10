@@ -70,7 +70,7 @@ Commands addSeats(const ResourceLocator::Ptr& locator)
 
   for (int i = 0; i < 3; ++i)
   {
-    auto link_seat = std::make_shared<Link>("seat_" + std::to_string(i + 1));
+    Link link_seat("seat_" + std::to_string(i + 1));
 
     Visual::Ptr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
@@ -82,7 +82,7 @@ Commands addSeats(const ResourceLocator::Ptr& locator)
                                                                                                      "seat.dae"),
                                                                              Eigen::Vector3d(1, 1, 1),
                                                                              true)[0];
-    link_seat->visual.push_back(visual);
+    link_seat.visual.push_back(visual);
 
     for (int m = 1; m <= 10; ++m)
     {
@@ -96,20 +96,20 @@ Commands addSeats(const ResourceLocator::Ptr& locator)
         Collision::Ptr collision = std::make_shared<Collision>();
         collision->origin = visual->origin;
         collision->geometry = makeConvexMesh(*mesh);
-        link_seat->collision.push_back(collision);
+        link_seat.collision.push_back(collision);
       }
     }
 
-    auto joint_seat = std::make_shared<Joint>("joint_seat_" + std::to_string(i + 1));
-    joint_seat->parent_link_name = "world";
-    joint_seat->child_link_name = link_seat->getName();
-    joint_seat->type = JointType::FIXED;
-    joint_seat->parent_to_joint_origin_transform = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
-                                                   Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
-                                                   Eigen::AngleAxisd(3.14159, Eigen::Vector3d::UnitZ());
-    joint_seat->parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0.5 + i, 2.15, 0.45);
+    Joint joint_seat("joint_seat_" + std::to_string(i + 1));
+    joint_seat.parent_link_name = "world";
+    joint_seat.child_link_name = link_seat.getName();
+    joint_seat.type = JointType::FIXED;
+    joint_seat.parent_to_joint_origin_transform = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+                                                  Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
+                                                  Eigen::AngleAxisd(3.14159, Eigen::Vector3d::UnitZ());
+    joint_seat.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0.5 + i, 2.15, 0.45);
 
-    cmds.push_back(std::make_shared<tesseract_environment::AddCommand>(link_seat, joint_seat));
+    cmds.push_back(std::make_shared<tesseract_environment::AddLinkCommand>(link_seat, joint_seat));
   }
   return cmds;
 }
@@ -346,11 +346,11 @@ bool CarSeatExample::run()
   EnvState::Ptr state = env_->getState(saved_positions_["Pick1"]);
 
   // Now we to detach seat_1 and attach it to the robot end_effector
-  auto joint_seat_1_robot = std::make_shared<Joint>("joint_seat_1_robot");
-  joint_seat_1_robot->parent_link_name = "end_effector";
-  joint_seat_1_robot->child_link_name = "seat_1";
-  joint_seat_1_robot->type = JointType::FIXED;
-  joint_seat_1_robot->parent_to_joint_origin_transform =
+  Joint joint_seat_1_robot("joint_seat_1_robot");
+  joint_seat_1_robot.parent_link_name = "end_effector";
+  joint_seat_1_robot.child_link_name = "seat_1";
+  joint_seat_1_robot.type = JointType::FIXED;
+  joint_seat_1_robot.parent_to_joint_origin_transform =
       state->link_transforms["end_effector"].inverse() * state->link_transforms["seat_1"];
 
   cmds.clear();

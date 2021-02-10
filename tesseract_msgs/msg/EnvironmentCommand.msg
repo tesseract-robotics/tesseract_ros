@@ -1,5 +1,5 @@
 # Possible Commands
-uint8 ADD=0
+uint8 ADD_LINK=0
 uint8 MOVE_LINK=1
 uint8 MOVE_JOINT=2
 uint8 REMOVE_LINK=3

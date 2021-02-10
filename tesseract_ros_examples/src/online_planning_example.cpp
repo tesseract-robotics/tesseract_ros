@@ -285,9 +285,15 @@ bool OnlinePlanningExample::onlinePlan()
 
     // Convert to joint trajectory
     tesseract_common::JointTrajectory joint_traj;
-    joint_traj.reserve(current_trajectory_.rows());
+    joint_traj.reserve(static_cast<std::size_t>(current_trajectory_.rows()));
+    double total_time = 0;
     for (long i = 0; i < current_trajectory_.rows(); ++i)
-      joint_traj.emplace_back(joint_names_, current_trajectory_.row(i));
+    {
+      tesseract_common::JointState js(joint_names_, current_trajectory_.row(i));
+      js.time = total_time;
+      joint_traj.push_back(js);
+      total_time += 0.1;
+    }
 
     // Display Results
     plotter_->plotTrajectory(joint_traj, env_->getStateSolver());

@@ -187,7 +187,7 @@ public:
    * names
    */
   virtual bool addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                             tesseract_scene_graph::Joint joint,
+                             const tesseract_scene_graph::Joint& joint,
                              const std::string& prefix = "");
 
   /**

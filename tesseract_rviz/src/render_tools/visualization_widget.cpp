@@ -342,7 +342,7 @@ bool VisualizationWidget::addSceneGraph(const tesseract_scene_graph::SceneGraph&
 }
 
 bool VisualizationWidget::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                        tesseract_scene_graph::Joint joint,
+                                        const tesseract_scene_graph::Joint& joint,
                                         const std::string& prefix)
 {
   env_loaded_ = false;
@@ -367,7 +367,7 @@ bool VisualizationWidget::addSceneGraph(const tesseract_scene_graph::SceneGraph&
   // (below).
   {
     // Add connecting joint
-    addJoint(std::move(joint));
+    addJoint(joint);
 
     // Add all other joints
     std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph.getJoints();
