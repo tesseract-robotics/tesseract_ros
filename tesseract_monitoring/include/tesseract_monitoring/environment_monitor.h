@@ -176,9 +176,8 @@ public:
    * @param command The command to apply
    * @return True if successful, otherwise false
    */
-  bool applyCommand(const tesseract_environment::Command& command);
+  bool applyCommand(const tesseract_environment::Command::ConstPtr& command);
   bool applyCommands(const tesseract_environment::Commands& commands);
-  bool applyCommands(const std::vector<tesseract_environment::Command>& commands);
 
   /**
    * @brief Get the scene graph

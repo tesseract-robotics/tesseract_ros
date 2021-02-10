@@ -24,7 +24,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
-#include <boost/filesystem.hpp>  // TODO: Update to <filesystem> when compilers support it (GCC 8).
 #include <system_error>
 #include <boost/system/error_code.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -37,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/PlanningResponseArchive.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_common/types.h>
 
 const std::string ARCHIVE_TOPIC_NAME = "/planning_response_archive";
 
@@ -81,10 +81,9 @@ public:
 
   bool viewArchiveDirectory(const std::string& dir_path)
   {
-    namespace fs = boost::filesystem;
-    const fs::path path(dir_path);
+    const tesseract_common::fs::path path(dir_path);
 
-    for (auto& entry : boost::make_iterator_range(fs::directory_iterator(path), {}))
+    for (auto& entry : boost::make_iterator_range(tesseract_common::fs::directory_iterator(path), {}))
     {
       std::string filepath = entry.path().string();
       ROS_INFO_STREAM("Viewing archive: " << filepath);
@@ -120,10 +119,10 @@ int main(int argc, char** argv)
 
   namespace fs = boost::filesystem;
 
-  const fs::path boost_path(path);
+  const tesseract_common::fs::path boost_path(path);
   boost::system::error_code ec;
 
-  if (fs::is_directory(path, ec))
+  if (tesseract_common::fs::is_directory(path, ec))
   {
     ROS_INFO("Path given is a directory.");
     viewer.viewArchiveDirectory(boost_path.string());
@@ -133,7 +132,7 @@ int main(int argc, char** argv)
     ROS_ERROR_STREAM("Error in is_directory: " << ec.message());
   }
 
-  if (fs::is_regular_file(path, ec))
+  if (tesseract_common::fs::is_regular_file(path, ec))
   {
     ROS_INFO("Path given is a file");
     viewer.viewArchive(boost_path.string());

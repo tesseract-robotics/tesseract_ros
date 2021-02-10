@@ -273,7 +273,7 @@ bool GlassUprightOMPLExample::run()
   joint_sphere.child_link_name = link_sphere.getName();
   joint_sphere.type = JointType::FIXED;
 
-  tesseract_->getEnvironment()->addLink(std::move(link_sphere), std::move(joint_sphere));
+  tesseract_->getEnvironment()->addLink(link_sphere, joint_sphere);
 
   if (rviz_)
   {

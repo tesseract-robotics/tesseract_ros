@@ -49,6 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/serialize.h>
 
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_common/timer.h>
 
 using tesseract_rosutils::processMsg;
 
@@ -225,14 +226,17 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(goal->request.plan_profile_remapping);
   process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
 
+  tesseract_common::Timer timer;
+  timer.start();
   tesseract_planning::ProcessPlanningFuture plan_future = planning_server_->run(process_request);
   plan_future.wait();  // Wait for results
+  timer.stop();
 
   result.response.successful = plan_future.interface->isSuccessful();
   result.response.results = tesseract_planning::toXMLString(*(plan_future.results));
   plan_future.clear();
 
-  ROS_INFO("Tesseract Planning Server Finished Request!");
+  ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
   motion_plan_server_.setSucceeded(result);
 }
 

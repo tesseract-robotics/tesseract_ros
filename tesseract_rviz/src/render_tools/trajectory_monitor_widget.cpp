@@ -120,8 +120,8 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
 TrajectoryMonitorWidget::~TrajectoryMonitorWidget()
 {
   clearTrajectoryTrail();
-  displaying_instruction_.clear();
-  trajectory_to_display_instruction_.clear();
+  displaying_trajectory_.clear();
+  trajectory_to_display_.clear();
 
   delete trajectory_slider_dock_panel_;
 }
@@ -164,7 +164,7 @@ void TrajectoryMonitorWidget::onDisable()
 {
   cached_visible_ = visualization_->isTrajectoryVisible();
   visualization_->setTrajectoryVisible(false);
-  displaying_instruction_.clear();
+  displaying_trajectory_.clear();
   animating_path_ = false;
 
   if (trajectory_slider_panel_)
@@ -174,8 +174,8 @@ void TrajectoryMonitorWidget::onDisable()
 void TrajectoryMonitorWidget::onReset()
 {
   clearTrajectoryTrail();
-  displaying_instruction_.clear();
-  trajectory_to_display_instruction_.clear();
+  displaying_trajectory_.clear();
+  trajectory_to_display_.clear();
   animating_path_ = false;
 }
 
@@ -211,27 +211,38 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     states_data.push_back(env_->getState(joint_state.joint_names, joint_state.position));
   }
 
+  std::vector<std::string> active_link_names = env_->getActiveLinkNames();
+
   // If current state is not visible must set trajectory for all links for a single state so static
   // objects will be visible
   for (const auto& tf : states_data[0]->link_transforms)
   {
+    // Active links get set in the next stage below do not set them here
+    if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
+      continue;
+
     LinkWidget* lw = visualization_->getLink(tf.first);
-    lw->clearTrajectory();
+    lw->hideTrajectory();
 
     if (!visualization_->isCurrentStateVisible() && !visualization_->isStartStateVisible())
+    {
       lw->setTrajectory({ tf.second });
+      lw->showTrajectory();
+    }
   }
 
   // Set Trajectory for active links
   for (const auto& link_name : env_->getActiveLinkNames())
   {
-    std::vector<Eigen::Isometry3d> link_trajectory;
+    tesseract_common::VectorIsometry3d link_trajectory;
     link_trajectory.reserve(states_data.size());
     for (auto& state : states_data)
     {
       link_trajectory.push_back(state->link_transforms[link_name]);
     }
-    visualization_->getLink(link_name)->setTrajectory(link_trajectory);
+    LinkWidget* l = visualization_->getLink(link_name);
+    l->setTrajectory(link_trajectory);
+    l->showTrajectory();
   }
 }
 
@@ -239,7 +250,7 @@ void TrajectoryMonitorWidget::changedDisplayMode()
 {
   if (display_mode_property_->getOptionInt() != 2)
   {
-    if (display_->isEnabled() && !displaying_instruction_.empty() && animating_path_)
+    if (display_->isEnabled() && !displaying_trajectory_.empty() && animating_path_)
       return;
 
     visualization_->setStartStateVisible(true);
@@ -298,7 +309,7 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
   if (drop_displaying_trajectory_)
   {
     animating_path_ = false;
-    displaying_instruction_.clear();
+    displaying_trajectory_.clear();
     trajectory_slider_panel_->update(0);
     drop_displaying_trajectory_ = false;
     trajectory_player_.reset();
@@ -309,21 +320,36 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
 
     boost::mutex::scoped_lock lock(update_trajectory_message_);
     // new trajectory available to display?
-    if (!trajectory_to_display_instruction_.empty())
+    if (!trajectory_to_display_.empty())
     {
       animating_path_ = true;
 
       if (display_mode_property_->getOptionInt() == 2)
         animating_path_ = false;
 
-      displaying_instruction_ = trajectory_to_display_instruction_;
-      trajectory_player_.setTrajectory(displaying_instruction_);
+      displaying_trajectory_ = trajectory_to_display_;
+      trajectory_player_.setTrajectory(displaying_trajectory_);
+
+      if (trajectory_env_commands_.empty())
+      {
+        trajectory_state_solver_ = env_->getStateSolver();
+      }
+      else
+      {
+        auto env_cloned = env_->clone();
+        env_cloned->applyCommands(trajectory_env_commands_);
+        trajectory_state_solver_ = env_cloned->getStateSolver();
+      }
+
       slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
-      createTrajectoryTrail();
+
+      if (display_mode_property_->getOptionInt() == 2)
+        createTrajectoryTrail();
+
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->update(slider_count_);
     }
-    else if (!displaying_instruction_.empty())
+    else if (!displaying_trajectory_.empty())
     {
       if (display_mode_property_->getOptionInt() == 1)
       {
@@ -347,7 +373,9 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       {
         if (previous_display_mode_ != display_mode_property_->getOptionInt())
         {
-          createTrajectoryTrail();
+          if (display_mode_property_->getOptionInt() == 2)
+            createTrajectoryTrail();
+
           if (trajectory_slider_panel_)
             trajectory_slider_panel_->update(slider_count_);
         }
@@ -356,13 +384,15 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       }
       previous_display_mode_ = display_mode_property_->getOptionInt();
     }
-    trajectory_to_display_instruction_.clear();
+    trajectory_to_display_.clear();
+    trajectory_env_commands_.clear();
 
     if (animating_path_)
     {
       trajectory_player_.reset();
       tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(0);
-      tesseract_environment::EnvState::Ptr state = env_->getState(joint_state.joint_names, joint_state.position);
+      tesseract_environment::EnvState::Ptr state =
+          trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
       visualization_->setStartState(state->link_transforms);
 
       if (trajectory_slider_panel_)
@@ -377,7 +407,8 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
     {
       double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) * SLIDER_RESOLUTION;
       tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(duration);
-      tesseract_environment::EnvState::Ptr state = env_->getState(joint_state.joint_names, joint_state.position);
+      tesseract_environment::EnvState::Ptr state =
+          trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
       visualization_->setStartState(state->link_transforms);
     }
     else
@@ -391,7 +422,8 @@ void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
       else
       {
         tesseract_common::JointState joint_state = trajectory_player_.getNext();
-        tesseract_environment::EnvState::Ptr state = env_->getState(joint_state.joint_names, joint_state.position);
+        tesseract_environment::EnvState::Ptr state =
+            trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
 
         if (trajectory_slider_panel_ != nullptr)
         {
@@ -431,25 +463,29 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
              msg->tesseract_state.id.c_str(),
              env_->getName().c_str());
 
+  trajectory_env_commands_.clear();
+  if (!msg->commands.empty())
+    trajectory_env_commands_ = tesseract_rosutils::fromMsg(msg->commands);
+
   if (!msg->instructions.empty())
   {
     tesseract_planning::Instruction program = tesseract_planning::fromXMLString(msg->instructions);
     boost::mutex::scoped_lock lock(update_trajectory_message_);
     const auto* ci = program.cast_const<tesseract_planning::CompositeInstruction>();
-    trajectory_to_display_instruction_ = tesseract_planning::toJointTrajectory(*ci);
+    trajectory_to_display_ = tesseract_planning::toJointTrajectory(*ci);
     if (interrupt_display_property_->getBool())
       interruptCurrentDisplay();
   }
   else if (!msg->joint_trajectory.empty())
   {
     boost::mutex::scoped_lock lock(update_trajectory_message_);
-    trajectory_to_display_instruction_ = tesseract_rosutils::fromMsg(msg->joint_trajectory);
+    trajectory_to_display_ = tesseract_rosutils::fromMsg(msg->joint_trajectory);
     if (interrupt_display_property_->getBool())
       interruptCurrentDisplay();
   }
   else
   {
-    trajectory_to_display_instruction_.clear();
+    trajectory_to_display_.clear();
   }
 }
 

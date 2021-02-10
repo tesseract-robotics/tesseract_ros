@@ -51,14 +51,14 @@ TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
-  auto link_1 = std::make_shared<Link>(link_name1);
+  Link link_1(link_name1);
 
-  auto joint_1 = std::make_shared<Joint>(joint_name1);
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "base_link";
-  joint_1->child_link_name = link_name1;
-  joint_1->type = JointType::FIXED;
-  auto cmd = std::make_shared<AddCommand>(link_1, joint_1);
+  Joint joint_1(joint_name1);
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "base_link";
+  joint_1.child_link_name = link_name1;
+  joint_1.type = JointType::FIXED;
+  auto cmd = std::make_shared<AddLinkCommand>(link_1, joint_1);
 
   Commands commands;
   commands.push_back(cmd);

@@ -293,10 +293,10 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
   update_required_ = true;
   switch (command.getType())
   {
-    case tesseract_environment::CommandType::ADD:
+    case tesseract_environment::CommandType::ADD_LINK:
     {
       // Done
-      const auto& cmd = static_cast<const tesseract_environment::AddCommand&>(command);
+      const auto& cmd = static_cast<const tesseract_environment::AddLinkCommand&>(command);
 
       if (!visualization_->addLink(cmd.getLink()->clone()) || !visualization_->addJoint(cmd.getJoint()->clone()))
         return false;

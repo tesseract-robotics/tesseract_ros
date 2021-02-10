@@ -125,8 +125,19 @@ protected:
   bool cached_visible_{ false }; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 
   tesseract_visualization::TrajectoryPlayer trajectory_player_;
-  tesseract_common::JointTrajectory displaying_instruction_;
-  tesseract_common::JointTrajectory trajectory_to_display_instruction_;
+  tesseract_environment::StateSolver::Ptr trajectory_state_solver_;
+  tesseract_common::JointTrajectory displaying_trajectory_;
+  tesseract_common::JointTrajectory trajectory_to_display_;
+
+  /**
+   * @brief These are the command that were pushed to motion planning
+   * @details Visualization only supports moving objects around in a trajectory visualization.
+   * If it includes commands which delete or adds links visualization may not be correct.
+   * @todo Need to maintain two environments one which tracks the monitored environment and then
+   * when new request are recieved it clones this environment an applys the commands througout the
+   * trajectory widget.
+   */
+  tesseract_environment::Commands trajectory_env_commands_;
 
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;
