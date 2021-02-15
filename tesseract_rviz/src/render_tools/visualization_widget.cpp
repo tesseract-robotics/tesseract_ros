@@ -391,9 +391,10 @@ bool VisualizationWidget::addSceneGraph(const tesseract_scene_graph::SceneGraph&
   return true;
 }
 
-bool VisualizationWidget::addLink(const tesseract_scene_graph::Link& link)
+bool VisualizationWidget::addLink(const tesseract_scene_graph::Link& link, bool replace_allowed)
 {
-  if (links_.find(link.getName()) != links_.end())
+  bool link_exists = (links_.find(link.getName()) != links_.end());
+  if (link_exists && !replace_allowed)
   {
     ROS_WARN("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
     return false;
@@ -405,14 +406,14 @@ bool VisualizationWidget::addLink(const tesseract_scene_graph::Link& link)
     show_geom = false;
 
   LinkWidget* tlink = link_factory_->createLink(this, link, load_visual_ & show_geom, load_collision_ & show_geom);
-
-  links_[link.getName()] = tlink;
-
   tlink->setAlpha(alpha_);
   tlink->updateVisibility();
 
-  // Add link to scene_graph
-  scene_graph_->addLink(link.clone());
+  // Add or replace link
+  if (!scene_graph_->addLink(link.clone(), link_exists))
+    return false;
+
+  links_[link.getName()] = tlink;
 
   changedLinkTreeStyle();
 
@@ -490,22 +491,42 @@ bool VisualizationWidget::moveLink(const tesseract_scene_graph::Joint& joint)
   return true;
 }
 
-bool VisualizationWidget::addJoint(const tesseract_scene_graph::Joint& joint)
+bool VisualizationWidget::addJoint(const tesseract_scene_graph::Joint& joint, bool replace)
 {
-  if (joints_.find(joint.getName()) != joints_.end())
+  bool joint_exists = (joints_.find(joint.getName()) != joints_.end());
+  if (joint_exists && !replace)
   {
     ROS_WARN("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
     return false;
   }
 
+  if (!joint_exists && replace)
+  {
+    ROS_WARN("Tried to replace joint (%s) which does not exist.", joint.getName().c_str());
+    return false;
+  }
+
   JointWidget* tjoint = link_factory_->createJoint(this, joint);
-
-  joints_[joint.getName()] = tjoint;
-
   tjoint->setAlpha(alpha_);
 
-  // Add link to scene_graph
-  scene_graph_->addJoint(joint.clone());
+  if (joint_exists)
+  {
+    // Add link to scene_graph
+    if (!scene_graph_->removeJoint(joint.getName()))
+      return false;
+
+    // Add link to scene_graph
+    if (!scene_graph_->addJoint(joint.clone()))
+      return false;
+  }
+  else
+  {
+    // Add link to scene_graph
+    if (!scene_graph_->addJoint(joint.clone()))
+      return false;
+  }
+
+  joints_[joint.getName()] = tjoint;
 
   changedLinkTreeStyle();
 

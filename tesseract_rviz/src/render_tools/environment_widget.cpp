@@ -295,11 +295,50 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
   {
     case tesseract_environment::CommandType::ADD_LINK:
     {
-      // Done
       const auto& cmd = static_cast<const tesseract_environment::AddLinkCommand&>(command);
 
-      if (!visualization_->addLink(cmd.getLink()->clone()) || !visualization_->addJoint(cmd.getJoint()->clone()))
+      bool link_exists = false;
+      bool joint_exists = false;
+      std::string link_name, joint_name;
+
+      if (cmd.getLink() != nullptr)
+      {
+        link_name = cmd.getLink()->getName();
+        link_exists = visualization_->getLink(link_name) != nullptr;
+      }
+
+      if (cmd.getJoint() != nullptr)
+      {
+        joint_name = cmd.getJoint()->getName();
+        joint_exists = visualization_->getJoint(joint_name) != nullptr;
+      }
+
+      // These check are handled by the environment but just as a precaution adding asserts here
+      assert(!(link_exists && !cmd.replaceAllowed()));
+      assert(!(joint_exists && !cmd.replaceAllowed()));
+      assert(!(link_exists && cmd.getJoint() && !joint_exists));
+      assert(!(!link_exists && joint_exists));
+
+      if (link_exists && joint_exists)
+      {
+        if (!visualization_->addLink(cmd.getLink()->clone(), true) ||
+            !visualization_->addJoint(cmd.getJoint()->clone(), true))
+          return false;
+      }
+      else if (link_exists && cmd.replaceAllowed())
+      {
+        if (visualization_->addLink(cmd.getLink()->clone(), true))
+          return false;
+      }
+      else if (!link_exists)
+      {
+        if (!visualization_->addLink(cmd.getLink()->clone()) || !visualization_->addJoint(cmd.getJoint()->clone()))
+          return false;
+      }
+      else
+      {
         return false;
+      }
 
       break;
     }
@@ -352,6 +391,15 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
       // Done
       const auto& cmd = static_cast<const tesseract_environment::RemoveJointCommand&>(command);
       if (!visualization_->removeJoint(cmd.getJointName()))
+        return false;
+
+      break;
+    }
+    case tesseract_environment::CommandType::REPLACE_JOINT:
+    {
+      // Done
+      const auto& cmd = static_cast<const tesseract_environment::ReplaceJointCommand&>(command);
+      if (!visualization_->addJoint(cmd.getJoint()->clone(), true))
         return false;
 
       break;

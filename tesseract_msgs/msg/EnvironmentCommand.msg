@@ -19,6 +19,7 @@ uint8 CHANGE_JOINT_ACCELERATION_LIMITS=16
 uint8 ADD_KINEMATICS_INFORMATION=17
 uint8 CHANGE_DEFAULT_CONTACT_MARGIN=18
 uint8 CHANGE_PAIR_CONTACT_MARGIN=19
+uint8 REPLACE_JOINT=20
 
 
 # Specifies the type of command. Dictates which of the fields below are used
@@ -27,6 +28,7 @@ uint8 command
 # ADD - Adds a link and the associated joint to the environment
 tesseract_msgs/Link add_link
 tesseract_msgs/Joint add_joint
+bool add_replace_allowed
 
 # MOVE_LINK - Changes the joint associated with the link
 tesseract_msgs/Joint move_link_joint
@@ -40,6 +42,9 @@ string remove_link
 
 # REMOVE_JOINT - Removes the joint from the environment
 string remove_joint
+
+# REPLACE_JOINT - Replace the joint in the environment
+tesseract_msgs/Joint replace_joint
 
 # CHANGE_LINK_ORIGIN - Changes the origin of the link
 string change_link_origin_name
