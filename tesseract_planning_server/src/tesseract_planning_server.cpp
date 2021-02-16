@@ -212,10 +212,12 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   tesseract_planning::ProcessPlanningRequest process_request;
   process_request.name = goal->request.name;
-  process_request.instructions = tesseract_planning::fromXMLString(goal->request.instructions);
+  process_request.instructions = tesseract_planning::fromXMLString<tesseract_planning::Instruction>(
+      goal->request.instructions, tesseract_planning::defaultInstructionParser);
 
   if (!goal->request.seed.empty())
-    process_request.seed = tesseract_planning::fromXMLString(goal->request.seed);
+    process_request.seed = tesseract_planning::fromXMLString<tesseract_planning::Instruction>(
+        goal->request.seed, tesseract_planning::defaultInstructionParser);
 
   auto env_state = std::make_shared<tesseract_environment::EnvState>();
   tesseract_rosutils::fromMsg(env_state->joints, goal->request.tesseract_state.joint_state);
