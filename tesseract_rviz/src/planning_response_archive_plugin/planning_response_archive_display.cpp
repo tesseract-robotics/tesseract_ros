@@ -84,7 +84,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   // Convert to objects
   tesseract_msgs::PlanningRequestArchive request_archive = msg->planning_request;
   auto env = fromMsg(request_archive.tesseract);
-  Instruction results = fromXMLString(msg->results);
+  Instruction results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
 
   // Disable
   visualization_->clear();

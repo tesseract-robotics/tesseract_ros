@@ -469,10 +469,11 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
 
   if (!msg->instructions.empty())
   {
-    tesseract_planning::Instruction program = tesseract_planning::fromXMLString(msg->instructions);
+    using namespace tesseract_planning;
+    Instruction program = fromXMLString<Instruction>(msg->instructions, defaultInstructionParser);
     boost::mutex::scoped_lock lock(update_trajectory_message_);
-    const auto* ci = program.cast_const<tesseract_planning::CompositeInstruction>();
-    trajectory_to_display_ = tesseract_planning::toJointTrajectory(*ci);
+    const auto* ci = program.cast_const<CompositeInstruction>();
+    trajectory_to_display_ = toJointTrajectory(*ci);
     if (interrupt_display_property_->getBool())
       interruptCurrentDisplay();
   }
