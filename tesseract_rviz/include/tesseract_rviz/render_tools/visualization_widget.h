@@ -233,6 +233,13 @@ public:
    */
   virtual void removeAllowedCollision(const std::string& link_name);
 
+  /** @brief Update visualization widget. This must be called after finished adding or removing links */
+  virtual void update();
+
+  /**
+   * @brief Update visualizations link transforms
+   * @param transforms The transforms to update
+   */
   virtual void update(const TransformMap& transforms);
 
   /**
@@ -451,7 +458,6 @@ protected:
   std::map<LinkTreeStyle, std::string> style_name_map_;
 
   bool doing_set_checkbox_;  // used only inside setEnableAllLinksCheckbox()
-  bool env_loaded_;          // true after robot model is loaded.
   bool initialized_{ false };
 
   // true inside changedEnableAllLinks().  Prevents calculateJointCheckboxes()

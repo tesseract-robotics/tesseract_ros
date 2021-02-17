@@ -147,8 +147,9 @@ JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::
 
 JointWidget::~JointWidget()
 {
-  delete axes_;
-  delete axis_;
+  assert(details_->getParent() == nullptr);
+  assert(joint_property_->getParent() == nullptr);
+
   delete details_;
   delete joint_property_;
 }
@@ -346,7 +347,7 @@ void JointWidget::updateAxes()
   {
     if (!axes_)
     {
-      axes_ = new rviz::Axes(env_->getSceneManager(), env_->getOtherNode(), 0.1f, 0.01f);
+      axes_ = std::make_unique<rviz::Axes>(env_->getSceneManager(), env_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
       axes_->setPosition(position_property_->getVector());
@@ -356,10 +357,7 @@ void JointWidget::updateAxes()
   else
   {
     if (axes_)
-    {
-      delete axes_;
       axes_ = nullptr;
-    }
   }
 }
 
@@ -369,7 +367,7 @@ void JointWidget::updateAxis()
   {
     if (!axis_)
     {
-      axis_ = new rviz::Arrow(env_->getSceneManager(), env_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
+      axis_ = std::make_unique<rviz::Arrow>(env_->getSceneManager(), env_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
       axis_->getSceneNode()->setVisible(getEnabled());
 
       axis_->setPosition(position_property_->getVector());
@@ -383,10 +381,7 @@ void JointWidget::updateAxis()
   else
   {
     if (axis_)
-    {
-      delete axis_;
       axis_ = nullptr;
-    }
   }
 }
 
@@ -414,11 +409,25 @@ void JointWidget::setTransforms(const Ogre::Vector3& parent_link_position,
 
 void JointWidget::hideSubProperties(bool hide)
 {
+  details_->setHidden(hide);
   position_property_->setHidden(hide);
   orientation_property_->setHidden(hide);
-  axes_property_->setHidden(hide);
-  show_axis_property_->setHidden(hide);
-  axis_property_->setHidden(hide);
+  type_property_->setHidden(hide);
+
+  if (axes_property_)
+    axes_property_->setHidden(hide);
+
+  if (show_axis_property_)
+    show_axis_property_->setHidden(hide);
+
+  if (axis_property_)
+    axis_property_->setHidden(hide);
+
+  if (lower_limit_property_)
+    lower_limit_property_->setHidden(hide);
+
+  if (upper_limit_property_)
+    upper_limit_property_->setHidden(hide);
 }
 
 Ogre::Vector3 JointWidget::getPosition() { return position_property_->getVector(); }
@@ -431,6 +440,8 @@ void JointWidget::setParentProperty(rviz::Property* new_parent)
 
   if (new_parent)
     new_parent->addChild(joint_property_);
+
+  joint_property_->setParent(new_parent);
 }
 
 // if use_detail:

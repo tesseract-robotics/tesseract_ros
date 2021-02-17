@@ -174,6 +174,7 @@ void EnvironmentWidget::onUpdate()
         applyEnvironmentCommands(*commands[i]);
 
       revision_ = monitor_revision;
+      visualization_->update();
     }
   }
 
@@ -327,7 +328,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
       }
       else if (link_exists && cmd.replaceAllowed())
       {
-        if (visualization_->addLink(cmd.getLink()->clone(), true))
+        if (!visualization_->addLink(cmd.getLink()->clone(), true))
           return false;
       }
       else if (!link_exists)
@@ -354,7 +355,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
       }
       else
       {
-        if (visualization_->addSceneGraph(*(cmd.getSceneGraph()), cmd.getJoint()->clone(), cmd.getPrefix()))
+        if (!visualization_->addSceneGraph(*(cmd.getSceneGraph()), cmd.getJoint()->clone(), cmd.getPrefix()))
           return false;
       }
 
@@ -582,6 +583,7 @@ void EnvironmentWidget::loadEnvironment()
   if (load_tesseract_ == false && env_->isInitialized())
   {
     visualization_->addSceneGraph(*(env_->getSceneGraph()));
+    visualization_->update();
     bool oldState = root_link_name_property_->blockSignals(true);
     root_link_name_property_->setStdString(env_->getRootLinkName());
     root_link_name_property_->blockSignals(oldState);
