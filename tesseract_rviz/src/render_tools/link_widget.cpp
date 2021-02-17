@@ -474,7 +474,6 @@ LinkWidget::~LinkWidget()
     scene_manager_->destroyRibbonTrail(trail_);
   }
 
-  delete axes_;
   delete details_;
   delete link_property_;
 }
@@ -750,7 +749,7 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
 
     Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
     Ogre::TextureUnitState* tex_unit = pass->createTextureUnitState();
-    ;
+
     tex_unit->setTextureName(filename);
   }
 
@@ -1469,7 +1468,7 @@ void LinkWidget::updateAxes()
   {
     if (!axes_)
     {
-      axes_ = new rviz::Axes(scene_manager_, env_->getOtherNode(), 0.1f, 0.01f);
+      axes_ = std::make_unique<rviz::Axes>(scene_manager_, env_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
       axes_->setPosition(position_property_->getVector());
@@ -1479,10 +1478,7 @@ void LinkWidget::updateAxes()
   else
   {
     if (axes_)
-    {
-      delete axes_;
       axes_ = nullptr;
-    }
   }
 }
 
@@ -1668,8 +1664,8 @@ void LinkWidget::hideTrajectory()
   {
     visual_trajectory_node_->setVisible(false);
     visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible(), false);
-    for (auto&& visual_trajectory_waypoint_visibility : visual_trajectory_waypoint_visibility_)
-      visual_trajectory_waypoint_visibility = false;
+    for (std::size_t i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
+      visual_trajectory_waypoint_visibility_[i] = false;
   }
 
   if (collision_current_node_)
@@ -1677,8 +1673,7 @@ void LinkWidget::hideTrajectory()
     collision_trajectory_node_->setVisible(false);
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible(), false);
     for (size_t i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
-      for (auto&& collision_trajectory_waypoint_visibility : collision_trajectory_waypoint_visibility_)
-        collision_trajectory_waypoint_visibility = false;
+      collision_trajectory_waypoint_visibility_[i] = false;
   }
 }
 
@@ -1810,6 +1805,8 @@ void LinkWidget::setParentProperty(rviz::Property* new_parent)
 
   if (new_parent)
     new_parent->addChild(link_property_);
+
+  link_property_->setParent(new_parent);
 }
 
 void LinkWidget::setCollisionEnabled(bool enabled)
@@ -1832,6 +1829,7 @@ void LinkWidget::removeAllowedCollision(const std::string& link_name)
     return;
 
   allowed_collision_matrix_property_->takeChild(it->second);
+  it->second->setParent(nullptr);
   delete it->second;
   acm_.erase(link_name);
 }

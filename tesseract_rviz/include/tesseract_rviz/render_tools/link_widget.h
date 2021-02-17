@@ -272,13 +272,13 @@ protected:
   rviz::FloatProperty* alpha_property_;
   rviz::StringProperty* collision_enabled_property_;
   rviz::Property* allowed_collision_matrix_property_;
+  std::map<std::string, rviz::StringProperty*> acm_;
 
 private:
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
-  std::map<std::string, rviz::StringProperty*> acm_;
   tesseract_common::VectorIsometry3d trajectory_;
 
   std::vector<Ogre::Entity*> visual_current_meshes_;     ///< The entities representing the visual mesh of this link (if
@@ -357,7 +357,7 @@ private:
 
   Ogre::RibbonTrail* trail_;
 
-  rviz::Axes* axes_;
+  std::unique_ptr<rviz::Axes> axes_;
 
   float material_alpha_;  ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is
                           /// 1.0.

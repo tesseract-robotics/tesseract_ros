@@ -131,9 +131,10 @@ public:
   /**
    * @brief Adds a link to the visualization
    * @param link The link to be added
-   * @return Return False if a link with the same name allready exists, otherwise true
+   * @param replace_allowed Link replacing is allowed
+   * @return Return False if a link with the same name already exists and replace is not allowed, otherwise true
    */
-  virtual bool addLink(const tesseract_scene_graph::Link& link);
+  virtual bool addLink(const tesseract_scene_graph::Link& link, bool replace_allowed = false);
 
   /**
    * @brief Removes a link from the visualization
@@ -152,10 +153,11 @@ public:
   /**
    * @brief Adds joint to the visualization
    * @param joint The joint to be added
-   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
-   * otherwise true
+   * @param replace Indicate if this should replace an existing joint
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph and
+   * replace is not allowed, otherwise true
    */
-  virtual bool addJoint(const tesseract_scene_graph::Joint& joint);
+  virtual bool addJoint(const tesseract_scene_graph::Joint& joint, bool replace = false);
 
   /**
    * @brief Removes a joint from the visualization
@@ -231,6 +233,13 @@ public:
    */
   virtual void removeAllowedCollision(const std::string& link_name);
 
+  /** @brief Update visualization widget. This must be called after finished adding or removing links */
+  virtual void update();
+
+  /**
+   * @brief Update visualizations link transforms
+   * @param transforms The transforms to update
+   */
   virtual void update(const TransformMap& transforms);
 
   /**
@@ -449,7 +458,6 @@ protected:
   std::map<LinkTreeStyle, std::string> style_name_map_;
 
   bool doing_set_checkbox_;  // used only inside setEnableAllLinksCheckbox()
-  bool env_loaded_;          // true after robot model is loaded.
   bool initialized_{ false };
 
   // true inside changedEnableAllLinks().  Prevents calculateJointCheckboxes()

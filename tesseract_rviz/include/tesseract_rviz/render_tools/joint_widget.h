@@ -176,8 +176,8 @@ private:
 
   bool doing_set_checkbox_;  // prevents updateChildVisibility() from  touching children
 
-  rviz::Axes* axes_;
-  rviz::Arrow* axis_;
+  std::unique_ptr<rviz::Axes> axes_;
+  std::unique_ptr<rviz::Arrow> axis_;
 };
 
 }  // namespace tesseract_rviz

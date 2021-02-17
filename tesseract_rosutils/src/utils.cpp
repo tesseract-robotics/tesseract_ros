@@ -1128,6 +1128,7 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_LINK;
       const auto& cmd = static_cast<const tesseract_environment::AddLinkCommand&>(command);
       tesseract_rosutils::toMsg(command_msg.add_link, *(cmd.getLink()));
+      command_msg.add_replace_allowed = cmd.replaceAllowed();
 
       if (cmd.getJoint())
         tesseract_rosutils::toMsg(command_msg.add_joint, *(cmd.getJoint()));
@@ -1161,6 +1162,13 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_JOINT;
       const auto& cmd = static_cast<const tesseract_environment::RemoveJointCommand&>(command);
       command_msg.remove_joint = cmd.getJointName();
+      return true;
+    }
+    case tesseract_environment::CommandType::REPLACE_JOINT:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::REPLACE_JOINT;
+      const auto& cmd = static_cast<const tesseract_environment::ReplaceJointCommand&>(command);
+      tesseract_rosutils::toMsg(command_msg.replace_joint, *(cmd.getJoint()));
       return true;
     }
     case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
@@ -1333,12 +1341,11 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
     case tesseract_msgs::EnvironmentCommand::ADD_LINK:
     {
       tesseract_scene_graph::Link l = fromMsg(command_msg.add_link);
-
       if (command_msg.add_joint.name.empty() || command_msg.add_joint.type == 0)
-        return std::make_shared<tesseract_environment::AddLinkCommand>(l);
+        return std::make_shared<tesseract_environment::AddLinkCommand>(l, command_msg.add_replace_allowed);
 
       tesseract_scene_graph::Joint j = fromMsg(command_msg.add_joint);
-      return std::make_shared<tesseract_environment::AddLinkCommand>(l, j);
+      return std::make_shared<tesseract_environment::AddLinkCommand>(l, j, command_msg.add_replace_allowed);
     }
     case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
     {
@@ -1357,6 +1364,11 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
     case tesseract_msgs::EnvironmentCommand::REMOVE_JOINT:
     {
       return std::make_shared<tesseract_environment::RemoveJointCommand>(command_msg.remove_joint);
+    }
+    case tesseract_msgs::EnvironmentCommand::REPLACE_JOINT:
+    {
+      tesseract_scene_graph::Joint j = fromMsg(command_msg.replace_joint);
+      return std::make_shared<tesseract_environment::ReplaceJointCommand>(j);
     }
     case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
     {
