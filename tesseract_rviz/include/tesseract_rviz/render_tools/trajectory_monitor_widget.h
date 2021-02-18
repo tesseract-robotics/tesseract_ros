@@ -111,6 +111,7 @@ private Q_SLOTS:
 
 public:
   void incomingDisplayTrajectory(const tesseract_msgs::Trajectory::ConstPtr& msg);
+  tesseract_environment::Environment::Ptr env_;
 
 protected:
   void clearTrajectoryTrail();
@@ -120,7 +121,6 @@ protected:
   rviz::Display* display_;
   rviz::DisplayContext* context_;
   VisualizationWidget::Ptr visualization_;
-  tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle nh_;
   bool cached_visible_{ false }; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 

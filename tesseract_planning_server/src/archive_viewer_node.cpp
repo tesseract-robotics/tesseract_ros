@@ -67,7 +67,6 @@ public:
 
     // Print debugging info
     ROS_INFO_STREAM("Request Name: " << request_archive.name);
-    ROS_INFO_STREAM("Num Threads: " << request_archive.num_threads);
 
     instructions.print("Instructions: ");
     seed.print("Seed: ");
