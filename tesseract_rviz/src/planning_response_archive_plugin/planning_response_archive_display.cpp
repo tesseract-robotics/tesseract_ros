@@ -71,7 +71,7 @@ void PlanningResponseArchiveDisplay::onInitialize()
 
   trajectory_monitor_->onInitialize(visualization_, env_, context_, nh_);
 
-  archive_topic_sub_ = nh_.subscribe(ARCHIVE_TOPIC_NAME, 5, &PlanningResponseArchiveDisplay::callback, this);
+  archive_topic_sub_ = nh_.subscribe(ARCHIVE_TOPIC_NAME, 1, &PlanningResponseArchiveDisplay::callback, this);
 
   visualization_->setVisible(false);
 }
@@ -84,10 +84,12 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   // Convert to objects
   tesseract_msgs::PlanningRequestArchive request_archive = msg->planning_request;
   auto env = fromMsg(request_archive.tesseract);
+  tesseract_environment::Commands commands = fromMsg(request_archive.commands);
+  env->applyCommands(commands);
   Instruction results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
 
   // Disable
-  visualization_->clear();
+  visualization_->initialize(true, true, true, true);
   trajectory_monitor_->onDisable();
 
   // Get the current find tcp callbacks
@@ -95,8 +97,9 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   if (env_ != nullptr)
     env_cb = env_->getFindTCPCallbacks();
 
-  // Load Tesseract
+  // Load Environment
   env_.swap(env);
+  trajectory_monitor_->env_ = env_;
   for (auto& f : env_cb)
     env_->addFindTCPCallback(f);
 
@@ -112,6 +115,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   // Manually call the callback
   visualization_->setVisible(true);
   trajectory_monitor_->incomingDisplayTrajectory(traj_msg);
+  trajectory_monitor_->dropTrajectory();
 }
 
 void PlanningResponseArchiveDisplay::reset()
