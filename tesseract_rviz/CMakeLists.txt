@@ -92,6 +92,7 @@ include_directories(
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/trajectory_panel.h
   include/tesseract_rviz/render_tools/visualization_widget.h
+  include/tesseract_rviz/render_tools/visualize_trajectory_widget.h
   include/tesseract_rviz/render_tools/link_widget.h
   include/tesseract_rviz/render_tools/joint_widget.h
   include/tesseract_rviz/render_tools/joint_state_monitor_widget.h
@@ -105,6 +106,7 @@ qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
 
 add_library(${PROJECT_NAME}_render_tools SHARED
   src/render_tools/visualization_widget.cpp
+  src/render_tools/visualize_trajectory_widget.cpp
   src/render_tools/joint_widget.cpp
   src/render_tools/link_widget.cpp
   src/render_tools/trajectory_panel.cpp

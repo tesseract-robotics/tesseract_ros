@@ -58,7 +58,7 @@ const std::string ARCHIVE_TOPIC_NAME = "/planning_response_archive";
 PlanningResponseArchiveDisplay::PlanningResponseArchiveDisplay()
 {
   env_ = std::make_shared<tesseract_environment::Environment>();
-  trajectory_monitor_ = std::make_shared<TrajectoryMonitorWidget>(this, this);
+  visualize_trajectory_widget_ = std::make_shared<VisualizeTrajectoryWidget>(this, this);
 }
 
 PlanningResponseArchiveDisplay::~PlanningResponseArchiveDisplay() = default;
@@ -69,7 +69,7 @@ void PlanningResponseArchiveDisplay::onInitialize()
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
   visualization_->setCurrentStateVisible(false);
 
-  trajectory_monitor_->onInitialize(visualization_, env_, context_, nh_);
+  visualize_trajectory_widget_->onInitialize(visualization_, env_, context_);
 
   archive_topic_sub_ = nh_.subscribe(ARCHIVE_TOPIC_NAME, 1, &PlanningResponseArchiveDisplay::callback, this);
 
@@ -88,10 +88,6 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   env->applyCommands(commands);
   Instruction results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
 
-  // Disable
-  visualization_->initialize(true, true, true, true);
-  trajectory_monitor_->onDisable();
-
   // Get the current find tcp callbacks
   std::vector<tesseract_environment::FindTCPCallbackFn> env_cb;
   if (env_ != nullptr)
@@ -99,23 +95,18 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
 
   // Load Environment
   env_.swap(env);
-  trajectory_monitor_->env_ = env_;
   for (auto& f : env_cb)
     env_->addFindTCPCallback(f);
+  visualize_trajectory_widget_->setEnvironment(env_);
 
-  // Enable
-  visualization_->addSceneGraph(*(env_->getSceneGraph()));
-  trajectory_monitor_->onEnable();
-
+  // Convert TCL to tesseract_msgs::Trajectory
   tesseract_common::JointTrajectory traj =
       tesseract_planning::toJointTrajectory(*(results.cast_const<tesseract_planning::CompositeInstruction>()));
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();
   tesseract_rosutils::toMsg(traj_msg->joint_trajectory, traj);
 
   // Manually call the callback
-  visualization_->setVisible(true);
-  trajectory_monitor_->incomingDisplayTrajectory(traj_msg);
-  trajectory_monitor_->dropTrajectory();
+  visualize_trajectory_widget_->setDisplayTrajectory(traj_msg);
 }
 
 void PlanningResponseArchiveDisplay::reset()
@@ -123,19 +114,19 @@ void PlanningResponseArchiveDisplay::reset()
   visualization_->clear();
   Display::reset();
 
-  trajectory_monitor_->onReset();
+  visualize_trajectory_widget_->onReset();
 }
 
 void PlanningResponseArchiveDisplay::onEnable()
 {
   Display::onEnable();
 
-  trajectory_monitor_->onEnable();
+  visualize_trajectory_widget_->onEnable();
 }
 
 void PlanningResponseArchiveDisplay::onDisable()
 {
-  trajectory_monitor_->onDisable();
+  visualize_trajectory_widget_->onDisable();
 
   Display::onDisable();
 }
@@ -143,13 +134,13 @@ void PlanningResponseArchiveDisplay::onDisable()
 void PlanningResponseArchiveDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
-  trajectory_monitor_->onUpdate(wall_dt);
+  visualize_trajectory_widget_->onUpdate(wall_dt);
 }
 
 void PlanningResponseArchiveDisplay::setName(const QString& name)
 {
   BoolProperty::setName(name);
-  trajectory_monitor_->onNameChange(name);
+  visualize_trajectory_widget_->onNameChange(name);
 }
 
 }  // namespace tesseract_rviz
