@@ -49,7 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>
-#include <tesseract_rviz/render_tools/trajectory_monitor_widget.h>
+#include <tesseract_rviz/render_tools/visualize_trajectory_widget.h>
 #include <tesseract_msgs/PlanningResponseArchive.h>
 
 namespace tesseract_rviz
@@ -81,7 +81,7 @@ protected:
   tesseract_environment::Environment::Ptr env_;
   VisualizationWidget::Ptr visualization_;
 
-  TrajectoryMonitorWidget::Ptr trajectory_monitor_;
+  VisualizeTrajectoryWidget::Ptr visualize_trajectory_widget_;
 
   ros::Subscriber archive_topic_sub_;
 };

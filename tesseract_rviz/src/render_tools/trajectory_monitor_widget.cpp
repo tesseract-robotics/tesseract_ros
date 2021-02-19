@@ -36,6 +36,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <memory>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
@@ -67,13 +69,8 @@ const double SLIDER_RESOLUTION = 0.001;
 TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::Display* display)
   : widget_(widget)
   , display_(display)
-  , visualization_(nullptr)
-  , env_(nullptr)
-  , cached_visible_(false)
-  , animating_path_(false)
-  , drop_displaying_trajectory_(false)
-  , trajectory_slider_panel_(nullptr)
-  , trajectory_slider_dock_panel_(nullptr)
+  , visualize_trajectory_widget_(std::make_shared<VisualizeTrajectoryWidget>(widget, display))  // should widget be
+                                                                                                // this?
 {
   main_property_ = new rviz::Property(
       "Trajectory Monitor", "", "Monitor a joint state topic and update the visualization", widget_, nullptr, this);
@@ -86,45 +83,9 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
                                                           main_property_,
                                                           SLOT(changedTrajectoryTopic()),
                                                           this);
-
-  display_mode_property_ = new rviz::EnumProperty(
-      "Display Mode", "Loop", "How to display the trajectoy.", main_property_, SLOT(changedDisplayMode()), this);
-  display_mode_property_->addOptionStd("Single", 0);
-  display_mode_property_->addOptionStd("Loop", 1);
-  display_mode_property_->addOptionStd("Trail", 2);
-
-  time_scale_property_ = new rviz::FloatProperty("Time Scale",
-                                                 1,
-                                                 "A time scale factor applied during play back of trajectory",
-                                                 main_property_,
-                                                 SLOT(changedTimeScale()),
-                                                 this);
-  time_scale_property_->setMin(1e-8f);
-
-  trail_step_size_property_ = new rviz::IntProperty("Trail Step Size",
-                                                    1,
-                                                    "Specifies the step size of the samples "
-                                                    "shown in the trajectory trail.",
-                                                    main_property_,
-                                                    SLOT(changedTrailStepSize()),
-                                                    this);
-  trail_step_size_property_->setMin(1);
-
-  interrupt_display_property_ = new rviz::BoolProperty("Interrupt Display",
-                                                       false,
-                                                       "Immediately show newly planned trajectory, "
-                                                       "interrupting the currently displayed one.",
-                                                       main_property_);
 }
 
-TrajectoryMonitorWidget::~TrajectoryMonitorWidget()
-{
-  clearTrajectoryTrail();
-  displaying_trajectory_.clear();
-  trajectory_to_display_.clear();
-
-  delete trajectory_slider_dock_panel_;
-}
+TrajectoryMonitorWidget::~TrajectoryMonitorWidget() {}
 
 void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
                                            tesseract_environment::Environment::Ptr env,
@@ -132,149 +93,25 @@ void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualizatio
                                            const ros::NodeHandle& update_nh)
 {
   // Save pointers for later use
-  visualization_ = std::move(visualization);
-  env_ = std::move(env);
   context_ = context;
   nh_ = update_nh;
 
-  previous_display_mode_ = display_mode_property_->getOptionInt();
-
-  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
-  if (window_context)
-  {
-    trajectory_slider_panel_ = new TrajectoryPanel(window_context->getParentWindow());
-    trajectory_slider_dock_panel_ =
-        window_context->addPane(display_->getName() + " - Slider", trajectory_slider_panel_);
-    trajectory_slider_dock_panel_->setIcon(display_->getIcon());
-    connect(trajectory_slider_dock_panel_,
-            SIGNAL(visibilityChanged(bool)),
-            this,
-            SLOT(trajectorySliderPanelVisibilityChange(bool)));
-    trajectory_slider_panel_->onInitialize();
-  }
+  visualize_trajectory_widget_->onInitialize(visualization, env, context);
 }
 
 void TrajectoryMonitorWidget::onEnable()
 {
-  visualization_->setTrajectoryVisible(cached_visible_);
-  changedTrajectoryTopic();  // load topic at startup if default used
+  visualize_trajectory_widget_->onEnable();
+  changedTrajectoryTopic();
 }
 
-void TrajectoryMonitorWidget::onDisable()
-{
-  cached_visible_ = visualization_->isTrajectoryVisible();
-  visualization_->setTrajectoryVisible(false);
-  displaying_trajectory_.clear();
-  animating_path_ = false;
+void TrajectoryMonitorWidget::onDisable() { visualize_trajectory_widget_->onDisable(); }
 
-  if (trajectory_slider_panel_)
-    trajectory_slider_panel_->onDisable();
-}
+void TrajectoryMonitorWidget::onUpdate(float wall_dt) { visualize_trajectory_widget_->onUpdate(wall_dt); }
 
-void TrajectoryMonitorWidget::onReset()
-{
-  clearTrajectoryTrail();
-  displaying_trajectory_.clear();
-  trajectory_to_display_.clear();
-  animating_path_ = false;
-}
+void TrajectoryMonitorWidget::onReset() { visualize_trajectory_widget_->onReset(); }
 
-void TrajectoryMonitorWidget::onNameChange(const QString& name)
-{
-  if (trajectory_slider_dock_panel_)
-    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
-}
-
-void TrajectoryMonitorWidget::clearTrajectoryTrail()
-{
-  for (auto& link_pair : visualization_->getLinks())
-    link_pair.second->clearTrajectory();
-}
-
-void TrajectoryMonitorWidget::createTrajectoryTrail()
-{
-  clearTrajectoryTrail();
-
-  long stepsize = trail_step_size_property_->getInt();
-  // always include last trajectory point
-  long num_waypoints = trajectory_player_.size();
-  num_trail_waypoints_ =
-      static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
-  std::vector<tesseract_environment::EnvState::Ptr> states_data;
-  states_data.reserve(num_trail_waypoints_);
-  for (std::size_t i = 0; i < num_trail_waypoints_; i++)
-  {
-    // limit to last trajectory point
-    auto waypoint_i = static_cast<long>(std::min(static_cast<long>(i) * stepsize, num_waypoints - 1));
-    std::unordered_map<std::string, double> joints;
-    tesseract_common::JointState joint_state = trajectory_player_.getByIndex(waypoint_i);
-    states_data.push_back(env_->getState(joint_state.joint_names, joint_state.position));
-  }
-
-  std::vector<std::string> active_link_names = env_->getActiveLinkNames();
-
-  // If current state is not visible must set trajectory for all links for a single state so static
-  // objects will be visible
-  for (const auto& tf : states_data[0]->link_transforms)
-  {
-    // Active links get set in the next stage below do not set them here
-    if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
-      continue;
-
-    LinkWidget* lw = visualization_->getLink(tf.first);
-    lw->hideTrajectory();
-
-    if (!visualization_->isCurrentStateVisible() && !visualization_->isStartStateVisible())
-    {
-      lw->setTrajectory({ tf.second });
-      lw->showTrajectory();
-    }
-  }
-
-  // Set Trajectory for active links
-  for (const auto& link_name : env_->getActiveLinkNames())
-  {
-    tesseract_common::VectorIsometry3d link_trajectory;
-    link_trajectory.reserve(states_data.size());
-    for (auto& state : states_data)
-    {
-      link_trajectory.push_back(state->link_transforms[link_name]);
-    }
-    LinkWidget* l = visualization_->getLink(link_name);
-    l->setTrajectory(link_trajectory);
-    l->showTrajectory();
-  }
-}
-
-void TrajectoryMonitorWidget::changedDisplayMode()
-{
-  if (display_mode_property_->getOptionInt() != 2)
-  {
-    if (display_->isEnabled() && !displaying_trajectory_.empty() && animating_path_)
-      return;
-
-    visualization_->setStartStateVisible(true);
-    visualization_->setTrajectoryVisible(false);
-
-    clearTrajectoryTrail();
-
-    if (trajectory_slider_panel_)
-      trajectory_slider_panel_->pauseButton(false);
-  }
-  else
-  {
-    visualization_->setStartStateVisible(false);
-    visualization_->setTrajectoryVisible(true);
-    if (trajectory_slider_panel_)
-      trajectory_slider_panel_->pauseButton(true);
-  }
-}
-
-void TrajectoryMonitorWidget::changedTrailStepSize()
-{
-  if (display_mode_property_->getOptionInt() == 2)
-    createTrajectoryTrail();
-}
+void TrajectoryMonitorWidget::onNameChange(const QString& name) { visualize_trajectory_widget_->onNameChange(name); }
 
 void TrajectoryMonitorWidget::changedTrajectoryTopic()
 {
@@ -286,219 +123,9 @@ void TrajectoryMonitorWidget::changedTrajectoryTopic()
   }
 }
 
-void TrajectoryMonitorWidget::changedTimeScale()
-{
-  trajectory_player_.setScale(static_cast<double>(time_scale_property_->getFloat()));
-}
-
-void TrajectoryMonitorWidget::interruptCurrentDisplay()
-{
-  // update() starts a new trajectory as soon as it is available
-  // interrupting may cause the newly received trajectory to interrupt
-  // hence, only interrupt when current_state_ already advanced past first
-  if (trajectory_player_.currentDuration() > 0)
-    animating_path_ = false;
-}
-
-void TrajectoryMonitorWidget::dropTrajectory() { drop_displaying_trajectory_ = true; }
-void TrajectoryMonitorWidget::onUpdate(float /*wall_dt*/)
-{
-  if (!env_->isInitialized() || !visualization_)
-    return;
-
-  if (drop_displaying_trajectory_)
-  {
-    animating_path_ = false;
-    displaying_trajectory_.clear();
-    trajectory_slider_panel_->update(0);
-    drop_displaying_trajectory_ = false;
-    trajectory_player_.reset();
-  }
-
-  if (!animating_path_)
-  {  // finished last animation?
-
-    boost::mutex::scoped_lock lock(update_trajectory_message_);
-    // new trajectory available to display?
-    if (!trajectory_to_display_.empty())
-    {
-      animating_path_ = true;
-
-      if (display_mode_property_->getOptionInt() == 2)
-        animating_path_ = false;
-
-      displaying_trajectory_ = trajectory_to_display_;
-      trajectory_player_.setTrajectory(displaying_trajectory_);
-
-      if (trajectory_env_commands_.empty())
-      {
-        trajectory_state_solver_ = env_->getStateSolver();
-      }
-      else
-      {
-        auto env_cloned = env_->clone();
-        env_cloned->applyCommands(trajectory_env_commands_);
-        trajectory_state_solver_ = env_cloned->getStateSolver();
-      }
-
-      slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
-
-      if (display_mode_property_->getOptionInt() == 2)
-        createTrajectoryTrail();
-
-      if (trajectory_slider_panel_)
-        trajectory_slider_panel_->update(slider_count_);
-    }
-    else if (!displaying_trajectory_.empty())
-    {
-      if (display_mode_property_->getOptionInt() == 1)
-      {
-        animating_path_ = true;
-      }
-      else if (display_mode_property_->getOptionInt() == 0)
-      {
-        if (previous_display_mode_ != display_mode_property_->getOptionInt())
-        {
-          animating_path_ = true;
-        }
-        else
-        {
-          if (trajectory_player_.isFinished())
-            animating_path_ = false;
-          else
-            animating_path_ = true;
-        }
-      }
-      else
-      {
-        if (previous_display_mode_ != display_mode_property_->getOptionInt())
-        {
-          if (display_mode_property_->getOptionInt() == 2)
-            createTrajectoryTrail();
-
-          if (trajectory_slider_panel_)
-            trajectory_slider_panel_->update(slider_count_);
-        }
-
-        animating_path_ = false;
-      }
-      previous_display_mode_ = display_mode_property_->getOptionInt();
-    }
-    trajectory_to_display_.clear();
-    trajectory_env_commands_.clear();
-
-    if (animating_path_)
-    {
-      trajectory_player_.reset();
-      tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(0);
-      tesseract_environment::EnvState::Ptr state =
-          trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
-      visualization_->setStartState(state->link_transforms);
-
-      if (trajectory_slider_panel_)
-        trajectory_slider_panel_->setSliderPosition(0);
-    }
-  }
-
-  if (animating_path_)
-  {
-    if (trajectory_slider_panel_ != nullptr && trajectory_slider_panel_->isVisible() &&
-        trajectory_slider_panel_->isPaused())
-    {
-      double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) * SLIDER_RESOLUTION;
-      tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(duration);
-      tesseract_environment::EnvState::Ptr state =
-          trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
-      visualization_->setStartState(state->link_transforms);
-    }
-    else
-    {
-      if (trajectory_player_.isFinished())
-      {
-        animating_path_ = false;  // animation finished
-        if ((display_mode_property_->getOptionInt() != 1) && trajectory_slider_panel_)
-          trajectory_slider_panel_->pauseButton(true);
-      }
-      else
-      {
-        tesseract_common::JointState joint_state = trajectory_player_.getNext();
-        tesseract_environment::EnvState::Ptr state =
-            trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
-
-        if (trajectory_slider_panel_ != nullptr)
-        {
-          int slider_index = static_cast<int>(std::ceil(trajectory_player_.currentDuration() / SLIDER_RESOLUTION));
-          trajectory_slider_panel_->setSliderPosition(slider_index);
-        }
-
-        visualization_->setStartState(state->link_transforms);
-      }
-    }
-  }
-}
-
 void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Trajectory::ConstPtr& msg)
 {
-  // Error check
-  if (!env_->isInitialized())
-  {
-    ROS_ERROR_STREAM_NAMED("trajectory_visualization", "No environment");
-    return;
-  }
-
-  if (visualization_)
-  {
-    //    if (!visualization_->isTrajectoryVisible())
-    //      visualization_->setTrajectoryVisible(true);
-    //    else
-    //      visualization_->setTrajectoryVisible(false);
-
-    if (!visualization_->isStartStateVisible())
-      visualization_->setStartStateVisible(true);
-  }
-
-  if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != env_->getName())
-    ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
-             "was expected",
-             msg->tesseract_state.id.c_str(),
-             env_->getName().c_str());
-
-  trajectory_env_commands_.clear();
-  if (!msg->commands.empty())
-    trajectory_env_commands_ = tesseract_rosutils::fromMsg(msg->commands);
-
-  if (!msg->instructions.empty())
-  {
-    using namespace tesseract_planning;
-    Instruction program = fromXMLString<Instruction>(msg->instructions, defaultInstructionParser);
-    boost::mutex::scoped_lock lock(update_trajectory_message_);
-    const auto* ci = program.cast_const<CompositeInstruction>();
-    trajectory_to_display_ = toJointTrajectory(*ci);
-    if (interrupt_display_property_->getBool())
-      interruptCurrentDisplay();
-  }
-  else if (!msg->joint_trajectory.empty())
-  {
-    boost::mutex::scoped_lock lock(update_trajectory_message_);
-    trajectory_to_display_ = tesseract_rosutils::fromMsg(msg->joint_trajectory);
-    if (interrupt_display_property_->getBool())
-      interruptCurrentDisplay();
-  }
-  else
-  {
-    trajectory_to_display_.clear();
-  }
-}
-
-void TrajectoryMonitorWidget::trajectorySliderPanelVisibilityChange(bool enable)
-{
-  if (!trajectory_slider_panel_)
-    return;
-
-  if (enable)
-    trajectory_slider_panel_->onEnable();
-  else
-    trajectory_slider_panel_->onDisable();
+  visualize_trajectory_widget_->setDisplayTrajectory(msg);
 }
 
 }  // namespace tesseract_rviz
