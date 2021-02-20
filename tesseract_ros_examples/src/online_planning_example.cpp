@@ -188,7 +188,7 @@ bool OnlinePlanningExample::setupProblem()
   }
   // Add the target pose constraint for the final step
   {
-    manipulator_fk_->calcFwdKin(target_pose_base_frame_, target_joint_position);
+    target_pose_base_frame_ = manipulator_fk_->calcFwdKin(target_joint_position);
     Eigen::Isometry3d target_tf = target_pose_base_frame_ * target_pose_delta_;
     std::cout << "Target Joint Position: " << target_joint_position.transpose() << std::endl;
     std::cout << "Target TF:\n" << target_tf.matrix() << std::endl;
