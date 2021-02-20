@@ -539,10 +539,10 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
     const Eigen::Isometry3d& base = env_state_->link_transforms[inv_kin_->getBaseLinkName()];
 
     Eigen::Isometry3d local_tf = (base.inverse() * ref * transform) * tcp_.inverse();
-    Eigen::VectorXd solutions;
-    if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
+    tesseract_kinematics::IKSolutions solutions = inv_kin_->calcInvKin(local_tf, inv_seed_);
+    if (!solutions.empty())
     {
-      Eigen::VectorXd temp_seed = solutions.head(inv_kin_->numJoints());
+      const Eigen::VectorXd& temp_seed = solutions[0];
       if (!tesseract_kinematics::isWithinLimits<double>(temp_seed, inv_kin_->getLimits().joint_limits))
         return;
 
