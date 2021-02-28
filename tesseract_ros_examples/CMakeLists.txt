@@ -243,7 +243,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIV
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt tesseract::tesseract_motion_planners_trajopt tesseract::tesseract_process_managers ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC VERSION 17)
