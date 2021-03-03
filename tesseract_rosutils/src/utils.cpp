@@ -2006,8 +2006,11 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
   return true;
 }
 
-bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment& env)
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment& env, bool include_joint_states)
 {
+  if (include_joint_states)
+    toMsg(environment_msg.joint_states, env.getCurrentState()->joints);
+
   if (!tesseract_rosutils::toMsg(environment_msg.command_history, env.getCommandHistory(), 0))
   {
     return false;
@@ -2021,9 +2024,9 @@ bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environ
   return true;
 }
 
-bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env)
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env, bool include_joint_states)
 {
-  return toMsg(environment_msg, *env);
+  return toMsg(environment_msg, *env, include_joint_states);
 }
 
 tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg)
