@@ -1478,6 +1478,7 @@ void toMsg(tesseract_msgs::EnvironmentState& state_msg,
 {
   state_msg.id = env.getName();
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
+  toMsg(state_msg.environment, env);
 
   if (include_joint_states)
     toMsg(state_msg.joint_state, env.getCurrentState()->joints);
@@ -2005,19 +2006,24 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
   return true;
 }
 
-bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env)
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment& env)
 {
-  if (!tesseract_rosutils::toMsg(environment_msg.command_history, env->getCommandHistory(), 0))
+  if (!tesseract_rosutils::toMsg(environment_msg.command_history, env.getCommandHistory(), 0))
   {
     return false;
   }
 
-  if (!tesseract_rosutils::toMsg(environment_msg.joint_states, env->getCurrentState()->joints))
+  if (!tesseract_rosutils::toMsg(environment_msg.joint_states, env.getCurrentState()->joints))
   {
     return false;
   }
 
   return true;
+}
+
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env)
+{
+  return toMsg(environment_msg, *env);
 }
 
 tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg)

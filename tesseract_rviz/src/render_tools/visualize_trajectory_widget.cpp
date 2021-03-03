@@ -436,6 +436,12 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
              "was expected",
              msg->environment_state.id.c_str(),
              env_->getName().c_str());
+  else
+  {
+    tesseract_environment::Environment::Ptr env = tesseract_rosutils::fromMsg(msg->environment_state.environment);
+    if (env)
+      setEnvironment(env);
+  }
 
   trajectory_env_commands_.clear();
   if (!msg->commands.empty())
