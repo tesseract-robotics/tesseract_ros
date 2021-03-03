@@ -358,6 +358,14 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
  * @param env Input Environment object
  * @return True if successful, otherwise false
  */
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment& env);
+
+/**
+ * @brief Converts a Environment object to a Tesseract msg
+ * @param tesseract_msg Resulting Message
+ * @param env Input Environment object
+ * @return True if successful, otherwise false
+ */
 bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env);
 
 /**
