@@ -33,6 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/StringLimitsPair.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_command_language/serialize.h>
+#include <tesseract_command_language/deserialize.h>
 #include <tesseract_rosutils/utils.h>
 
 namespace tesseract_rosutils
@@ -2058,6 +2060,38 @@ tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environmen
   env->setState(env_state->joints);
 
   return env;
+}
+
+bool toMsg(tesseract_msgs::TaskInfo& task_info_msg, tesseract_planning::TaskInfo::ConstPtr task_info)
+{
+  using namespace tesseract_planning;
+  task_info_msg.return_value = task_info->return_value;
+  task_info_msg.unique_id = task_info->unique_id;
+  task_info_msg.task_name = task_info->task_name;
+  task_info_msg.message = task_info->message;
+  task_info_msg.instructions_input = toXMLString<Instruction>(task_info->instructions_input);
+  task_info_msg.instructions_output = toXMLString<Instruction>(task_info->instructions_output);
+  task_info_msg.results_input = toXMLString<Instruction>(task_info->results_input);
+  task_info_msg.results_output = toXMLString<Instruction>(task_info->results_output);
+  return toMsg(task_info_msg.environment, task_info->environment);
+}
+
+tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_info_msg)
+{
+  using namespace tesseract_planning;
+  auto task_info = std::make_shared<tesseract_planning::TaskInfo>(task_info_msg.unique_id);
+  task_info->return_value = task_info_msg.return_value;
+  task_info->task_name = task_info_msg.task_name;
+  task_info->message = task_info_msg.message;
+  task_info->instructions_input =
+      fromXMLString<Instruction>(task_info_msg.instructions_input, defaultInstructionParser);
+  task_info->instructions_output =
+      fromXMLString<Instruction>(task_info_msg.instructions_output, defaultInstructionParser);
+  task_info->results_input = fromXMLString<Instruction>(task_info_msg.results_input, defaultInstructionParser);
+  task_info->results_output = fromXMLString<Instruction>(task_info_msg.results_output, defaultInstructionParser);
+  task_info->environment = fromMsg(task_info_msg.environment);
+
+  return task_info;
 }
 
 }  // namespace tesseract_rosutils

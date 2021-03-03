@@ -21,6 +21,7 @@ find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_command_language REQUIRED)
+find_package(tesseract_process_managers REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -46,6 +47,7 @@ catkin_package(
     tesseract_motion_planners
     tesseract_command_language
     tesseract_environment
+    tesseract_process_managers
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
@@ -61,6 +63,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_visualization
   tesseract::tesseract_common
   tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_process_managers
   tesseract::tesseract_command_language
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES})

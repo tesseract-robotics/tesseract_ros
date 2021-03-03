@@ -62,6 +62,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/StringPair.h>
 #include <tesseract_msgs/Environment.h>
 #include <tesseract_msgs/EnvironmentState.h>
+#include <tesseract_msgs/TaskInfo.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
@@ -83,6 +84,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/types.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_process_managers/core/task_info.h>
 
 namespace tesseract_rosutils
 {
@@ -376,6 +378,21 @@ bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environ
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
 tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg);
+
+/**
+ * @brief Converts a TaskInfo object to a TaskInfo msg
+ * @param task_info_msg Resulting message
+ * @param task_info TaskInfo object
+ * @return True if successful, otherwise false
+ */
+bool toMsg(tesseract_msgs::TaskInfo& task_info_msg, tesseract_planning::TaskInfo::ConstPtr task_info);
+
+/**
+ * @brief Converts a TaskInfo msg to a TaskInfo object
+ * @param task_info_msg Input TaskInfo msg
+ * @return Resulting Tesseract Object if successful, nullptr otherwise
+ */
+tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_info_msg);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

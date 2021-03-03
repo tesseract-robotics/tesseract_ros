@@ -76,6 +76,7 @@ add_message_files(
     StringDoublePair.msg
     StringLimitsPair.msg
     StringPair.msg
+    TaskInfo.msg
     Trajectory.msg
     TransformMap.msg
     VisualGeometry.msg
