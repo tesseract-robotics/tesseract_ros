@@ -46,20 +46,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <OgreSceneNode.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_rviz/tesseract_state_plugin/tesseract_state_display.h>
+#include <tesseract_rviz/environment_state_plugin/environment_state_display.h>
 
 namespace tesseract_rviz
 {
-TesseractStateDisplay::TesseractStateDisplay()
+EnvironmentStateDisplay::EnvironmentStateDisplay()
 {
   env_ = std::make_shared<tesseract_environment::Environment>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
 }
 
-TesseractStateDisplay::~TesseractStateDisplay() = default;
+EnvironmentStateDisplay::~EnvironmentStateDisplay() = default;
 
-void TesseractStateDisplay::onInitialize()
+void EnvironmentStateDisplay::onInitialize()
 {
   Display::onInitialize();
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
@@ -70,7 +70,7 @@ void TesseractStateDisplay::onInitialize()
   visualization_->setVisible(false);
 }
 
-void TesseractStateDisplay::reset()
+void EnvironmentStateDisplay::reset()
 {
   visualization_->clear();
   Display::reset();
@@ -79,7 +79,7 @@ void TesseractStateDisplay::reset()
   state_monitor_->onReset();
 }
 
-void TesseractStateDisplay::onEnable()
+void EnvironmentStateDisplay::onEnable()
 {
   Display::onEnable();
 
@@ -87,7 +87,7 @@ void TesseractStateDisplay::onEnable()
   state_monitor_->onEnable();
 }
 
-void TesseractStateDisplay::onDisable()
+void EnvironmentStateDisplay::onDisable()
 {
   environment_monitor_->onDisable();
   state_monitor_->onDisable();
@@ -95,7 +95,7 @@ void TesseractStateDisplay::onDisable()
   Display::onDisable();
 }
 
-void TesseractStateDisplay::update(float wall_dt, float ros_dt)
+void EnvironmentStateDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
 
@@ -106,7 +106,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
 // ******************************************************************************************
 // Calculate Offset Position
 // ******************************************************************************************
-// void TesseractStateDisplay::calculateOffsetPosition()
+// void EnvironmentStateDisplay::calculateOffsetPosition()
 //{
 //  if (!env_)
 //    return;
@@ -119,7 +119,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
 //  scene_node_->setOrientation(orientation);
 //}
 
-// void TesseractStateDisplay::fixedFrameChanged()
+// void EnvironmentStateDisplay::fixedFrameChanged()
 //{
 //  Display::fixedFrameChanged();
 //  calculateOffsetPosition();

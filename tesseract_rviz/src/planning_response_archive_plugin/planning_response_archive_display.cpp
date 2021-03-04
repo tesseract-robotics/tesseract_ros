@@ -83,7 +83,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
 
   // Convert to objects
   tesseract_msgs::PlanningRequestArchive request_archive = msg->planning_request;
-  auto env = fromMsg(request_archive.tesseract);
+  auto env = fromMsg(request_archive.environment);
   tesseract_environment::Commands commands = fromMsg(request_archive.commands);
   env->applyCommands(commands);
   Instruction results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);

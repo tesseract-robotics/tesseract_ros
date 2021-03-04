@@ -37,7 +37,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
-#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
 #include <tesseract_msgs/GetEnvironmentChanges.h>

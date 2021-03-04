@@ -431,10 +431,10 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
       visualization_->setStartStateVisible(true);
   }
 
-  if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != env_->getName())
+  if (!msg->environment_state.id.empty() && msg->environment_state.id != env_->getName())
     ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
              "was expected",
-             msg->tesseract_state.id.c_str(),
+             msg->environment_state.id.c_str(),
              env_->getName().c_str());
 
   trajectory_env_commands_.clear();

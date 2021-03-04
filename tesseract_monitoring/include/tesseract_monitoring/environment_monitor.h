@@ -49,7 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <condition_variable>
 #include <thread>
 #include <functional>
-#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <tesseract_msgs/GetEnvironmentInformation.h>
@@ -383,7 +383,7 @@ private:
   void updateJointStateTimerCallback(const ros::WallTimerEvent& event);
 
   // Callback for a new state msg
-  void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& env);
+  void newEnvironmentStateCallback(const tesseract_msgs::EnvironmentStateConstPtr& env);
 
   /** @brief Callback for modifying the environment via service request */
   bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,

@@ -131,7 +131,7 @@ void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
   if (!visualization_->isInitialized())
     visualization_->initialize(true, true, true, true);
 
-  //  tesseract_state_topic_property_->setString(tesseract_state_topic);
+  //  environment_state_topic_property_->setString(environment_state_topic);
 
   changedEnableVisualVisible();
   changedEnableCollisionVisible();
@@ -199,7 +199,7 @@ void EnvironmentWidget::changedAllLinks()
   }
 }
 
-// void TesseractStateDisplay::setHighlightedLink(const std::string& link_name, const std_msgs::ColorRGBA& color)
+// void EnvironmentStateDisplay::setHighlightedLink(const std::string& link_name, const std_msgs::ColorRGBA& color)
 //{
 //  RobotLink* link = state_->getRobot().getLink(link_name);
 //  if (link)
@@ -209,7 +209,7 @@ void EnvironmentWidget::changedAllLinks()
 //  }
 //}
 
-// void TesseractStateDisplay::unsetHighlightedLink(const std::string& link_name)
+// void EnvironmentStateDisplay::unsetHighlightedLink(const std::string& link_name)
 //{
 //  RobotLink* link = state_->getRobot().getLink(link_name);
 //  if (link)
@@ -483,10 +483,10 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
   return true;
 }
 
-// void TesseractStateDisplay::setLinkColor(const tesseract_msgs::TesseractState::_object_colors_type& link_colors)
+// void EnvironmentStateDisplay::setLinkColor(const tesseract_msgs::EnvironmentState::_object_colors_type& link_colors)
 //{
 //  assert(false);
-//  for (tesseract_msgs::TesseractState::_object_colors_type::const_iterator it = link_colors.begin();
+//  for (tesseract_msgs::EnvironmentState::_object_colors_type::const_iterator it = link_colors.begin();
 //       it != link_colors.end();
 //       ++it)
 //  {
@@ -497,17 +497,17 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
 //  }
 //}
 
-// void TesseractStateDisplay::setLinkColor(const std::string& link_name, const QColor& color)
+// void EnvironmentStateDisplay::setLinkColor(const std::string& link_name, const QColor& color)
 //{
 //  setLinkColor(&state_->getRobot(), link_name, color);
 //}
 
-// void TesseractStateDisplay::unsetLinkColor(const std::string& link_name)
+// void EnvironmentStateDisplay::unsetLinkColor(const std::string& link_name)
 //{
 //  unsetLinkColor(&state_->getRobot(), link_name);
 //}
 
-// void TesseractStateDisplay::setLinkColor(Robot* robot, const std::string& link_name, const QColor& color)
+// void EnvironmentStateDisplay::setLinkColor(Robot* robot, const std::string& link_name, const QColor& color)
 //{
 //  RobotLink* link = robot->getLink(link_name);
 
@@ -517,7 +517,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
 //        static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()));
 //}
 
-// void TesseractStateDisplay::unsetLinkColor(Robot* robot, const std::string& link_name)
+// void EnvironmentStateDisplay::unsetLinkColor(Robot* robot, const std::string& link_name)
 //{
 //  RobotLink* link = robot->getLink(link_name);
 
@@ -544,7 +544,7 @@ void EnvironmentWidget::loadEnvironment()
     {
       load_tesseract_ = true;
       // TODO:
-      //    setStatus(rviz::StatusProperty::Error, "TesseractState", "No URDF model loaded");
+      //    setStatus(rviz::StatusProperty::Error, "EnvironmentState", "No URDF model loaded");
     }
     else
     {

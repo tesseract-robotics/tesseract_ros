@@ -55,16 +55,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-class TesseractStateDisplay : public rviz::Display
+class EnvironmentStateDisplay : public rviz::Display
 {
   Q_OBJECT
 
 public:
-  using Ptr = std::shared_ptr<TesseractStateDisplay>;
-  using ConstPtr = std::shared_ptr<const TesseractStateDisplay>;
+  using Ptr = std::shared_ptr<EnvironmentStateDisplay>;
+  using ConstPtr = std::shared_ptr<const EnvironmentStateDisplay>;
 
-  TesseractStateDisplay();
-  ~TesseractStateDisplay() override;
+  EnvironmentStateDisplay();
+  ~EnvironmentStateDisplay() override;
 
   void update(float wall_dt, float ros_dt) override;
   void reset() override;

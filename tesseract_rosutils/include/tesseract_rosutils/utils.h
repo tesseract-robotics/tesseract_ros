@@ -60,8 +60,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/SceneGraph.h>
 #include <tesseract_msgs/StringDoublePair.h>
 #include <tesseract_msgs/StringPair.h>
-#include <tesseract_msgs/Tesseract.h>
-#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/Environment.h>
+#include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
@@ -195,11 +195,11 @@ bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
            const tesseract_environment::Commands& commands,
            unsigned long past_revision);
 
-void toMsg(tesseract_msgs::TesseractState& state_msg,
+void toMsg(tesseract_msgs::EnvironmentState& state_msg,
            const tesseract_environment::Environment& env,
            bool include_joint_states = true);
 
-void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env);
+void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract_environment::Environment& env);
 
 /**
  * @brief Generate a JointTrajectory Message that contains only trajectory joints
@@ -358,14 +358,14 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
  * @param env Input Environment object
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract_environment::Environment::ConstPtr& env);
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env);
 
 /**
  * @brief Converts a Tesseract msg to a Environment object
  * @param tesseract_msg Input Tesseract msg
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
-tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg);
+tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

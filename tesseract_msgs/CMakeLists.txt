@@ -39,7 +39,9 @@ add_message_files(
     ContactMarginPair.msg
     ContactResult.msg
     ContactResultVector.msg
+    Environment.msg
     EnvironmentCommand.msg
+    EnvironmentState.msg
     Geometry.msg
     GroupsJointState.msg
     GroupsJointStates.msg
@@ -74,8 +76,6 @@ add_message_files(
     StringDoublePair.msg
     StringLimitsPair.msg
     StringPair.msg
-    TesseractState.msg
-    Tesseract.msg
     Trajectory.msg
     TransformMap.msg
     VisualGeometry.msg

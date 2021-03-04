@@ -220,7 +220,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
         goal->request.seed, tesseract_planning::defaultInstructionParser);
 
   auto env_state = std::make_shared<tesseract_environment::EnvState>();
-  tesseract_rosutils::fromMsg(env_state->joints, goal->request.tesseract_state.joint_state);
+  tesseract_rosutils::fromMsg(env_state->joints, goal->request.environment_state.joint_state);
 
   process_request.env_state = env_state;
   process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
