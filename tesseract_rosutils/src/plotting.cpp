@@ -63,7 +63,7 @@ ROSPlotting::ROSPlotting(std::string root_link, std::string topic_namespace)
   collisions_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_collisions", 1, true);
   arrows_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_arrows", 1, true);
   axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_axes", 1, true);
-  tool_path_pub_ = nh.advertise<geometry_msgs::PoseArray>(topic_namespace + "/display_tool_path", 1, true);
+  tool_path_pub_ = nh.advertise<visualization_msgs::MarkerArray>(topic_namespace + "/display_tool_path", 1, true);
 }
 
 bool ROSPlotting::isConnected() const { return true; }
@@ -134,7 +134,7 @@ void ROSPlotting::plotTrajectory(tesseract_environment::Environment::ConstPtr en
   plotTrajectory(msg);
 }
 
-void ROSPlotting::plotMarker(const tesseract_visualization::Marker& marker, std::string /*ns*/)
+void ROSPlotting::plotMarker(const tesseract_visualization::Marker& marker, std::string ns)
 {
   switch (marker.getType())
   {
@@ -151,22 +151,28 @@ void ROSPlotting::plotMarker(const tesseract_visualization::Marker& marker, std:
     {
       const auto& m = dynamic_cast<const tesseract_visualization::AxisMarker&>(marker);
       visualization_msgs::MarkerArray msg =
-          getMarkerAxisMsg(marker_counter_, root_link_, topic_namespace_, ros::Time::now(), m);
+          getMarkerAxisMsg(marker_counter_, root_link_, topic_namespace_, ros::Time::now(), m.axis, m.getScale());
       axes_pub_.publish(msg);
       break;
     }
     case static_cast<int>(tesseract_visualization::MarkerType::TOOLPATH):
     {
       const auto& m = dynamic_cast<const tesseract_visualization::ToolpathMarker&>(marker);
-      geometry_msgs::PoseArray msg;
-      msg.header.frame_id = root_link_;
+      std::string prefix_ns = topic_namespace_;
+      if (!ns.empty())
+        prefix_ns = topic_namespace_ + "/" + ns;
+
+      visualization_msgs::MarkerArray msg;
+      long cnt = 0;
+      auto time = ros::Time::now();
       for (const auto& s : m.toolpath)
       {
+        std::string segment_ns = prefix_ns + "/segment_" + std::to_string(cnt++) + "/poses";
         for (const auto& p : s)
         {
-          geometry_msgs::Pose pose_msg;
-          toMsg(pose_msg, p);
-          msg.poses.push_back(pose_msg);
+          visualization_msgs::MarkerArray msg_pose =
+              getMarkerAxisMsg(marker_counter_, root_link_, segment_ns, time, p, m.scale);
+          msg.markers.insert(msg.markers.end(), msg_pose.markers.begin(), msg_pose.markers.end());
         }
       }
       tool_path_pub_.publish(msg);
@@ -207,14 +213,14 @@ visualization_msgs::MarkerArray ROSPlotting::getMarkerAxisMsg(int& id_counter,
                                                               const std::string& frame_id,
                                                               const std::string& ns,
                                                               const ros::Time& time_stamp,
-                                                              const tesseract_visualization::AxisMarker& marker)
+                                                              const Eigen::Isometry3d& axis,
+                                                              const Eigen::Vector3d& scale)
 {
   visualization_msgs::MarkerArray msg;
-  Eigen::Vector3d x_axis = marker.axis.matrix().block<3, 1>(0, 0);
-  Eigen::Vector3d y_axis = marker.axis.matrix().block<3, 1>(0, 1);
-  Eigen::Vector3d z_axis = marker.axis.matrix().block<3, 1>(0, 2);
-  Eigen::Vector3d position = marker.axis.matrix().block<3, 1>(0, 3);
-  Eigen::Vector3d scale = marker.getScale();
+  Eigen::Vector3d x_axis = axis.matrix().block<3, 1>(0, 0);
+  Eigen::Vector3d y_axis = axis.matrix().block<3, 1>(0, 1);
+  Eigen::Vector3d z_axis = axis.matrix().block<3, 1>(0, 2);
+  Eigen::Vector3d position = axis.matrix().block<3, 1>(0, 3);
 
   auto marker_msg = getMarkerCylinderMsg(
       id_counter, frame_id, ns, time_stamp, position, position + x_axis, Eigen::Vector4d(1, 0, 0, 1), scale(0));
