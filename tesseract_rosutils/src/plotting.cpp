@@ -121,7 +121,7 @@ void ROSPlotting::plotTrajectory(tesseract_environment::Environment::ConstPtr en
 
   // Set tesseract state information
   if (env != nullptr)
-    toMsg(msg.tesseract_state, *(env));
+    toMsg(msg.environment_state, *(env));
 
   // Convert to joint trajectory
   assert(tesseract_planning::isCompositeInstruction(instruction));

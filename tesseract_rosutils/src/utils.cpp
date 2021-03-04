@@ -1472,7 +1472,7 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
   }
 }
 
-void toMsg(tesseract_msgs::TesseractState& state_msg,
+void toMsg(tesseract_msgs::EnvironmentState& state_msg,
            const tesseract_environment::Environment& env,
            bool include_joint_states)
 {
@@ -1483,7 +1483,7 @@ void toMsg(tesseract_msgs::TesseractState& state_msg,
     toMsg(state_msg.joint_state, env.getCurrentState()->joints);
 }
 
-void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, const tesseract_environment::Environment& env)
+void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract_environment::Environment& env)
 {
   toMsg(*state_msg, env);
 }
@@ -2005,14 +2005,14 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
   return true;
 }
 
-bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract_environment::Environment::ConstPtr& env)
+bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env)
 {
-  if (!tesseract_rosutils::toMsg(tesseract_msg.command_history, env->getCommandHistory(), 0))
+  if (!tesseract_rosutils::toMsg(environment_msg.command_history, env->getCommandHistory(), 0))
   {
     return false;
   }
 
-  if (!tesseract_rosutils::toMsg(tesseract_msg.joint_states, env->getCurrentState()->joints))
+  if (!tesseract_rosutils::toMsg(environment_msg.joint_states, env->getCurrentState()->joints))
   {
     return false;
   }
@@ -2020,12 +2020,12 @@ bool toMsg(tesseract_msgs::Tesseract& tesseract_msg, const tesseract_environment
   return true;
 }
 
-tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Tesseract& tesseract_msg)
+tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg)
 {
   tesseract_environment::Commands commands;
   try
   {
-    commands = tesseract_rosutils::fromMsg(tesseract_msg.command_history);
+    commands = tesseract_rosutils::fromMsg(environment_msg.command_history);
   }
   catch (const std::exception& e)
   {
@@ -2041,7 +2041,7 @@ tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Tesseract&
   }
 
   auto env_state = std::make_shared<tesseract_environment::EnvState>();
-  if (!tesseract_rosutils::fromMsg(env_state->joints, tesseract_msg.joint_states))
+  if (!tesseract_rosutils::fromMsg(env_state->joints, environment_msg.joint_states))
   {
     ROS_ERROR_STREAM("Failed to get joint states");
     return nullptr;

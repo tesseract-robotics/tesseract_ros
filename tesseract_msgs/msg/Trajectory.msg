@@ -2,7 +2,7 @@
 std_msgs/Header header
 
 # Tesseract State
-TesseractState tesseract_state
+EnvironmentState environment_state
 tesseract_msgs/EnvironmentCommand[] commands # Additional Commands to be applied to environment prior to trajectory visualization
 
 # Tesseract Command Language Instructions

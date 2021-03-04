@@ -60,7 +60,7 @@ public:
 
     // Convert to objects
     tesseract_msgs::PlanningRequestArchive request_archive = archive.planning_request;
-    auto tesseract = fromMsg(request_archive.tesseract);
+    auto tesseract = fromMsg(request_archive.environment);
     Instruction instructions = fromXMLString<Instruction>(request_archive.instructions, defaultInstructionParser);
     Instruction seed = fromXMLString<Instruction>(request_archive.seed, defaultInstructionParser);
     Instruction results = fromXMLString<Instruction>(archive.results, defaultInstructionParser);

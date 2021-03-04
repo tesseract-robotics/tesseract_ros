@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/resource_locator.h>
 
-#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/EnvironmentState.h>
 
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -38,16 +38,16 @@ TEST_F(TesseractROSUtilsUnit, Instantiation)  // NOLINT
   using namespace tesseract_rosutils;
 }
 
-TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
+TEST_F(TesseractROSUtilsUnit, processEnvironmentStateMsg)  // NOLINT
 {
   ros::Time::init();
 
-  tesseract_msgs::TesseractState tesseract_state_msg;
+  tesseract_msgs::EnvironmentState environment_state_msg;
 
-  toMsg(tesseract_state_msg, *env_);
+  toMsg(environment_state_msg, *env_);
 
-  EXPECT_EQ(tesseract_state_msg.id, env_->getName());
-  EXPECT_EQ(tesseract_state_msg.revision, env_->getRevision());
+  EXPECT_EQ(environment_state_msg.id, env_->getName());
+  EXPECT_EQ(environment_state_msg.revision, env_->getRevision());
 
   const std::string link_name1 = "link_n1";
   const std::string joint_name1 = "joint_n1";
@@ -65,23 +65,23 @@ TEST_F(TesseractROSUtilsUnit, processTesseractStateMsg)  // NOLINT
 
   env_->applyCommands(commands);
 
-  tesseract_msgs::TesseractState tesseract_state_msg2;
-  toMsg(tesseract_state_msg2, *env_);
+  tesseract_msgs::EnvironmentState environment_state_msg2;
+  toMsg(environment_state_msg2, *env_);
 
-  EXPECT_EQ(tesseract_state_msg2.id, env_->getName());
-  EXPECT_EQ(tesseract_state_msg2.revision, env_->getRevision());
-  EXPECT_EQ(tesseract_state_msg.revision + 1, tesseract_state_msg2.revision);
+  EXPECT_EQ(environment_state_msg2.id, env_->getName());
+  EXPECT_EQ(environment_state_msg2.revision, env_->getRevision());
+  EXPECT_EQ(environment_state_msg.revision + 1, environment_state_msg2.revision);
 }
 
 TEST_F(TesseractROSUtilsUnit, toFromMsgTesseract)  // NOLINT
 {
-  tesseract_msgs::Tesseract tesseract_msg;
+  tesseract_msgs::Environment tesseract_msg;
   EXPECT_TRUE(toMsg(tesseract_msg, env_));
 
   std::string filepath = "/tmp/tesseract.bin";
-  EXPECT_TRUE(toFile<tesseract_msgs::Tesseract>(filepath, tesseract_msg));
+  EXPECT_TRUE(toFile<tesseract_msgs::Environment>(filepath, tesseract_msg));
 
-  auto new_tesseract_msg = fromFile<tesseract_msgs::Tesseract>(filepath);
+  auto new_tesseract_msg = fromFile<tesseract_msgs::Environment>(filepath);
 
   auto new_tesseract = fromMsg(tesseract_msg);
   EXPECT_TRUE(new_tesseract);

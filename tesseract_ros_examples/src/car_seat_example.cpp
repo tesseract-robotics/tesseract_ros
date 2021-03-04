@@ -36,12 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/profile_dictionary.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/core/default_process_planners.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
-#include <tesseract_command_language/profile_dictionary.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>

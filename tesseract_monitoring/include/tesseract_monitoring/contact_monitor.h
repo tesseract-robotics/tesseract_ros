@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sensor_msgs/JointState.h>
 #include <tesseract_msgs/ComputeContactResultVector.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/EnvironmentState.h>
 #include <mutex>
 #include <condition_variable>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -102,7 +102,7 @@ public:
   bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVector::Request& request,
                                           tesseract_msgs::ComputeContactResultVector::Response& response);
 
-  void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state);
+  void callbackTesseractEnvDiff(const tesseract_msgs::EnvironmentStatePtr& state);
 
 private:
   std::string monitor_namespace_;

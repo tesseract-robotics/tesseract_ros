@@ -1,4 +1,4 @@
-tesseract_msgs/TesseractState tesseract_state
+tesseract_msgs/EnvironmentState environment_state
 tesseract_msgs/EnvironmentCommand[] commands # Additional Commands to be applied to environment prior to planning
 
 string name # The name of the taskflow to use
