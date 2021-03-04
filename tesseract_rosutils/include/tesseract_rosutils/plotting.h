@@ -84,7 +84,8 @@ public:
                                                           const std::string& frame_id,
                                                           const std::string& ns,
                                                           const ros::Time& time_stamp,
-                                                          const tesseract_visualization::AxisMarker& marker);
+                                                          const Eigen::Isometry3d& axis,
+                                                          const Eigen::Vector3d& scale);
 
   static visualization_msgs::Marker getMarkerArrowMsg(int& id_counter,
                                                       const std::string& frame_id,
