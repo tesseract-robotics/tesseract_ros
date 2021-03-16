@@ -492,8 +492,9 @@ void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::Envir
       }
       catch (const std::exception& e)
       {
-        ROS_ERROR_NAMED(
-            monitor_namespace_, "newEnvironmentStateCallback: Failed to convert command history message, %s!", e.what());
+        ROS_ERROR_NAMED(monitor_namespace_,
+                        "newEnvironmentStateCallback: Failed to convert command history message, %s!",
+                        e.what());
         return;
       }
 
@@ -546,7 +547,8 @@ void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::Envir
                 if (!tesseract_rosutils::processMsg(*env_, res.response.commands))
                 {
                   ROS_ERROR_STREAM_NAMED(monitor_namespace_,
-                                         "newEnvironmentStateCallback: Failed to apply monitored environments changes.");
+                                         "newEnvironmentStateCallback: Failed to apply monitored environments "
+                                         "changes.");
                 }
               }
               else
@@ -580,13 +582,15 @@ void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::Envir
           else
           {
             ROS_ERROR_STREAM_NAMED(monitor_namespace_,
-                                   "newEnvironmentStateCallback: Failed to convert latest changes to message and update "
+                                   "newEnvironmentStateCallback: Failed to convert latest changes to message and "
+                                   "update "
                                    "monitored environment!");
           }
         }
         else
         {
-          ROS_ERROR_STREAM_NAMED(monitor_namespace_, "newEnvironmentStateCallback: Unsupporte MonitoredEnvironmentMode!");
+          ROS_ERROR_STREAM_NAMED(monitor_namespace_,
+                                 "newEnvironmentStateCallback: Unsupporte MonitoredEnvironmentMode!");
         }
       }
       else

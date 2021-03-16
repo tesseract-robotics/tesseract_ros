@@ -87,8 +87,8 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   tesseract_environment::Commands commands = fromMsg(request_archive.commands);
   env->applyCommands(commands);
   Instruction results = CompositeInstruction();
-  if(!msg->results.empty())
-     results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
+  if (!msg->results.empty())
+    results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
 
   // Get the current find tcp callbacks
   std::vector<tesseract_environment::FindTCPCallbackFn> env_cb;
