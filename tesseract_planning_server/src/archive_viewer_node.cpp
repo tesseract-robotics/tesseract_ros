@@ -61,11 +61,11 @@ public:
     // Convert to objects
     tesseract_msgs::PlanningRequestArchive request_archive = archive.planning_request;
     Instruction instructions, seed, results;
-    if(!request_archive.instructions.empty())
+    if (!request_archive.instructions.empty())
       instructions = fromXMLString<Instruction>(request_archive.instructions, defaultInstructionParser);
-    if(!request_archive.seed.empty())
+    if (!request_archive.seed.empty())
       seed = fromXMLString<Instruction>(request_archive.seed, defaultInstructionParser);
-    if(!archive.results.empty())
+    if (!archive.results.empty())
       results = fromXMLString<Instruction>(archive.results, defaultInstructionParser);
 
     // Print debugging info

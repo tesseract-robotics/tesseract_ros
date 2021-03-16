@@ -361,7 +361,9 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
  * @param include_joint_states If true, the joint_states element will be populated with the current state
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment& env, bool include_joint_states = true);
+bool toMsg(tesseract_msgs::Environment& environment_msg,
+           const tesseract_environment::Environment& env,
+           bool include_joint_states = true);
 
 /**
  * @brief Converts a Environment object to a Tesseract msg
@@ -370,7 +372,9 @@ bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environ
  * @param include_joint_states If true, the joint_states element will be populated with the current state
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::Environment& environment_msg, const tesseract_environment::Environment::ConstPtr& env, bool include_joint_states = true);
+bool toMsg(tesseract_msgs::Environment& environment_msg,
+           const tesseract_environment::Environment::ConstPtr& env,
+           bool include_joint_states = true);
 
 /**
  * @brief Converts a Tesseract msg to a Environment object
