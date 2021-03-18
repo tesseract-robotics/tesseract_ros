@@ -372,7 +372,7 @@ ROSPlotting::getContactResultsMarkerArrayMsg(int& id_counter,
     if (marker.margin_fn != nullptr)
       safety_distance = marker.margin_fn(dist.link_names[0], dist.link_names[1]);
     else
-      safety_distance = marker.margin_data.getPairCollisionMarginData(dist.link_names[0], dist.link_names[1]);
+      safety_distance = marker.margin_data.getPairCollisionMargin(dist.link_names[0], dist.link_names[1]);
 
     auto base_material = std::make_shared<tesseract_scene_graph::Material>("base_material");
     if (dist.distance < 0)

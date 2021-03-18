@@ -20,6 +20,7 @@ uint8 ADD_KINEMATICS_INFORMATION=17
 uint8 CHANGE_DEFAULT_CONTACT_MARGIN=18
 uint8 CHANGE_PAIR_CONTACT_MARGIN=19
 uint8 REPLACE_JOINT=20
+uint8 CHANGE_COLLISION_MARGINS=21
 
 
 # Specifies the type of command. Dictates which of the fields below are used
@@ -91,8 +92,12 @@ tesseract_msgs/StringDoublePair[] change_joint_acceleration_limits
 # ADD_KINEMATICS_INFORMATION Command
 tesseract_msgs/KinematicsInformation add_kinematics_information
 
-# CHANGE_DEFAULT_CONTACT_MARGIN
+# CHANGE_DEFAULT_CONTACT_MARGIN (DEPRECATED)
 float64 default_contact_margin
 
-# CHANGE_PAIR_CONTACT_MARGIN
+# CHANGE_PAIR_CONTACT_MARGIN (DEPRECATED)
 tesseract_msgs/ContactMarginPair[] contact_margin_pairs
+
+#CHANGE_COLLISION_MARGINS
+tesseract_msgs/CollisionMarginData collision_margin_data
+tesseract_msgs/CollisionMarginOverrideType collision_margin_override_type
