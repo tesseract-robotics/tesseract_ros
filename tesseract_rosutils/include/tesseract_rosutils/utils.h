@@ -164,11 +164,18 @@ tesseract_planning::PlannerProfileRemapping
 fromMsg(const tesseract_msgs::PlannerProfileRemapping& profile_remapping_msg);
 tesseract_msgs::PlannerProfileRemapping toMsg(const tesseract_planning::PlannerProfileRemapping& profile_remapping);
 
-std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>
+tesseract_common::PairsCollisionMarginData
 fromMsg(const std::vector<tesseract_msgs::ContactMarginPair>& contact_margin_pairs_msg);
 std::vector<tesseract_msgs::ContactMarginPair>
-toMsg(const std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>&
-          contact_margin_pairs);
+toMsg(const tesseract_common::PairsCollisionMarginData& contact_margin_pairs);
+
+tesseract_common::CollisionMarginData fromMsg(const tesseract_msgs::CollisionMarginData& contact_margin_data_msg);
+tesseract_msgs::CollisionMarginData toMsg(const tesseract_common::CollisionMarginData& contact_margin_data);
+
+tesseract_common::CollisionMarginOverrideType
+fromMsg(const tesseract_msgs::CollisionMarginOverrideType& contact_margin_override_type_msg);
+tesseract_msgs::CollisionMarginOverrideType
+toMsg(const tesseract_common::CollisionMarginOverrideType& contact_margin_override_type);
 
 tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg);
 
