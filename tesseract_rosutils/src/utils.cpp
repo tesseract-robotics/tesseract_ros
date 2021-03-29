@@ -2143,21 +2143,21 @@ tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environmen
   }
   catch (const std::exception& e)
   {
-    ROS_ERROR("Failed to convert command history message: %s!", e.what());
+    ROS_ERROR("fromMsg(Environment): Failed to convert command history message: %s!", e.what());
     return nullptr;
   }
 
   auto env = std::make_shared<tesseract_environment::Environment>();
   if (!env->init<tesseract_environment::OFKTStateSolver>(commands))  // TODO: Get state solver
   {
-    ROS_ERROR_STREAM("Failed to initialize environment!");
+    ROS_ERROR_STREAM("fromMsg(Environment): Failed to initialize environment!");
     return nullptr;
   }
 
   auto env_state = std::make_shared<tesseract_environment::EnvState>();
   if (!tesseract_rosutils::fromMsg(env_state->joints, environment_msg.joint_states))
   {
-    ROS_ERROR_STREAM("Failed to get joint states");
+    ROS_ERROR_STREAM("fromMsg(Environment): Failed to get joint states");
     return nullptr;
   }
   env->setState(env_state->joints);
