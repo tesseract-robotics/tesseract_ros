@@ -177,8 +177,6 @@ void VisualizeTrajectoryWidget::clearTrajectoryTrail()
 
 void VisualizeTrajectoryWidget::createTrajectoryTrail()
 {
-  clearTrajectoryTrail();
-
   long stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
   long num_waypoints = trajectory_player_.size();
@@ -436,7 +434,7 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
              "was expected",
              msg->environment_state.id.c_str(),
              env_->getName().c_str());
-  else
+  else if (msg->environment_state.revision > 0)
   {
     tesseract_environment::Environment::Ptr env = tesseract_rosutils::fromMsg(msg->environment_state.environment);
     if (env)

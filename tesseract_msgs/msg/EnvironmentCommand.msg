@@ -98,6 +98,6 @@ float64 default_contact_margin
 # CHANGE_PAIR_CONTACT_MARGIN (DEPRECATED)
 tesseract_msgs/ContactMarginPair[] contact_margin_pairs
 
-#CHANGE_COLLISION_MARGINS
+# CHANGE_COLLISION_MARGINS
 tesseract_msgs/CollisionMarginData collision_margin_data
 tesseract_msgs/CollisionMarginOverrideType collision_margin_override_type
