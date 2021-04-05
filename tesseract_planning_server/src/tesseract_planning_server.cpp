@@ -45,12 +45,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_command_language/deserialize.h>
-#include <tesseract_command_language/serialize.h>
+#include <tesseract_command_language/core/serialization.h>
 
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_common/timer.h>
 
+using tesseract_planning::Serialization;
 using tesseract_rosutils::processMsg;
 
 namespace tesseract_planning_server
@@ -212,12 +212,11 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   tesseract_planning::ProcessPlanningRequest process_request;
   process_request.name = goal->request.name;
-  process_request.instructions = tesseract_planning::fromXMLString<tesseract_planning::Instruction>(
-      goal->request.instructions, tesseract_planning::defaultInstructionParser);
+  process_request.instructions =
+      Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.instructions);
 
   if (!goal->request.seed.empty())
-    process_request.seed = tesseract_planning::fromXMLString<tesseract_planning::Instruction>(
-        goal->request.seed, tesseract_planning::defaultInstructionParser);
+    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.seed);
 
   auto env_state = std::make_shared<tesseract_environment::EnvState>();
   tesseract_rosutils::fromMsg(env_state->joints, goal->request.environment_state.joint_state);
@@ -235,7 +234,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   timer.stop();
 
   result.response.successful = plan_future.interface->isSuccessful();
-  result.response.results = tesseract_planning::toXMLString(*(plan_future.results));
+  result.response.results = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
   plan_future.clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());

@@ -249,9 +249,9 @@ bool PickAndPlaceExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto* cp = pick_response.results->cast_const<CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(*cp, env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(*cp);
+    const auto& cp = pick_response.results->as<CompositeInstruction>();
+    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(cp, env_);
+    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(cp);
     plotter->plotMarker(ToolpathMarker(toolpath));
     plotter->plotTrajectory(trajectory, env_->getStateSolver());
   }
@@ -281,8 +281,8 @@ bool PickAndPlaceExample::run()
   monitor_->applyCommands(cmds);
 
   // Get the last move instruction
-  const CompositeInstruction* pick_composite = pick_response.results->cast_const<CompositeInstruction>();
-  const MoveInstruction* pick_final_state = tesseract_planning::getLastMoveInstruction(*pick_composite);
+  const CompositeInstruction& pick_composite = pick_response.results->as<CompositeInstruction>();
+  const MoveInstruction* pick_final_state = tesseract_planning::getLastMoveInstruction(pick_composite);
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = pick_approach_pose;
@@ -358,9 +358,9 @@ bool PickAndPlaceExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto* ci = place_response.results->cast_const<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(*ci, env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(*ci);
+    const auto& ci = place_response.results->as<tesseract_planning::CompositeInstruction>();
+    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, env_);
+    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
     plotter->plotMarker(ToolpathMarker(toolpath));
     plotter->plotTrajectory(trajectory, env_->getStateSolver());
   }

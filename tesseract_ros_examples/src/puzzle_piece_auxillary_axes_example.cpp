@@ -279,8 +279,8 @@ bool PuzzlePieceAuxillaryAxesExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto* ci = response.results->cast_const<tesseract_planning::CompositeInstruction>();
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(*ci);
+    const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
+    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
     plotter->plotTrajectory(trajectory, env_->getStateSolver());
   }
 
