@@ -46,8 +46,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_msgs/PlanningResponseArchive.h>
 #include <tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h>
+#include <tesseract_command_language/core/serialization.h>
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/deserialize.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_msgs/Trajectory.h>
 
@@ -88,7 +88,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   env->applyCommands(commands);
   Instruction results = CompositeInstruction();
   if (!msg->results.empty())
-    results = fromXMLString<Instruction>(msg->results, defaultInstructionParser);
+    results = Serialization::fromArchiveStringXML<Instruction>(msg->results);
 
   // Get the current find tcp callbacks
   std::vector<tesseract_environment::FindTCPCallbackFn> env_cb;
@@ -103,7 +103,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
 
   // Convert TCL to tesseract_msgs::Trajectory
   tesseract_common::JointTrajectory traj =
-      tesseract_planning::toJointTrajectory(*(results.cast_const<tesseract_planning::CompositeInstruction>()));
+      tesseract_planning::toJointTrajectory(results.as<tesseract_planning::CompositeInstruction>());
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();
   tesseract_rosutils::toMsg(traj_msg->joint_trajectory, traj);
 

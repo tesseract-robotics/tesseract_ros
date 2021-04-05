@@ -125,8 +125,8 @@ void ROSPlotting::plotTrajectory(tesseract_environment::Environment::ConstPtr en
 
   // Convert to joint trajectory
   assert(tesseract_planning::isCompositeInstruction(instruction));
-  const auto* ci = instruction.cast_const<tesseract_planning::CompositeInstruction>();
-  tesseract_common::JointTrajectory traj = tesseract_planning::toJointTrajectory(*ci);
+  const auto& ci = instruction.as<tesseract_planning::CompositeInstruction>();
+  tesseract_common::JointTrajectory traj = tesseract_planning::toJointTrajectory(ci);
 
   // Set the joint trajectory message
   toMsg(msg.joint_trajectory, traj);

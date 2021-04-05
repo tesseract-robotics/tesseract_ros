@@ -54,7 +54,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/window_manager_interface.h>
 
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_command_language/deserialize.h>
 #include <tesseract_rosutils/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
