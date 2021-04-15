@@ -29,7 +29,7 @@
 
     <!-- Launch visualization -->
     <node if="$(arg rviz)" pkg="rviz" type="rviz" name="online_planning_example_rviz"
-         args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+         args="-d $(find tesseract_ros_examples)/config/online_example.rviz" />
 
     <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" respawn="true"/>
   </group>

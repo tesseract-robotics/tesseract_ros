@@ -139,8 +139,8 @@ protected:
   boost::mutex update_trajectory_message_;
 
   // Pointers from parent display taht we save
-  bool animating_path_;
-  bool drop_displaying_trajectory_;
+  bool animating_path_{ false };
+  bool drop_displaying_trajectory_{ false };
   TrajectoryPanel* trajectory_slider_panel_;
   rviz::PanelDockWidget* trajectory_slider_dock_panel_;
   int previous_display_mode_;
