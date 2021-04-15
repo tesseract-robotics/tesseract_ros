@@ -245,8 +245,11 @@ void VisualizeTrajectoryWidget::changedDisplayMode()
   }
   else
   {
+    animating_path_ = false;
+
     visualization_->setStartStateVisible(false);
-    visualization_->setTrajectoryVisible(true);
+    visualization_->setTrajectoryVisible(false);
+
     if (trajectory_slider_panel_)
       trajectory_slider_panel_->pauseButton(true);
   }
@@ -316,7 +319,10 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
       slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
 
       if (display_mode_property_->getOptionInt() == 2)
+      {
         createTrajectoryTrail();
+        visualization_->setTrajectoryVisible(true);
+      }
 
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->update(slider_count_);
@@ -346,7 +352,10 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
         if (previous_display_mode_ != display_mode_property_->getOptionInt())
         {
           if (display_mode_property_->getOptionInt() == 2)
+          {
             createTrajectoryTrail();
+            visualization_->setTrajectoryVisible(true);
+          }
 
           if (trajectory_slider_panel_)
             trajectory_slider_panel_->update(slider_count_);
@@ -420,11 +429,6 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
 
   if (visualization_)
   {
-    //    if (!visualization_->isTrajectoryVisible())
-    //      visualization_->setTrajectoryVisible(true);
-    //    else
-    //      visualization_->setTrajectoryVisible(false);
-
     if (!visualization_->isStartStateVisible())
       visualization_->setStartStateVisible(true);
   }
