@@ -64,7 +64,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_monitoring/constants.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
@@ -189,7 +188,7 @@ public:
    * @brief Get the kinematics information
    * @return Const KinematicsInformatiion
    */
-  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const;
+  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const;
 
   /**
    * @brief Returns an @b unsafe pointer to the current environment.

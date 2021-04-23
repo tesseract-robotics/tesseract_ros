@@ -1540,7 +1540,7 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
     }
     case tesseract_msgs::EnvironmentCommand::ADD_KINEMATICS_INFORMATION:
     {
-      tesseract_scene_graph::KinematicsInformation kin_info;
+      tesseract_srdf::KinematicsInformation kin_info;
       fromMsg(kin_info, command_msg.add_kinematics_information);
 
       return std::make_shared<tesseract_environment::AddKinematicsInformationCommand>(kin_info);
@@ -1744,7 +1744,7 @@ bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorI
   return true;
 }
 
-tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_reference group)
+tesseract_msgs::ChainGroup toMsg(tesseract_srdf::ChainGroups::const_reference group)
 {
   tesseract_msgs::ChainGroup g;
   g.name = group.first;
@@ -1759,7 +1759,7 @@ tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_refer
   return g;
 }
 
-tesseract_msgs::GroupsROPKinematics toMsg(tesseract_scene_graph::GroupROPKinematics::const_reference group)
+tesseract_msgs::GroupsROPKinematics toMsg(tesseract_srdf::GroupROPKinematics::const_reference group)
 {
   tesseract_msgs::GroupsROPKinematics g;
   g.name = group.first;
@@ -1780,7 +1780,7 @@ tesseract_msgs::GroupsROPKinematics toMsg(tesseract_scene_graph::GroupROPKinemat
   return g;
 }
 
-tesseract_msgs::GroupsREPKinematics toMsg(tesseract_scene_graph::GroupREPKinematics::const_reference group)
+tesseract_msgs::GroupsREPKinematics toMsg(tesseract_srdf::GroupREPKinematics::const_reference group)
 {
   tesseract_msgs::GroupsREPKinematics g;
   g.name = group.first;
@@ -1801,7 +1801,7 @@ tesseract_msgs::GroupsREPKinematics toMsg(tesseract_scene_graph::GroupREPKinemat
   return g;
 }
 
-tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_scene_graph::GroupOPWKinematics::const_reference group)
+tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_srdf::GroupOPWKinematics::const_reference group)
 {
   tesseract_msgs::GroupsOPWKinematics g;
   g.name = group.first;
@@ -1822,7 +1822,7 @@ tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_scene_graph::GroupOPWKinemat
   return g;
 }
 
-tesseract_msgs::GroupsJointStates toMsg(tesseract_scene_graph::GroupJointStates::const_reference group)
+tesseract_msgs::GroupsJointStates toMsg(tesseract_srdf::GroupJointStates::const_reference group)
 {
   tesseract_msgs::GroupsJointStates g;
   g.name = group.first;
@@ -1846,7 +1846,7 @@ tesseract_msgs::GroupsJointStates toMsg(tesseract_scene_graph::GroupJointStates:
   return g;
 }
 
-tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_reference group)
+tesseract_msgs::GroupsTCPs toMsg(tesseract_srdf::GroupTCPs::const_reference group)
 {
   tesseract_msgs::GroupsTCPs g;
   g.name = group.first;
@@ -1862,8 +1862,7 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
   return g;
 }
 
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
-           const tesseract_scene_graph::KinematicsInformation& kin_info)
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg, const tesseract_srdf::KinematicsInformation& kin_info)
 {
   kin_info_msg.group_names = kin_info.group_names;
 
@@ -1949,14 +1948,13 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
   return true;
 }
 
-bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
-             const tesseract_msgs::KinematicsInformation& kin_info_msg)
+bool fromMsg(tesseract_srdf::KinematicsInformation& kin_info, const tesseract_msgs::KinematicsInformation& kin_info_msg)
 {
   kin_info.group_names = kin_info_msg.group_names;
 
   for (const auto& group : kin_info_msg.chain_groups)
   {
-    tesseract_scene_graph::ChainGroup chain_group;
+    tesseract_srdf::ChainGroup chain_group;
     for (const auto& pair : group.chains)
       chain_group.emplace_back(pair.first, pair.second);
 
@@ -1971,7 +1969,7 @@ bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
 
   for (const auto& group : kin_info_msg.group_rop)
   {
-    tesseract_scene_graph::ROPKinematicParameters rop_group;
+    tesseract_srdf::ROPKinematicParameters rop_group;
     rop_group.manipulator_group = group.manipulator_group;
     rop_group.manipulator_ik_solver = group.manipulator_ik_solver;
     rop_group.manipulator_reach = group.manipulator_reach;
@@ -1985,7 +1983,7 @@ bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
 
   for (const auto& group : kin_info_msg.group_rep)
   {
-    tesseract_scene_graph::REPKinematicParameters rep_group;
+    tesseract_srdf::REPKinematicParameters rep_group;
     rep_group.manipulator_group = group.manipulator_group;
     rep_group.manipulator_ik_solver = group.manipulator_ik_solver;
     rep_group.manipulator_reach = group.manipulator_reach;
@@ -1999,7 +1997,7 @@ bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
 
   for (const auto& group : kin_info_msg.group_opw)
   {
-    tesseract_scene_graph::OPWKinematicParameters opw_group;
+    tesseract_srdf::OPWKinematicParameters opw_group;
     opw_group.a1 = group.a1;
     opw_group.a2 = group.a2;
     opw_group.b = group.b;
@@ -2020,7 +2018,7 @@ bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
   {
     for (const auto& state : group.joint_states)
     {
-      tesseract_scene_graph::GroupsJointState joint_state;
+      tesseract_srdf::GroupsJointState joint_state;
       joint_state.reserve(state.joint_state.size());
       for (const auto& js : state.joint_state)
         joint_state[js.first] = js.second;

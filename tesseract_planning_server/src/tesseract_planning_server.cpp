@@ -212,8 +212,23 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   tesseract_planning::ProcessPlanningRequest process_request;
   process_request.name = goal->request.name;
-  process_request.instructions =
-      Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.instructions);
+
+  try
+  {
+    process_request.instructions =
+        Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.instructions);
+  }
+  catch (const std::exception& e)
+  {
+    result.response.successful = false;
+    std::ostringstream oss;
+    oss << "Failed to deserialize program instruction with error: '" << e.what() << "'!" << std::endl;
+    oss << "   Make sure the program was serialized from an Instruction type and not a CompositeInstruction type."
+        << std::endl;
+    ROS_ERROR_STREAM(oss.str());
+    motion_plan_server_.setSucceeded(result);
+    return;
+  }
 
   if (!goal->request.seed.empty())
     process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.seed);

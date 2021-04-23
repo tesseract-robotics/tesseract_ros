@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract_srdf/srdf_model.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_rosutils/utils.h>
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
 
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  tesseract_scene_graph::SRDFModel::Ptr srdf_model;
+  tesseract_srdf::SRDFModel::Ptr srdf_model;
   std::string robot_description;
   std::string joint_state_topic;
   std::string monitor_namespace;
