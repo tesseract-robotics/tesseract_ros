@@ -306,7 +306,7 @@ bool EnvironmentMonitor::applyCommands(const tesseract_environment::Commands& co
 
 tesseract_scene_graph::SceneGraph::ConstPtr EnvironmentMonitor::getSceneGraph() const { return env_->getSceneGraph(); }
 
-const tesseract_scene_graph::KinematicsInformation& EnvironmentMonitor::getKinematicsInformation() const
+const tesseract_srdf::KinematicsInformation& EnvironmentMonitor::getKinematicsInformation() const
 {
   return env_->getManipulatorManager()->getKinematicsInformation();
 }

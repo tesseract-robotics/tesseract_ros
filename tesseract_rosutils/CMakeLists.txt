@@ -19,6 +19,7 @@ find_package(tesseract_environment REQUIRED)
 find_package(tesseract_geometry REQUIRED) # This should not be required, must be doing something wrong when creating targets
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
+find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_process_managers REQUIRED)
@@ -40,6 +41,7 @@ catkin_package(
     Boost
     EIGEN3
     tesseract_scene_graph
+    tesseract_srdf
     tesseract_geometry
     tesseract_visualization
     tesseract_collision
@@ -58,6 +60,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_environment_core
   tesseract::tesseract_environment_ofkt
   tesseract::tesseract_scene_graph
+  tesseract::tesseract_srdf
   tesseract::tesseract_geometry
   tesseract::tesseract_collision_core
   tesseract::tesseract_visualization

@@ -274,42 +274,42 @@ bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorI
  * @param group Chain group
  * @return Chain group message
  */
-tesseract_msgs::ChainGroup toMsg(tesseract_scene_graph::ChainGroups::const_reference group);
+tesseract_msgs::ChainGroup toMsg(tesseract_srdf::ChainGroups::const_reference group);
 
 /**
  * @brief Convert a Robot on Positioner group to message
  * @param group Robot on Positioner group
  * @return Robot on Positioner group message
  */
-tesseract_msgs::GroupsROPKinematics toMsg(tesseract_scene_graph::GroupROPKinematics::const_reference group);
+tesseract_msgs::GroupsROPKinematics toMsg(tesseract_srdf::GroupROPKinematics::const_reference group);
 
 /**
  * @brief Convert a Robot with External Positioner group to message
  * @param group  Robot with External Positioner group
  * @return Robot with External Positioner group message
  */
-tesseract_msgs::GroupsREPKinematics toMsg(tesseract_scene_graph::GroupREPKinematics::const_reference group);
+tesseract_msgs::GroupsREPKinematics toMsg(tesseract_srdf::GroupREPKinematics::const_reference group);
 
 /**
  * @brief Convert a group's OPW kinematics to message
  * @param group Group's OPW kinematics
  * @return Group's OPW kinematics message
  */
-tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_scene_graph::GroupOPWKinematics::const_reference group);
+tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_srdf::GroupOPWKinematics::const_reference group);
 
 /**
  * @brief Convert a group's joint state to message
  * @param group Group's joint states
  * @return Group's joint states message
  */
-tesseract_msgs::GroupsJointStates toMsg(tesseract_scene_graph::GroupJointStates::const_reference group);
+tesseract_msgs::GroupsJointStates toMsg(tesseract_srdf::GroupJointStates::const_reference group);
 
 /**
  * @brief Convert a group's tool center points to message
  * @param group Group's tool center points
  * @return Group's tool center points message
  */
-tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_reference group);
+tesseract_msgs::GroupsTCPs toMsg(tesseract_srdf::GroupTCPs::const_reference group);
 
 /**
  * @brief Convert manipulator managers data to message
@@ -317,8 +317,7 @@ tesseract_msgs::GroupsTCPs toMsg(tesseract_scene_graph::GroupTCPs::const_referen
  * @param manager The Manipulator manager to convert to message
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
-           const tesseract_scene_graph::KinematicsInformation& kin_info);
+bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg, const tesseract_srdf::KinematicsInformation& kin_info);
 
 /**
  * @brief This will populate the kinematics information from the kinematics information message
@@ -326,7 +325,7 @@ bool toMsg(tesseract_msgs::KinematicsInformation& kin_info_msg,
  * @param kin_info_msg The kinematics information message
  * @return True if successful, otherwise false
  */
-bool fromMsg(tesseract_scene_graph::KinematicsInformation& kin_info,
+bool fromMsg(tesseract_srdf::KinematicsInformation& kin_info,
              const tesseract_msgs::KinematicsInformation& kin_info_msg);
 
 /**

@@ -11,6 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_srdf/kinematics_information.h>
 
 #include <tesseract_msgs/EnvironmentState.h>
 
@@ -107,30 +108,30 @@ TEST_F(TesseractROSUtilsUnit, toFromFile)  // NOLINT
 
 TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
 {
-  tesseract_scene_graph::KinematicsInformation kin_info;
+  tesseract_srdf::KinematicsInformation kin_info;
   kin_info.group_names = { "manipulator1", "manipulator2", "manipulator3" };
   kin_info.chain_groups["manipulator1"] = { std::make_pair("base_link", "tip_link") };
   kin_info.joint_groups["manipulator2"] = { "joint_1", "joint_2", "joint_3" };
   kin_info.link_groups["manipulator3"] = { "base_link", "link_1", "link_2" };
-  tesseract_scene_graph::GroupsJointState js;
+  tesseract_srdf::GroupsJointState js;
   js["joint_0"] = 1.1;
   js["joint_1"] = 2.1;
-  tesseract_scene_graph::GroupsJointStates jss;
+  tesseract_srdf::GroupsJointStates jss;
   jss["home"] = js;
   kin_info.group_states["manipulator1"] = jss;
 
-  tesseract_scene_graph::GroupsTCPs gts;
+  tesseract_srdf::GroupsTCPs gts;
   Eigen::Isometry3d p = Eigen::Isometry3d::Identity();
   gts["sander"] = p;
   kin_info.group_tcps["manipulator1"] = gts;
 
-  tesseract_scene_graph::ROPKinematicParameters rop;
+  tesseract_srdf::ROPKinematicParameters rop;
   kin_info.group_rop_kinematics["manipulator1"] = rop;
 
-  tesseract_scene_graph::REPKinematicParameters rep;
+  tesseract_srdf::REPKinematicParameters rep;
   kin_info.group_rep_kinematics["manipulator2"] = rep;
 
-  tesseract_scene_graph::OPWKinematicParameters opw;
+  tesseract_srdf::OPWKinematicParameters opw;
   kin_info.group_opw_kinematics["manipulator3"] = opw;
 
   kin_info.group_default_fwd_kin["manipulator1"] = "ROPSolver";
@@ -179,7 +180,7 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   EXPECT_EQ(kin_info_msg.default_inv_kin[0].first, "manipulator2");
   EXPECT_EQ(kin_info_msg.default_inv_kin[0].second, "REPSolver");
 
-  tesseract_scene_graph::KinematicsInformation kin_info2;
+  tesseract_srdf::KinematicsInformation kin_info2;
   tesseract_rosutils::fromMsg(kin_info2, kin_info_msg);
 
   EXPECT_EQ(kin_info2.group_names.size(), kin_info_msg.group_names.size());
