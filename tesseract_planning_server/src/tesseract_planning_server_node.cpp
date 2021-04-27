@@ -76,8 +76,7 @@ int main(int argc, char** argv)
   planning_server->getEnvironmentCache().setCacheSize(cache_size);
 
   if (publish_environment)
-    planning_server->getEnvironmentMonitor().startPublishingEnvironment(
-        tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
+    planning_server->getEnvironmentMonitor().startPublishingEnvironment();
 
   if (!monitored_namespace.empty())
     planning_server->getEnvironmentMonitor().startMonitoringEnvironment(monitored_namespace);

@@ -106,7 +106,31 @@ public:
    * @param monitor_namespace The namespace to extract the environment from.
    * @return Environment Shared Pointer, if nullptr it failed
    */
-  tesseract_environment::EnvState::Ptr getEnvironmentState(const std::string& monitor_namespace);
+  tesseract_environment::EnvState::Ptr getEnvironmentState(const std::string& monitor_namespace) const;
+
+  /**
+   * @brief Set environments state in the provided namespace
+   * @param monitor_namespace The monitored namespace to set the state
+   * @return True if successful, otherwise false
+   */
+  bool setEnvironmentState(const std::string& monitor_namespace,
+                           const std::unordered_map<std::string, double>& joints) const;
+  bool setEnvironmentState(const std::string& monitor_namespace,
+                           const std::vector<std::string>& joint_names,
+                           const std::vector<double>& joint_values);
+  bool setEnvironmentState(const std::string& monitor_namespace,
+                           const std::vector<std::string>& joint_names,
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+
+  /**
+   * @brief Set environment state for all monitor namespaces
+   * @return A vector of failed namespace, if empty all namespace were updated successfully.
+   */
+  std::vector<std::string> setEnvironmentState(const std::unordered_map<std::string, double>& joints);
+  std::vector<std::string> setEnvironmentState(const std::vector<std::string>& joint_names,
+                                               const std::vector<double>& joint_values);
+  std::vector<std::string> setEnvironmentState(const std::vector<std::string>& joint_names,
+                                               const Eigen::Ref<const Eigen::VectorXd>& joint_values);
 
   /**
    * @brief Pull information from the environment in the provided namespace and create a Environment Object

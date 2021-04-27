@@ -178,10 +178,14 @@ void EnvironmentWidget::onUpdate()
     }
   }
 
-  if (visualization_ && update_required_ && env_->isInitialized())
+  if (visualization_ && env_->isInitialized())
   {
-    update_required_ = false;
-    visualization_->update(env_->getCurrentState()->link_transforms);
+    if (update_required_ || state_timestamp_ != env_->getCurrentStateTimestamp())
+    {
+      update_required_ = false;
+      visualization_->update(env_->getCurrentState()->link_transforms);
+      state_timestamp_ = env_->getCurrentStateTimestamp();
+    }
   }
 }
 

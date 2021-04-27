@@ -98,8 +98,6 @@ public:
 
 bool isMsgEmpty(const sensor_msgs::JointState& msg);
 
-bool isMsgEmpty(const sensor_msgs::MultiDOFJointState& msg);
-
 bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2);
 
 bool isIdentical(const tesseract_scene_graph::Visual& visual1, const tesseract_scene_graph::Visual& visual2);

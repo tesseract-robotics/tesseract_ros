@@ -121,7 +121,7 @@ void ROSPlotting::plotTrajectory(tesseract_environment::Environment::ConstPtr en
 
   // Set tesseract state information
   if (env != nullptr)
-    toMsg(msg.environment_state, *(env));
+    toMsg(msg.environment, *(env));
 
   // Convert to joint trajectory
   assert(tesseract_planning::isCompositeInstruction(instruction));
@@ -195,7 +195,7 @@ void ROSPlotting::plotMarker(const tesseract_visualization::Marker& marker, std:
   ros::spinOnce();
 }
 
-void ROSPlotting::plotMarkers(const std::vector<tesseract_visualization::Marker::Ptr>& markers, std::string /*ns*/)
+void ROSPlotting::plotMarkers(const std::vector<tesseract_visualization::Marker::Ptr>& /*markers*/, std::string /*ns*/)
 {
   ROS_ERROR("ROSPlotting: Plotting vector of markers is currently no implemented!");
 }
