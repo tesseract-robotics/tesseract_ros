@@ -40,7 +40,7 @@ int main(int argc, char** argv)
       robot_description, monitor_namespace, discrete_plugin, continuous_plugin);
 
   if (publish_environment)
-    monitor.startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
+    monitor.startPublishingEnvironment();
 
   if (!monitored_namespace.empty())
     monitor.startMonitoringEnvironment(monitored_namespace);

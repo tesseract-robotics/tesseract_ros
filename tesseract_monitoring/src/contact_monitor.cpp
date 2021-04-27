@@ -84,10 +84,7 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
 
 ContactMonitor::~ContactMonitor() { current_joint_states_evt_.notify_all(); }
 
-void ContactMonitor::startPublishingEnvironment()
-{
-  monitor_->startPublishingEnvironment(tesseract_monitoring::EnvironmentMonitor::UPDATE_ENVIRONMENT);
-}
+void ContactMonitor::startPublishingEnvironment() { monitor_->startPublishingEnvironment(); }
 
 void ContactMonitor::startMonitoringEnvironment(const std::string& monitored_namepsace)
 {

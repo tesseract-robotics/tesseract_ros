@@ -1,9 +1,8 @@
 # Header
 std_msgs/Header header
 
-# Tesseract State
-EnvironmentState environment_state
-tesseract_msgs/EnvironmentCommand[] commands # Additional Commands to be applied to environment prior to trajectory visualization
+Environment environment # (Optional) Override the existing Tesseract Environment
+tesseract_msgs/EnvironmentCommand[] commands # (Optional) Additional Commands to be applied to environment prior to trajectory visualization
 
 # Tesseract Command Language Instructions
 string instructions

@@ -78,6 +78,9 @@ protected:
   bool update_state_;    /**< @brief Update visualization current state from environment message */
   bool load_tesseract_;  // for delayed initialization
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
+  std::chrono::high_resolution_clock::duration state_timestamp_{
+    std::chrono::high_resolution_clock::now().time_since_epoch()
+  };
 
   void loadEnvironment();
 

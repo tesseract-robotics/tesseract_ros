@@ -238,8 +238,7 @@ bool EnvironmentMonitor::initialize()
     env_.reset();
   }
 
-  publish_environment_frequency_ = 2.0;
-  new_environment_update_ = UPDATE_NONE;
+  publish_environment_frequency_ = 30.0;
 
   last_update_time_ = last_robot_motion_time_ = ros::Time::now();
   last_robot_state_update_wall_time_ = ros::WallTime::now();
@@ -289,7 +288,7 @@ bool EnvironmentMonitor::applyCommand(const tesseract_environment::Command::Cons
     auto lock = lockEnvironmentWrite();
     result = env_->applyCommand(command);
   }
-  triggerEnvironmentUpdateEvent(UPDATE_ENVIRONMENT);
+  triggerEnvironmentUpdateEvent();
   return result;
 }
 
@@ -300,7 +299,7 @@ bool EnvironmentMonitor::applyCommands(const tesseract_environment::Commands& co
     auto lock = lockEnvironmentWrite();
     result = env_->applyCommands(commands);
   }
-  triggerEnvironmentUpdateEvent(UPDATE_ENVIRONMENT);
+  triggerEnvironmentUpdateEvent();
   return result;
 }
 
@@ -329,9 +328,8 @@ void EnvironmentMonitor::stopPublishingEnvironment()
   }
 }
 
-void EnvironmentMonitor::startPublishingEnvironment(EnvironmentUpdateType update_type)
+void EnvironmentMonitor::startPublishingEnvironment()
 {
-  publish_update_types_ = update_type;
   if (!publish_environment_ && env_->isInitialized())
   {
     std::string environment_topic = R"(/)" + monitor_namespace_ + DEFAULT_PUBLISH_ENVIRONMENT_TOPIC;
@@ -365,23 +363,11 @@ void EnvironmentMonitor::environmentPublishingThread()
     ros::Rate rate(publish_environment_frequency_);
     {
       std::unique_lock<std::shared_mutex> ulock(scene_update_mutex_);
-      if (new_environment_update_ == UPDATE_NONE && publish_environment_)
-      {
-        tesseract_rosutils::toMsg(msg, *env_, false);
-        publish_msg = true;
-      }
-      else
-      {
-        if ((publish_update_types_ & new_environment_update_) || new_environment_update_ == UPDATE_ENVIRONMENT)
-        {
-          tesseract_rosutils::toMsg(msg, *env_);
+      tesseract_rosutils::toMsg(msg, *env_);
 
-          // also publish timestamp of this robot_state
-          msg.joint_state.header.stamp = last_robot_motion_time_;
-          publish_msg = true;
-        }
-        new_environment_update_ = UPDATE_NONE;
-      }
+      // also publish timestamp of this robot_state
+      msg.joint_state.header.stamp = last_robot_motion_time_;
+      publish_msg = true;
     }
 
     if (publish_msg)
@@ -450,27 +436,23 @@ double EnvironmentMonitor::getStateUpdateFrequency() const
   return 0.0;
 }
 
-void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType update_type)
+void EnvironmentMonitor::triggerEnvironmentUpdateEvent()
 {
   // do not modify update functions while we are calling them
   std::scoped_lock<std::recursive_mutex> lock(update_lock_);
 
   for (auto& update_callback : update_callbacks_)
-    update_callback(update_type);
-  new_environment_update_ = static_cast<EnvironmentUpdateType>(new_environment_update_ | update_type);
+    update_callback();
+
   new_environment_update_condition_.notify_all();
 }
 
 void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::EnvironmentStateConstPtr& env)
 {
-  EnvironmentUpdateType upd = UPDATE_ENVIRONMENT;
   {
     std::unique_lock<std::shared_mutex> ulock(scene_update_mutex_);
     last_update_time_ = ros::Time::now();
-    last_robot_motion_time_ = env->joint_state.header.stamp;
-    ROS_DEBUG_STREAM_NAMED(monitor_namespace_,
-                           "environment update " << fmod(last_update_time_.toSec(), 10.)
-                                                 << " robot stamp: " << fmod(last_robot_motion_time_.toSec(), 10.));
+
     if (!env_->isInitialized())
     {
       tesseract_msgs::GetEnvironmentInformation res;
@@ -593,17 +575,23 @@ void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::Envir
                                  "newEnvironmentStateCallback: Unsupporte MonitoredEnvironmentMode!");
         }
       }
-      else
+    }
+
+    if (!tesseract_rosutils::isMsgEmpty(env->joint_state))
+    {
+      if (last_robot_motion_time_ != env->joint_state.header.stamp)
       {
-        upd = UPDATE_NONE;
+        tesseract_rosutils::processMsg(env_, env->joint_state);
+        last_robot_motion_time_ = env->joint_state.header.stamp;
       }
     }
+
+    ROS_DEBUG_STREAM_NAMED(monitor_namespace_,
+                           "environment update " << fmod(last_update_time_.toSec(), 10.)
+                                                 << " robot stamp: " << fmod(last_robot_motion_time_.toSec(), 10.));
   }
 
-  if (!tesseract_rosutils::isMsgEmpty(env->joint_state) || !tesseract_rosutils::isMsgEmpty(env->multi_dof_joint_state))
-    upd = static_cast<EnvironmentUpdateType>(upd | UPDATE_STATE);
-
-  triggerEnvironmentUpdateEvent(upd);
+  triggerEnvironmentUpdateEvent();
 }
 
 bool EnvironmentMonitor::applyEnvironmentCommandsMessage(
@@ -614,16 +602,43 @@ bool EnvironmentMonitor::applyEnvironmentCommandsMessage(
   if (!env_ || id != env_->getName() || revision != env_->getRevision())
     return false;
 
-  bool result;
+  bool result = true;
 
-  EnvironmentUpdateType upd = UPDATE_ENVIRONMENT;
+  // Update joint state is not a tracked command so need to filter them out.
+  std::vector<tesseract_msgs::EnvironmentCommand> filtered_commands;
+  std::vector<tesseract_msgs::EnvironmentCommand> update_joint_state_commands;
+  for (const auto& cmd : commands)
+  {
+    if (cmd.command == tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE)
+      update_joint_state_commands.push_back(cmd);
+    else
+      filtered_commands.push_back(cmd);
+  }
+
   std::string old_scene_name;
   {
     std::unique_lock<std::shared_mutex> ulock(scene_update_mutex_);
-    result = tesseract_rosutils::processMsg(*env_, commands);
+    if (!filtered_commands.empty())
+      result = tesseract_rosutils::processMsg(*env_, filtered_commands);
+
+    if (result)
+    {
+      for (const auto& cmd : update_joint_state_commands)
+      {
+        if (tesseract_rosutils::processMsg(env_, cmd.joint_state))
+        {
+          last_robot_motion_time_ = ros::Time::now();
+        }
+        else
+        {
+          ROS_ERROR("Failed to apply UPDATE_JOINT_STATE command!");
+          result = false;
+        }
+      }
+    }
   }
 
-  triggerEnvironmentUpdateEvent(upd);
+  triggerEnvironmentUpdateEvent();
   return result;
 }
 
@@ -846,14 +861,14 @@ void EnvironmentMonitor::updateEnvironmentWithCurrentState()
 
       env_->setState(current_state_monitor_->getCurrentState()->joints);
     }
-    triggerEnvironmentUpdateEvent(UPDATE_STATE);
+    triggerEnvironmentUpdateEvent();
   }
   else
     ROS_ERROR_THROTTLE_NAMED(
         1, monitor_namespace_, "State monitor is not active. Unable to set the planning scene state");
 }
 
-void EnvironmentMonitor::addUpdateCallback(const std::function<void(EnvironmentUpdateType)>& fn)
+void EnvironmentMonitor::addUpdateCallback(const std::function<void()>& fn)
 {
   std::scoped_lock lock(update_lock_);
   if (fn)

@@ -206,7 +206,7 @@ bool TesseractMonitorInterface::sendCommands(const std::string& ns,
   bool status = ros::service::call(R"(/)" + ns + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, res);
   if (!status || !res.response.success)
   {
-    ROS_ERROR_STREAM_NAMED(ns, "Failed to update monitored environment!");
+    ROS_ERROR_STREAM_NAMED(ns, "sendCommands: Failed to update monitored environment!");
     return false;
   }
 
@@ -214,7 +214,7 @@ bool TesseractMonitorInterface::sendCommands(const std::string& ns,
 }
 
 tesseract_environment::EnvState::Ptr
-TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namespace)
+TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namespace) const
 {
   tesseract_msgs::GetEnvironmentInformation res;
   res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::JOINT_STATES |
@@ -235,4 +235,79 @@ TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namesp
 
   return env_state;
 }
+
+bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                    const std::unordered_map<std::string, double>& joints) const
+{
+  tesseract_msgs::EnvironmentCommand command;
+  command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
+  tesseract_rosutils::toMsg(command.joint_state, joints);
+  return sendCommands(monitor_namespace, { command });
+}
+
+bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                    const std::vector<std::string>& joint_names,
+                                                    const std::vector<double>& joint_values)
+{
+  std::unordered_map<std::string, double> joints;
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+    joints[joint_names[i]] = joint_values[i];
+
+  tesseract_msgs::EnvironmentCommand command;
+  command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
+  tesseract_rosutils::toMsg(command.joint_state, joints);
+  return sendCommands(monitor_namespace, { command });
+}
+
+bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                    const std::vector<std::string>& joint_names,
+                                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+{
+  std::unordered_map<std::string, double> joints;
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+    joints[joint_names[i]] = joint_values[static_cast<Eigen::Index>(i)];
+
+  tesseract_msgs::EnvironmentCommand command;
+  command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
+  tesseract_rosutils::toMsg(command.joint_state, joints);
+  return sendCommands(monitor_namespace, { command });
+}
+
+std::vector<std::string>
+TesseractMonitorInterface::setEnvironmentState(const std::unordered_map<std::string, double>& joints)
+{
+  std::vector<std::string> failed_namespace;
+  failed_namespace.reserve(ns_.size());
+  for (const auto& ns : ns_)
+    if (!setEnvironmentState(ns, joints))
+      failed_namespace.push_back(ns);
+
+  return failed_namespace;
+}
+
+std::vector<std::string> TesseractMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
+                                                                        const std::vector<double>& joint_values)
+{
+  std::vector<std::string> failed_namespace;
+  failed_namespace.reserve(ns_.size());
+  for (const auto& ns : ns_)
+    if (!setEnvironmentState(ns, joint_names, joint_values))
+      failed_namespace.push_back(ns);
+
+  return failed_namespace;
+}
+
+std::vector<std::string>
+TesseractMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
+                                               const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+{
+  std::vector<std::string> failed_namespace;
+  failed_namespace.reserve(ns_.size());
+  for (const auto& ns : ns_)
+    if (!setEnvironmentState(ns, joint_names, joint_values))
+      failed_namespace.push_back(ns);
+
+  return failed_namespace;
+}
+
 }  // namespace tesseract_monitoring

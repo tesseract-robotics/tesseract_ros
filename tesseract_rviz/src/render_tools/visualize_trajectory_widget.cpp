@@ -433,14 +433,9 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
       visualization_->setStartStateVisible(true);
   }
 
-  if (!msg->environment_state.id.empty() && msg->environment_state.id != env_->getName())
-    ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
-             "was expected",
-             msg->environment_state.id.c_str(),
-             env_->getName().c_str());
-  else if (msg->environment_state.revision > 0)
+  if (msg->environment.command_history.size() > 0)
   {
-    tesseract_environment::Environment::Ptr env = tesseract_rosutils::fromMsg(msg->environment_state.environment);
+    tesseract_environment::Environment::Ptr env = tesseract_rosutils::fromMsg(msg->environment);
     if (env)
       setEnvironment(env);
   }

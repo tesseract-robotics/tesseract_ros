@@ -81,11 +81,6 @@ bool isMsgEmpty(const sensor_msgs::JointState& msg)
   return msg.name.empty() && msg.position.empty() && msg.velocity.empty() && msg.effort.empty();
 }
 
-bool isMsgEmpty(const sensor_msgs::MultiDOFJointState& msg)
-{
-  return msg.joint_names.empty() && msg.transforms.empty() && msg.twist.empty() && msg.wrench.empty();
-}
-
 bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2)
 {
   if (shape1.getType() != shape2.getType())
@@ -1100,6 +1095,10 @@ fromMsg(const tesseract_msgs::CollisionMarginOverrideType& contact_margin_overri
     {
       return tesseract_common::CollisionMarginOverrideType::NONE;
     }
+    default:
+    {
+      throw std::runtime_error("fromMsg: Invalid CollisionMarginOverrideType!");
+    }
   }
 }
 
@@ -1578,7 +1577,6 @@ void toMsg(tesseract_msgs::EnvironmentState& state_msg,
 {
   state_msg.id = env.getName();
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
-  toMsg(state_msg.environment, env);
 
   if (include_joint_states)
     toMsg(state_msg.joint_state, env.getCurrentState()->joints);

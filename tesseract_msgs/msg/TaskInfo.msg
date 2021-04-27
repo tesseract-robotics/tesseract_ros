@@ -4,7 +4,7 @@
 int32 return_value
 
 # Unique ID generated for the Task by Taskflow
-int32 unique_id
+uint64 unique_id
 
 # Name of the Task
 string task_name

@@ -110,26 +110,6 @@ public:
   using Ptr = std::shared_ptr<EnvironmentMonitor>;
   using ConstPtr = std::shared_ptr<const EnvironmentMonitor>;
 
-  enum EnvironmentUpdateType
-  {
-    /** \brief No update */
-    UPDATE_NONE = 0,
-
-    /** \brief The state in the monitored environment was updated */
-    UPDATE_STATE = 1,
-
-    /** \brief The maintained set of fixed transforms in the monitored environment was updated */
-    UPDATE_TRANSFORMS = 2,
-
-    /** \brief The geometry of the environment was updated. This includes receiving new octomaps, collision objects,
-       attached
-       objects, environment geometry, etc. */
-    UPDATE_GEOMETRY = 4,
-
-    /** \brief The entire environment was updated */
-    UPDATE_ENVIRONMENT = 8 + UPDATE_STATE + UPDATE_TRANSFORMS + UPDATE_GEOMETRY
-  };
-
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
    *  @param monitor_namespace A name identifying this monitor, must be unique
@@ -226,7 +206,7 @@ public:
   const std::string& getURDFDescription() const { return robot_description_; }
 
   /** \brief Start publishing the maintained environment.*/
-  void startPublishingEnvironment(EnvironmentUpdateType update_type);
+  void startPublishingEnvironment();
 
   /** \brief Stop publishing the maintained environment. */
   void stopPublishingEnvironment();
@@ -277,7 +257,7 @@ public:
   void stopMonitoringEnvironment();
 
   /** @brief Add a function to be called when an update to the scene is received */
-  void addUpdateCallback(const std::function<void(EnvironmentUpdateType)>& fn);
+  void addUpdateCallback(const std::function<void()>& fn);
 
   /** @brief Clear the functions to be called when an update to the scene is received */
   void clearUpdateCallbacks();
@@ -286,7 +266,7 @@ public:
   const ros::Time& getLastUpdateTime() const { return last_update_time_; }
 
   /** @brief This function is called every time there is a change to the planning scene */
-  void triggerEnvironmentUpdateEvent(EnvironmentUpdateType update_type);
+  void triggerEnvironmentUpdateEvent();
 
   /** \brief Wait for robot state to become more recent than time t.
    *
@@ -337,8 +317,6 @@ protected:
   ros::Publisher environment_publisher_;
   std::unique_ptr<std::thread> publish_environment_;
   double publish_environment_frequency_;
-  EnvironmentUpdateType publish_update_types_;
-  EnvironmentUpdateType new_environment_update_;
   std::condition_variable_any new_environment_update_condition_;
 
   // variables for monitored environment
@@ -365,9 +343,9 @@ protected:
 
   /// lock access to update_callbacks_
   std::recursive_mutex update_lock_;
-  std::vector<std::function<void(EnvironmentUpdateType)> > update_callbacks_;  /// List of callbacks to trigger when
-                                                                               /// updates
-                                                                               /// are received
+
+  /// List of callbacks to trigger when updates are received
+  std::vector<std::function<void()> > update_callbacks_;
 
 private:
   void getUpdatedFrameTransforms(std::vector<geometry_msgs::TransformStamped>& transforms);
