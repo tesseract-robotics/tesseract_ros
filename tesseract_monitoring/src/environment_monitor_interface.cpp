@@ -30,13 +30,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/EnvironmentCommand.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_monitoring/tesseract_monitor_interface.h>
+#include <tesseract_monitoring/environment_monitor_interface.h>
 
 namespace tesseract_monitoring
 {
-TesseractMonitorInterface::TesseractMonitorInterface(const std::string& env_name) : env_name_(env_name) {}
+EnvironmentMonitorInterface::EnvironmentMonitorInterface(const std::string& env_name) : env_name_(env_name) {}
 
-bool TesseractMonitorInterface::wait(ros::Duration timeout) const
+bool EnvironmentMonitorInterface::wait(ros::Duration timeout) const
 {
   if (ns_.empty())
   {
@@ -63,7 +63,7 @@ bool TesseractMonitorInterface::wait(ros::Duration timeout) const
   return true;
 }
 
-bool TesseractMonitorInterface::waitForNamespace(const std::string& monitor_namespace, ros::Duration timeout) const
+bool EnvironmentMonitorInterface::waitForNamespace(const std::string& monitor_namespace, ros::Duration timeout) const
 {
   std::string service_name = R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;
   const ros::WallTime start_time = ros::WallTime::now();
@@ -93,20 +93,20 @@ bool TesseractMonitorInterface::waitForNamespace(const std::string& monitor_name
   return false;
 }
 
-void TesseractMonitorInterface::addNamespace(std::string monitor_namespace)
+void EnvironmentMonitorInterface::addNamespace(std::string monitor_namespace)
 {
   if (std::find(ns_.begin(), ns_.end(), monitor_namespace) == ns_.end())
     ns_.push_back(monitor_namespace);
 }
 
-void TesseractMonitorInterface::removeNamespace(const std::string& monitor_namespace)
+void EnvironmentMonitorInterface::removeNamespace(const std::string& monitor_namespace)
 {
   auto it = std::remove_if(
       ns_.begin(), ns_.end(), [monitor_namespace](const std::string& ns) { return (ns == monitor_namespace); });
   ns_.erase(it, ns_.end());
 }
 
-std::vector<std::string> TesseractMonitorInterface::applyCommand(const tesseract_environment::Command& command) const
+std::vector<std::string> EnvironmentMonitorInterface::applyCommand(const tesseract_environment::Command& command) const
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -117,7 +117,8 @@ std::vector<std::string> TesseractMonitorInterface::applyCommand(const tesseract
   return failed_namespace;
 }
 
-std::vector<std::string> TesseractMonitorInterface::applyCommands(const tesseract_environment::Commands& commands) const
+std::vector<std::string>
+EnvironmentMonitorInterface::applyCommands(const tesseract_environment::Commands& commands) const
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -129,7 +130,7 @@ std::vector<std::string> TesseractMonitorInterface::applyCommands(const tesserac
 }
 
 std::vector<std::string>
-TesseractMonitorInterface::applyCommands(const std::vector<tesseract_environment::Command>& commands) const
+EnvironmentMonitorInterface::applyCommands(const std::vector<tesseract_environment::Command>& commands) const
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -140,8 +141,8 @@ TesseractMonitorInterface::applyCommands(const std::vector<tesseract_environment
   return failed_namespace;
 }
 
-bool TesseractMonitorInterface::applyCommand(const std::string& monitor_namespace,
-                                             const tesseract_environment::Command& command) const
+bool EnvironmentMonitorInterface::applyCommand(const std::string& monitor_namespace,
+                                               const tesseract_environment::Command& command) const
 {
   tesseract_msgs::EnvironmentCommand command_msg;
   if (tesseract_rosutils::toMsg(command_msg, command))
@@ -156,8 +157,8 @@ bool TesseractMonitorInterface::applyCommand(const std::string& monitor_namespac
   }
 }
 
-bool TesseractMonitorInterface::applyCommands(const std::string& monitor_namespace,
-                                              const tesseract_environment::Commands& commands) const
+bool EnvironmentMonitorInterface::applyCommands(const std::string& monitor_namespace,
+                                                const tesseract_environment::Commands& commands) const
 {
   std::vector<tesseract_msgs::EnvironmentCommand> commands_msg;
   if (tesseract_rosutils::toMsg(commands_msg, commands, 0))
@@ -172,8 +173,8 @@ bool TesseractMonitorInterface::applyCommands(const std::string& monitor_namespa
   }
 }
 
-bool TesseractMonitorInterface::applyCommands(const std::string& monitor_namespace,
-                                              const std::vector<tesseract_environment::Command>& commands) const
+bool EnvironmentMonitorInterface::applyCommands(const std::string& monitor_namespace,
+                                                const std::vector<tesseract_environment::Command>& commands) const
 {
   std::vector<tesseract_msgs::EnvironmentCommand> commands_msg;
   commands_msg.reserve(commands.size());
@@ -195,8 +196,8 @@ bool TesseractMonitorInterface::applyCommands(const std::string& monitor_namespa
   return sendCommands(monitor_namespace, commands_msg);
 }
 
-bool TesseractMonitorInterface::sendCommands(const std::string& ns,
-                                             const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const
+bool EnvironmentMonitorInterface::sendCommands(const std::string& ns,
+                                               const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const
 {
   tesseract_msgs::ModifyEnvironment res;
   res.request.id = env_name_;
@@ -214,7 +215,7 @@ bool TesseractMonitorInterface::sendCommands(const std::string& ns,
 }
 
 tesseract_environment::EnvState::Ptr
-TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namespace) const
+EnvironmentMonitorInterface::getEnvironmentState(const std::string& monitor_namespace) const
 {
   tesseract_msgs::GetEnvironmentInformation res;
   res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::JOINT_STATES |
@@ -236,8 +237,8 @@ TesseractMonitorInterface::getEnvironmentState(const std::string& monitor_namesp
   return env_state;
 }
 
-bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
-                                                    const std::unordered_map<std::string, double>& joints) const
+bool EnvironmentMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                      const std::unordered_map<std::string, double>& joints) const
 {
   tesseract_msgs::EnvironmentCommand command;
   command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
@@ -245,9 +246,9 @@ bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_n
   return sendCommands(monitor_namespace, { command });
 }
 
-bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
-                                                    const std::vector<std::string>& joint_names,
-                                                    const std::vector<double>& joint_values)
+bool EnvironmentMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                      const std::vector<std::string>& joint_names,
+                                                      const std::vector<double>& joint_values)
 {
   std::unordered_map<std::string, double> joints;
   for (std::size_t i = 0; i < joint_names.size(); ++i)
@@ -259,9 +260,9 @@ bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_n
   return sendCommands(monitor_namespace, { command });
 }
 
-bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
-                                                    const std::vector<std::string>& joint_names,
-                                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+bool EnvironmentMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
+                                                      const std::vector<std::string>& joint_names,
+                                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   std::unordered_map<std::string, double> joints;
   for (std::size_t i = 0; i < joint_names.size(); ++i)
@@ -274,7 +275,7 @@ bool TesseractMonitorInterface::setEnvironmentState(const std::string& monitor_n
 }
 
 std::vector<std::string>
-TesseractMonitorInterface::setEnvironmentState(const std::unordered_map<std::string, double>& joints)
+EnvironmentMonitorInterface::setEnvironmentState(const std::unordered_map<std::string, double>& joints)
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -285,8 +286,8 @@ TesseractMonitorInterface::setEnvironmentState(const std::unordered_map<std::str
   return failed_namespace;
 }
 
-std::vector<std::string> TesseractMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
-                                                                        const std::vector<double>& joint_values)
+std::vector<std::string> EnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
+                                                                          const std::vector<double>& joint_values)
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -298,8 +299,8 @@ std::vector<std::string> TesseractMonitorInterface::setEnvironmentState(const st
 }
 
 std::vector<std::string>
-TesseractMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
-                                               const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+EnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::string>& joint_names,
+                                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
