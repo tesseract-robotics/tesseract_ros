@@ -1,6 +1,6 @@
 /**
- * @file tesseract_monitor_interface.h
- * @brief This is a utility class for applying changes to multiple tesseract monitors
+ * @file environment_monitor_interface.h
+ * @brief This is a utility class for applying changes to multiple tesseract environment monitors
  *
  * @author Levi Armstrong
  * @version TODO
@@ -22,8 +22,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MONITORING_TESSERACT_MONITOR_INTERFACE_H
-#define TESSERACT_MONITORING_TESSERACT_MONITOR_INTERFACE_H
+#ifndef TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
+#define TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -41,18 +41,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-class TesseractMonitorInterface
+class EnvironmentMonitorInterface
 {
 public:
-  using Ptr = std::shared_ptr<TesseractMonitorInterface>;
-  using ConstPtr = std::shared_ptr<const TesseractMonitorInterface>;
+  using Ptr = std::shared_ptr<EnvironmentMonitorInterface>;
+  using ConstPtr = std::shared_ptr<const EnvironmentMonitorInterface>;
 
-  TesseractMonitorInterface(const std::string& env_name);
-  virtual ~TesseractMonitorInterface() = default;
-  TesseractMonitorInterface(const TesseractMonitorInterface&) = default;
-  TesseractMonitorInterface& operator=(const TesseractMonitorInterface&) = default;
-  TesseractMonitorInterface(TesseractMonitorInterface&&) = default;
-  TesseractMonitorInterface& operator=(TesseractMonitorInterface&&) = default;
+  EnvironmentMonitorInterface(const std::string& env_name);
+  virtual ~EnvironmentMonitorInterface() = default;
+  EnvironmentMonitorInterface(const EnvironmentMonitorInterface&) = default;
+  EnvironmentMonitorInterface& operator=(const EnvironmentMonitorInterface&) = default;
+  EnvironmentMonitorInterface(EnvironmentMonitorInterface&&) = default;
+  EnvironmentMonitorInterface& operator=(EnvironmentMonitorInterface&&) = default;
 
   /**
    * @brief This will wait for all namespaces to begin publishing
@@ -175,4 +175,4 @@ protected:
   bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const;
 };
 }  // namespace tesseract_monitoring
-#endif  // TESSERACT_MONITORING_TESSERACT_MONITOR_INTERFACE_H
+#endif  // TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
