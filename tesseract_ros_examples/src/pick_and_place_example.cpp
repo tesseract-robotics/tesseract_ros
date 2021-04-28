@@ -138,7 +138,7 @@ bool PickAndPlaceExample::run()
     monitor_->startPublishingEnvironment();
 
   // Set default contact distance
-  Command::Ptr cmd_default_dist = std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(0.005);
+  Command::Ptr cmd_default_dist = std::make_shared<tesseract_environment::ChangeCollisionMarginsCommand>(0.005);
   if (!monitor_->applyCommand(cmd_default_dist))
     return false;
 
