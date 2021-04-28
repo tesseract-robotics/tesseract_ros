@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/window_manager_interface.h>
 
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_motion_planners/robot_config.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/markers/utils.h>
@@ -122,6 +123,22 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 
   joint_values_property_ =
       new rviz::Property("Joint Values", "", "Shows current joint values", main_property_, nullptr, this);
+
+  joint_config_property_ = new rviz::StringProperty(
+      "Joint Config", "Unknown", "Shows current joint configuration", main_property_, nullptr, this);
+  joint_config_property_->setReadOnly(true);
+
+  joint3_sign_property_ =
+      new rviz::EnumProperty("Joint 3 Sign Correction", "+1", "", joint_config_property_, nullptr, this);
+  joint3_sign_property_->addOptionStd("+1", 1);
+  joint3_sign_property_->addOptionStd("-1", -1);
+  joint3_sign_property_->setShouldBeSaved(true);
+
+  joint5_sign_property_ =
+      new rviz::EnumProperty("Joint 5 Sign Correction", "+1", "", joint_config_property_, nullptr, this);
+  joint5_sign_property_->addOptionStd("+1", 1);
+  joint5_sign_property_->addOptionStd("-1", -1);
+  joint5_sign_property_->setShouldBeSaved(true);
 }
 
 ManipulationWidget::~ManipulationWidget()
@@ -266,6 +283,10 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     if (inv_kin_ == nullptr)
       return false;
 
+    fwd_kin_ = env_->getManipulatorManager()->getFwdKinematicSolver(manipulator.toStdString());
+    if (fwd_kin_ == nullptr)
+      return false;
+
     manipulator_property_->setString(manipulator);
 
     const auto& scene_graph = env_->getSceneGraph();
@@ -296,6 +317,7 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 
     // Need to update state information (transforms) because manipulator changes and
     env_state_ = env_->getState(joints_);
+    updateJointConfig();
 
     // Get available TCP's
     QString current_tcp = tcp_property_->getString();
@@ -559,6 +581,7 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
       }
 
       env_state_ = env_->getState(joints_);
+      updateJointConfig();
       updateEnvironmentVisualization();
       updateCartesianMarkerVisualization();
       udpateJointMarkerVisualization();
@@ -649,6 +672,7 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
   }
 
   env_state_ = env_->getState(joints_);
+  updateJointConfig();
   updateEnvironmentVisualization();
   updateCartesianMarkerVisualization();
   udpateJointMarkerVisualization();
@@ -672,6 +696,7 @@ void ManipulationWidget::userInputJointValuesChanged()
   }
 
   env_state_ = env_->getState(joints_);
+  updateJointConfig();
   updateEnvironmentVisualization();
   updateCartesianMarkerVisualization();
   udpateJointMarkerVisualization();
@@ -704,7 +729,7 @@ void ManipulationWidget::onUpdate(float wall_dt)
           joint_values_property_->childAt(i)->blockSignals(oldState);
           ++i;
         }
-
+        updateJointConfig();
         updateCartesianMarkerVisualization();
         udpateJointMarkerVisualization();
       }
@@ -744,6 +769,31 @@ void ManipulationWidget::onUpdate(float wall_dt)
 
   for (auto& joint_marker : joint_interactive_markers_)
     joint_marker.second->update(wall_dt);
+}
+
+void ManipulationWidget::updateJointConfig()
+{
+  // calculate robot config
+  if (fwd_kin_->numJoints() == 6)
+  {
+    Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, "", "");
+
+    Eigen::Vector2i sign_correction;
+    sign_correction[0] = joint3_sign_property_->getOptionInt();
+    sign_correction[1] = joint5_sign_property_->getOptionInt();
+
+    auto config = tesseract_planning::getRobotConfig<double>(fwd_kin_, inv_seed_, sign_correction);
+    Eigen::VectorXi turns = tesseract_planning::getJointTurns<double>(inv_seed_).transpose();
+
+    std::stringstream config_string;
+    config_string << tesseract_planning::RobotConfigString[static_cast<std::size_t>(config)];
+    config_string << " " << turns.format(eigen_format);
+    joint_config_property_->setStdString(config_string.str());
+  }
+  else
+  {
+    joint_config_property_->setString("Unknown");
+  }
 }
 
 void ManipulationWidget::updateEnvironmentVisualization()

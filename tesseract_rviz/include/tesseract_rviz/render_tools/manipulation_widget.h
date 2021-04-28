@@ -142,6 +142,7 @@ protected:
   std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers_;
   std::vector<std::string> manipulators_;
   tesseract_kinematics::InverseKinematics::Ptr inv_kin_;
+  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin_;
   Eigen::VectorXd inv_seed_;
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
@@ -166,7 +167,11 @@ protected:
   rviz::FloatProperty* joint_marker_scale_property_;
   rviz::EnumProperty* tcp_property_;
   rviz::Property* joint_values_property_;
+  rviz::StringProperty* joint_config_property_;
+  rviz::EnumProperty* joint3_sign_property_;
+  rviz::EnumProperty* joint5_sign_property_;
 
+  void updateJointConfig();
   void updateEnvironmentVisualization();
   void updateCartesianMarkerVisualization();
   void udpateJointMarkerVisualization();

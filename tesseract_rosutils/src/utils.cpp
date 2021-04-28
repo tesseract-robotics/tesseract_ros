@@ -1369,20 +1369,6 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       const auto& cmd = static_cast<const tesseract_environment::AddKinematicsInformationCommand&>(command);
       return toMsg(command_msg.add_kinematics_information, cmd.getKinematicsInformation());
     }
-    case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_DEFAULT_CONTACT_MARGIN;
-      const auto& cmd = static_cast<const tesseract_environment::ChangeDefaultContactMarginCommand&>(command);
-      command_msg.default_contact_margin = cmd.getDefaultCollisionMargin();
-      return true;
-    }
-    case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_PAIR_CONTACT_MARGIN;
-      const auto& cmd = static_cast<const tesseract_environment::ChangePairContactMarginCommand&>(command);
-      command_msg.contact_margin_pairs = toMsg(cmd.getPairCollisionMarginData());
-      return true;
-    }
     case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
     {
       command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_COLLISION_MARGINS;
@@ -1543,19 +1529,6 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
       fromMsg(kin_info, command_msg.add_kinematics_information);
 
       return std::make_shared<tesseract_environment::AddKinematicsInformationCommand>(kin_info);
-    }
-    case tesseract_msgs::EnvironmentCommand::CHANGE_DEFAULT_CONTACT_MARGIN:
-    {
-      return std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(
-          command_msg.default_contact_margin);
-    }
-    case tesseract_msgs::EnvironmentCommand::CHANGE_PAIR_CONTACT_MARGIN:
-    {
-      tesseract_common::PairsCollisionMarginData pair_map;
-      for (const auto& pair_msg : command_msg.contact_margin_pairs)
-        pair_map[tesseract_common::LinkNamesPair(pair_msg.first.first, pair_msg.first.second)] = pair_msg.second;
-
-      return std::make_shared<tesseract_environment::ChangePairContactMarginCommand>(pair_map);
     }
     case tesseract_msgs::EnvironmentCommand::CHANGE_COLLISION_MARGINS:
     {

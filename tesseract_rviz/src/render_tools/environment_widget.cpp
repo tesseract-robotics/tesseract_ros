@@ -478,8 +478,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const tesseract_environment::Co
       break;
     }
     case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
-    case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
-    case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+    case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
     {
       break;
     }

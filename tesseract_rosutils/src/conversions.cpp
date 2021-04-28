@@ -99,8 +99,8 @@ std::vector<tesseract_msgs::JointState> trajectoryFromCSVFile(const std::string&
     if (!tesseract_common::isNumeric(tokens[0]))
       throw std::runtime_error("jointTrajectoryFromCSVFile: Invalid format");
 
-    std::size_t num_vals;
-    std::size_t cnt = 0;
+    std::size_t num_vals{ 0 };
+    std::size_t cnt{ 0 };
     tesseract_common::toNumeric<std::size_t>(tokens[cnt++], num_vals);
 
     tesseract_msgs::JointState js;
