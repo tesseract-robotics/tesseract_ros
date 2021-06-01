@@ -1,6 +1,8 @@
-# puzzle piece auxiliary axes example
+# Puzzle Piece auxiliary axes example
 
 The puzzle piece examples show a small collaborative robot manipulating a puzzle piece to debur the edges with a grinder which has two axes of rotation.
+
+![Puzzle piece](https://github.com/ros-industrial-consortium/trajopt_ros/blob/master/gh_pages/_static/example_gifs/puzzle_piece_with_positioner.gif)
 
 ```cpp
 tesseract_common::VectorIsometry3d tool_poses = makePuzzleToolPoses();
