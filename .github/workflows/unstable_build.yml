@@ -1,0 +1,59 @@
+name: Unstable-Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  industrial_ci:
+    name: Unstable
+    runs-on: ubuntu-latest
+    env:
+      CI_NAME: Unstable-Build
+      OS_NAME: ubuntu
+      OS_CODE_NAME: focal
+      ROS_DISTRO: noetic
+      ROS_REPO: main
+      UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
+      ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow"
+      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
+      PARALLEL_TESTS: false
+      NOT_TEST_BUILD: true
+      BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
+      CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Unstable-Build/.ccache"
+      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Free Disk Space
+        continue-on-error: true
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        continue-on-error: true
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.CI_NAME }}/.ccache
+          key: ${{ env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ env.CI_NAME }}-ccache-
+
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{env}}
