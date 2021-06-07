@@ -4,6 +4,7 @@ Platform             | CI Status
 ---------------------|:---------
 Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
 Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
+Linux (Unstable)     | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Unstable-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
 Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
 Lint  (Clang Tidy)   | [![Build Status](https://github.com/ros-industrial-consortium/tesseract_ros/workflows/Clang-Tidy/badge.svg)](https://github.com/ros-industrial-consortium/tesseract_ros/actions)
 
