@@ -110,7 +110,7 @@ private:
   Eigen::Isometry3d target_pose_delta_;
   Eigen::Isometry3d target_pose_base_frame_;
   // We need to keep this around so we can update it
-  trajopt::CartPosConstraint::Ptr target_pose_constraint_;
+  trajopt_ifopt::CartPosConstraint::Ptr target_pose_constraint_;
 
   std::vector<std::string> joint_names_;
   ros::Subscriber joint_state_subscriber_;
