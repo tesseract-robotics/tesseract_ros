@@ -33,6 +33,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 
+#include <trajopt_sqp/ifopt_qp_problem.h>
+#include <trajopt_sqp/trajopt_qp_problem.h>
 #include <trajopt_sqp/trust_region_sqp_solver.h>
 #include <trajopt_sqp/osqp_eigen_solver.h>
 #include <trajopt_sqp/types.h>
@@ -168,7 +170,7 @@ bool OnlinePlanningExample::run()
 bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_trajectory)
 {
   // 1) Create the problem
-  nlp_ = ifopt::Problem{};
+  nlp_ = std::make_shared<trajopt_sqp::TrajOptQPProblem>();
 
   // 2) Add Variables
   Eigen::MatrixX2d joint_limits_eigen = manipulator_fk_->getLimits().joint_limits;
@@ -190,7 +192,7 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
         initial_states[ind], manipulator_fk_->getJointNames(), "Joint_Position_" + std::to_string(ind));
     var->SetBounds(joint_limits_eigen);
     vars.push_back(var);
-    nlp_.AddVariableSet(var);
+    nlp_->addVariableSet(var);
   }
 
   // 3) Add costs and constraints
@@ -200,7 +202,7 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
     std::vector<trajopt_ifopt::JointPosition::ConstPtr> var_vec(1, vars[0]);
     auto home_constraint =
         std::make_shared<trajopt_ifopt::JointPosConstraint>(current_position, var_vec, "Home_Position");
-    nlp_.AddConstraintSet(home_constraint);
+    nlp_->addConstraintSet(home_constraint);
   }
   // Add the target pose constraint for the final step
   {
@@ -214,17 +216,13 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
 
     trajopt_ifopt::CartPosInfo cart_info(kinematic_info, target_tf, manipulator_fk_->getTipLinkName());
     target_pose_constraint_ = std::make_shared<trajopt_ifopt::CartPosConstraint>(cart_info, vars.back());
-    nlp_.AddConstraintSet(target_pose_constraint_);
+    nlp_->addConstraintSet(target_pose_constraint_);
   }
   // Add joint velocity cost for all timesteps
   {
     Eigen::VectorXd vel_target = Eigen::VectorXd::Zero(8);
     auto vel_constraint = std::make_shared<trajopt_ifopt::JointVelConstraint>(vel_target, vars, "JointVelocity");
-
-    // Must link the variables to the constraint since that happens in AddConstraintSet
-    vel_constraint->LinkWithVariables(nlp_.GetOptVariables());
-    auto vel_cost = std::make_shared<trajopt_ifopt::SquaredCost>(vel_constraint);
-    nlp_.AddCostSet(vel_cost);
+    nlp_->addCostSet(vel_constraint, trajopt_sqp::CostPenaltyType::SQUARED);
   }
   // Add a collision cost for all steps
   double margin_coeff = 10;
@@ -252,12 +250,12 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
         collision_evaluator,
         trajopt_ifopt::ContinuousCombineCollisionData(trajopt_ifopt::CombineCollisionDataMethod::WEIGHTED_AVERAGE),
         position_vars);
-    collision_constraint->LinkWithVariables(nlp_.GetOptVariables());
-    auto collision_cost = std::make_shared<trajopt_ifopt::AbsoluteCost>(collision_constraint);
-    nlp_.AddCostSet(collision_constraint);
+    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::SQUARED);
   }
 
-  nlp_.PrintCurrent();
+  nlp_->setup();
+  nlp_->print();
+
   return true;
 }
 
@@ -301,9 +299,9 @@ bool OnlinePlanningExample::onlinePlan()
   trajopt_sqp::TrustRegionSQPSolver solver(qp_solver);
 
   // Adjust this to be larger to adapt quicker but more jerkily
-  solver.init(nlp_);
+  //  solver.init(qp_problem);
   solver.verbose = true;
-  solver.Solve(nlp_);
+  solver.solve(nlp_);
   Eigen::VectorXd x = solver.getResults().best_var_vals;
   updateAndPlotTrajectory(x);
   plotter_->waitForInput("View global trajectory. Hit enter to run online planner.");
@@ -369,10 +367,10 @@ bool OnlinePlanningExample::onlinePlan()
     // Update manipulator joint values and plot trajectory
     updateAndPlotTrajectory(x);
 
-    std::string message =
-        "Solver Frequency (Hz): " + std::to_string(1.0 / static_cast<double>(duration.count()) * 1000000.) +
-        "\nCost: " + std::to_string(nlp_.EvaluateCostFunction(x.data()));
-    std::cout << message << std::endl;
+    //    std::string message =
+    //        "Solver Frequency (Hz): " + std::to_string(1.0 / static_cast<double>(duration.count()) * 1000000.) +
+    //        "\nCost: " + std::to_string(nlp_->evaluateCostFunction(x.data()));
+    //    std::cout << message << std::endl;
   }
 
   return true;
