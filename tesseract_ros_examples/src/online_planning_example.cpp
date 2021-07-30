@@ -42,8 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt_ifopt/constraints/cartesian_position_constraint.h>
 #include <trajopt_ifopt/constraints/joint_position_constraint.h>
 #include <trajopt_ifopt/constraints/joint_velocity_constraint.h>
-#include <trajopt_ifopt/constraints/discrete_collision_constraint.h>
-#include <trajopt_ifopt/constraints/continuous_collision_constraint.h>
+#include <trajopt_ifopt/constraints/collision/discrete_collision_constraint.h>
+#include <trajopt_ifopt/constraints/collision/continuous_collision_constraint.h>
 #include <trajopt_ifopt/constraints/inverse_kinematics_constraint.h>
 #include <trajopt_ifopt/variable_sets/joint_position_variable.h>
 #include <trajopt_ifopt/costs/squared_cost.h>
@@ -82,8 +82,8 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
   , nh_(nh)
   , steps_(steps)
   , box_size_(box_size)
-  , realtime_running_(false)
   , update_start_state_(update_start_state)
+  , realtime_running_(false)
 {
   // Import URDF/SRDF
   std::string urdf_xml_string, srdf_xml_string;
@@ -233,7 +233,8 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   collision_config->collision_margin_buffer = 0.10;
 
   auto collision_cache = std::make_shared<trajopt_ifopt::CollisionCache>(steps_);
-  for (std::size_t i = 1; i < static_cast<std::size_t>(steps_) - 1; i++)
+  std::array<bool, 2> position_vars_fixed{ true, false };
+  for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
   {
     auto collision_evaluator =
         std::make_shared<trajopt_ifopt::LVSDiscreteCollisionEvaluator>(collision_cache,
@@ -244,13 +245,16 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
                                                                        collision_config,
                                                                        true);
 
-    std::array<trajopt_ifopt::JointPosition::ConstPtr, 3> position_vars = { vars[i - 1], vars[i], vars[i + 1] };
+    std::array<trajopt_ifopt::JointPosition::ConstPtr, 2> position_vars = { vars[i - 1], vars[i] };
+    auto collision_constraint =
+        std::make_shared<trajopt_ifopt::ContinuousCollisionConstraint>(collision_evaluator,
+                                                                       position_vars,
+                                                                       position_vars_fixed,
+                                                                       collision_config->max_num_cnt,
+                                                                       "Collision_" + std::to_string(i));
+    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
 
-    auto collision_constraint = std::make_shared<trajopt_ifopt::ContinuousCollisionConstraintIfopt>(
-        collision_evaluator,
-        trajopt_ifopt::ContinuousCombineCollisionData(trajopt_ifopt::CombineCollisionDataMethod::WEIGHTED_AVERAGE),
-        position_vars);
-    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::SQUARED);
+    position_vars_fixed = { false, false };
   }
 
   nlp_->setup();

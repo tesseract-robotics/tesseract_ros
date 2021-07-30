@@ -65,8 +65,8 @@ public:
                         bool update_start_state);
 
   ~OnlinePlanningExample() override = default;
-  OnlinePlanningExample(const OnlinePlanningExample&) = default;
-  OnlinePlanningExample& operator=(const OnlinePlanningExample&) = default;
+  OnlinePlanningExample(const OnlinePlanningExample&) = delete;
+  OnlinePlanningExample& operator=(const OnlinePlanningExample&) = delete;
   OnlinePlanningExample(OnlinePlanningExample&&) = default;
   OnlinePlanningExample& operator=(OnlinePlanningExample&&) = default;
 
