@@ -45,7 +45,7 @@ namespace tesseract_ros_examples
 class GlassUprightExample : public Example
 {
 public:
-  GlassUprightExample(const ros::NodeHandle& nh, bool plotting, bool rviz, bool write_to_file);
+  GlassUprightExample(const ros::NodeHandle& nh, bool plotting, bool rviz, bool write_to_file, bool ifopt, bool debug);
   ~GlassUprightExample() override = default;
   GlassUprightExample(const GlassUprightExample&) = default;
   GlassUprightExample& operator=(const GlassUprightExample&) = default;
@@ -57,7 +57,8 @@ public:
 private:
   ros::NodeHandle nh_;
   bool write_to_file_;
-
+  bool ifopt_;
+  bool debug_;
   tesseract_environment::Command::Ptr addSphere();
 };
 
