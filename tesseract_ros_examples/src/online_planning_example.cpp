@@ -252,7 +252,8 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
                                                                        position_vars_fixed,
                                                                        collision_config->max_num_cnt,
                                                                        "Collision_" + std::to_string(i));
-    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
+//    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
+    nlp_->addConstraintSet(collision_constraint);
 
     position_vars_fixed = { false, false };
   }
