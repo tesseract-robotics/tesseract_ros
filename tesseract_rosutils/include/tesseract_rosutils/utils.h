@@ -72,17 +72,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <geometry_msgs/PoseArray.h>
 #include <ros/serialization.h>
 
+#include <trajectory_msgs/JointTrajectory.h>
+
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/ofkt/ofkt_state_solver.h>
+#include <tesseract_environment/core/types.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/joint_state.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_process_managers/core/task_info.h>
 
@@ -401,6 +405,13 @@ bool toMsg(tesseract_msgs::TaskInfo& task_info_msg, tesseract_planning::TaskInfo
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
 tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_info_msg);
+
+/**
+ * @brief Converts a tesseract_common::JointTrajectory msg to a trajectory_msgs::JointTrajectory object
+ * @param joint_trajectory Input JointTrajectory msg
+ * @return Resulting Tesseract
+ */
+trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory, const tesseract_environment::EnvState& initial_state);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

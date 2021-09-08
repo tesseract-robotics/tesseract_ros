@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/serialization.h>
 #include <tesseract_rosutils/utils.h>
+#include <map>
 
 namespace tesseract_rosutils
 {
@@ -2161,6 +2162,53 @@ tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_i
   task_info->environment = fromMsg(task_info_msg.environment);
 
   return task_info;
+}
+
+trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory, const tesseract_environment::EnvState& initial_state)
+{
+  trajectory_msgs::JointTrajectory result;
+  std::vector<std::string> joint_names;
+  std::map<std::string, int> joint_names_indices;
+  trajectory_msgs::JointTrajectoryPoint last_point;
+  for (auto joint_state : joint_trajectory)
+  {
+    for (auto joint : joint_state.joint_names)
+    {
+      if(std::find(joint_names.begin(), joint_names.end(), joint) == joint_names.end())
+      {
+        joint_names.push_back(joint);
+        joint_names_indices.insert({joint, joint_names.size()-1});
+      }
+    }
+  }
+  Eigen::VectorXd initial_points = initial_state.getJointValues(joint_names);
+  last_point.positions = std::vector<double> (initial_points.data(),initial_points.data() + initial_points.rows() * initial_points.cols());
+  result.joint_names = joint_names;
+  std::vector<trajectory_msgs::JointTrajectoryPoint> points;
+  for (unsigned long i=0; i < joint_trajectory.size(); i++){
+    trajectory_msgs::JointTrajectoryPoint current_point;
+    current_point.positions = last_point.positions;
+    current_point.velocities = std::vector<double> (joint_names.size(), 0);
+    current_point.accelerations = std::vector<double> (joint_names.size(), 0);
+    current_point.effort = std::vector<double> (joint_names.size(), 0);
+    current_point.time_from_start = ros::Duration (joint_trajectory[i].time);
+    for (unsigned long j=0; j < joint_trajectory[i].joint_names.size(); j++){
+      int joint_index = joint_names_indices[joint_trajectory[i].joint_names[j]];
+      if (joint_trajectory[i].position.size() > 0)
+        current_point.positions[joint_index] = joint_trajectory[i].position[j];
+      if (joint_trajectory[i].velocity.size() > 0)
+        current_point.velocities[joint_index] = joint_trajectory[i].velocity[j];
+      if (joint_trajectory[i].acceleration.size() > 0)
+        current_point.accelerations[joint_index] = joint_trajectory[i].acceleration[j];
+      if (joint_trajectory[i].effort.size() > j)
+        current_point.effort[joint_index] = joint_trajectory[i].effort[j];
+    }
+    last_point = current_point;
+    points.push_back(current_point);
+  }
+  result.points = points;
+  return result;
+
 }
 
 }  // namespace tesseract_rosutils
