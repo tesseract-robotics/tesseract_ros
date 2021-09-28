@@ -970,7 +970,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       }
       else
       {
-        entity = createEntityForMeshData(entity_name, mesh.getVertices(), mesh.getTriangles());
+        entity = createEntityForMeshData(entity_name, mesh.getVertices(), mesh.getFaces());
       }
 
       break;
