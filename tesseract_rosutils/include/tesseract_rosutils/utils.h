@@ -411,7 +411,8 @@ tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_i
  * @param joint_trajectory Input JointTrajectory msg
  * @return Resulting Tesseract
  */
-trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory, const tesseract_environment::EnvState& initial_state);
+trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory,
+                                       const tesseract_environment::EnvState& initial_state);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

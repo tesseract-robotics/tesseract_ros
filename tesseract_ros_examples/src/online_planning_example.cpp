@@ -54,7 +54,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_ros_examples/online_planning_example.h>
 #include <tesseract_visualization/markers/axis_marker.h>
 
-using namespace trajopt;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -77,12 +76,14 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
                                              bool rviz,
                                              int steps,
                                              double box_size,
-                                             bool update_start_state)
+                                             bool update_start_state,
+                                             bool use_continuous)
   : Example(plotting, rviz)
   , nh_(nh)
   , steps_(steps)
   , box_size_(box_size)
   , update_start_state_(update_start_state)
+  , use_continuous_(use_continuous)
   , realtime_running_(false)
 {
   // Import URDF/SRDF
@@ -104,7 +105,7 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
   manipulator_ik_ = env_->getManipulatorManager()->getInvKinematicSolver("manipulator");
 
   // Initialize the trajectory
-  current_trajectory_ = trajopt::TrajArray::Zero(steps_, 10);
+  current_trajectory_ = tesseract_common::TrajArray::Zero(steps_, 10);
   joint_names_ = { "gantry_axis_1", "gantry_axis_2", "joint_1", "joint_2",       "joint_3",
                    "joint_4",       "joint_5",       "joint_6", "human_x_joint", "human_y_joint" };
 
@@ -200,8 +201,9 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   {
     //    auto home_position = Eigen::VectorXd::Zero(8);
     std::vector<trajopt_ifopt::JointPosition::ConstPtr> var_vec(1, vars[0]);
+    Eigen::VectorXd coeffs = Eigen::VectorXd::Constant(manipulator_fk_->numJoints(), 5);
     auto home_constraint =
-        std::make_shared<trajopt_ifopt::JointPosConstraint>(current_position, var_vec, "Home_Position");
+        std::make_shared<trajopt_ifopt::JointPosConstraint>(current_position, var_vec, coeffs, "Home_Position");
     nlp_->addConstraintSet(home_constraint);
   }
   // Add the target pose constraint for the final step
@@ -233,29 +235,51 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   collision_config->collision_margin_buffer = 0.10;
 
   auto collision_cache = std::make_shared<trajopt_ifopt::CollisionCache>(steps_);
-  std::array<bool, 2> position_vars_fixed{ true, false };
-  for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
+  if (use_continuous_)
   {
-    auto collision_evaluator =
-        std::make_shared<trajopt_ifopt::LVSDiscreteCollisionEvaluator>(collision_cache,
-                                                                       manipulator_fk_,
-                                                                       env_,
-                                                                       manipulator_adjacency_map_,
-                                                                       Eigen::Isometry3d::Identity(),
-                                                                       collision_config,
-                                                                       true);
+    std::array<bool, 2> position_vars_fixed{ true, false };
+    for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
+    {
+      auto collision_evaluator =
+          std::make_shared<trajopt_ifopt::LVSDiscreteCollisionEvaluator>(collision_cache,
+                                                                         manipulator_fk_,
+                                                                         env_,
+                                                                         manipulator_adjacency_map_,
+                                                                         Eigen::Isometry3d::Identity(),
+                                                                         collision_config,
+                                                                         true);
 
-    std::array<trajopt_ifopt::JointPosition::ConstPtr, 2> position_vars = { vars[i - 1], vars[i] };
-    auto collision_constraint =
-        std::make_shared<trajopt_ifopt::ContinuousCollisionConstraint>(collision_evaluator,
-                                                                       position_vars,
-                                                                       position_vars_fixed,
-                                                                       collision_config->max_num_cnt,
-                                                                       "Collision_" + std::to_string(i));
-//    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
-    nlp_->addConstraintSet(collision_constraint);
+      std::array<trajopt_ifopt::JointPosition::ConstPtr, 2> position_vars = { vars[i - 1], vars[i] };
+      auto collision_constraint =
+          std::make_shared<trajopt_ifopt::ContinuousCollisionConstraint>(collision_evaluator,
+                                                                         position_vars,
+                                                                         position_vars_fixed,
+                                                                         collision_config->max_num_cnt,
+                                                                         "LVSDiscreteCollision_" + std::to_string(i));
+      //    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
+      nlp_->addConstraintSet(collision_constraint);
 
-    position_vars_fixed = { false, false };
+      position_vars_fixed = { false, false };
+    }
+  }
+  else
+  {
+    for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
+    {
+      auto collision_evaluator =
+          std::make_shared<trajopt_ifopt::SingleTimestepCollisionEvaluator>(collision_cache,
+                                                                            manipulator_fk_,
+                                                                            env_,
+                                                                            manipulator_adjacency_map_,
+                                                                            Eigen::Isometry3d::Identity(),
+                                                                            collision_config,
+                                                                            true);
+
+      auto collision_constraint = std::make_shared<trajopt_ifopt::DiscreteCollisionConstraint>(
+          collision_evaluator, vars[i], collision_config->max_num_cnt, "SingleTimestepCollision_" + std::to_string(i));
+      //    nlp_->addCostSet(collision_constraint, trajopt_sqp::CostPenaltyType::HINGE);
+      nlp_->addConstraintSet(collision_constraint);
+    }
   }
 
   nlp_->setup();
@@ -266,7 +290,7 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
 
 // Convert to joint trajectory
 tesseract_common::JointTrajectory getJointTrajectory(const std::vector<std::string>& joint_names,
-                                                     const trajopt::TrajArray& current_trajectory)
+                                                     const tesseract_common::TrajArray& current_trajectory)
 {
   tesseract_common::JointTrajectory joint_traj;
   joint_traj.reserve(static_cast<std::size_t>(current_trajectory.rows()));
@@ -284,7 +308,7 @@ tesseract_common::JointTrajectory getJointTrajectory(const std::vector<std::stri
 void OnlinePlanningExample::updateAndPlotTrajectory(const Eigen::VectorXd& osqp_vals)
 {
   // Update manipulator joint values
-  Eigen::Map<const trajopt::TrajArray> trajectory(osqp_vals.data(), steps_, 8);
+  Eigen::Map<const tesseract_common::TrajArray> trajectory(osqp_vals.data(), steps_, 8);
   current_trajectory_.block(0, 0, steps_, 8) = trajectory;
 
   // Convert to joint trajectory
@@ -342,6 +366,19 @@ bool OnlinePlanningExample::onlinePlan()
       // Setup problem again which should use a new start state
       setupProblem(init_trajectory);
     }
+
+    // TODO Figure out why this is needed. The commented code below this should be enough to reset
+    {  // Setup problem again
+      Eigen::Map<const tesseract_common::TrajArray> trajectory(x.data(), steps_, 8);
+      std::vector<Eigen::VectorXd> init_trajectory(static_cast<std::size_t>(steps_));
+      for (Eigen::Index i = 0; i < steps_; ++i)
+        init_trajectory[static_cast<std::size_t>(i)] = trajectory.row(i);
+
+      setupProblem(init_trajectory);
+    }
+
+    //    nlp_->setVariables(x.data());
+    //    nlp_->setup();
 
     // Reset the box size because now the trust region loop is being ran and it can go to zero
     solver.params.initial_trust_box_size = box_size_;

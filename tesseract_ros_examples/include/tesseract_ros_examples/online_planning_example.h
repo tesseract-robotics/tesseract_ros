@@ -62,7 +62,8 @@ public:
                         bool rviz,
                         int steps,
                         double box_size,
-                        bool update_start_state);
+                        bool update_start_state,
+                        bool use_continuous);
 
   ~OnlinePlanningExample() override = default;
   OnlinePlanningExample(const OnlinePlanningExample&) = delete;
@@ -98,7 +99,8 @@ private:
   ros::NodeHandle nh_;
   int steps_;
   double box_size_;
-  bool update_start_state_;
+  bool update_start_state_{ false };
+  bool use_continuous_{ false };
 
   tesseract_kinematics::ForwardKinematics::Ptr manipulator_fk_;
   tesseract_kinematics::InverseKinematics::Ptr manipulator_ik_;
@@ -106,7 +108,7 @@ private:
   tesseract_environment::AdjacencyMap::Ptr manipulator_adjacency_map_;
 
   tesseract_visualization::TrajectoryPlayer player_;
-  trajopt::TrajArray current_trajectory_;
+  tesseract_common::TrajArray current_trajectory_;
   Eigen::Isometry3d target_pose_delta_;
   Eigen::Isometry3d target_pose_base_frame_;
   // We need to keep this around so we can update it
