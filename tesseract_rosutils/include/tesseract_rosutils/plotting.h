@@ -52,21 +52,21 @@ public:
 
   void waitForConnection(long seconds = 0) const override;
 
-  void plotEnvironment(tesseract_environment::Environment::ConstPtr env, std::string ns = "") override;
+  void plotEnvironment(const tesseract_environment::Environment& env, std::string ns = "") override;
 
-  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state, std::string ns = "") override;
+  void plotEnvironmentState(const tesseract_scene_graph::SceneState& state, std::string ns = "") override;
 
   void plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                      tesseract_environment::StateSolver::Ptr state_solver,
+                      const tesseract_scene_graph::StateSolver& state_solver,
                       std::string ns = "") override;
 
   void plotTrajectory(const tesseract_msgs::Trajectory& traj, std::string ns = "");
 
-  void plotTrajectory(tesseract_environment::Environment::ConstPtr env,
+  void plotTrajectory(const tesseract_environment::Environment& env,
                       const tesseract_planning::Instruction& instruction,
                       std::string ns = "");
 
-  void plotToolpath(tesseract_environment::Environment::ConstPtr env,
+  void plotToolpath(const tesseract_environment::Environment& env,
                     const tesseract_planning::Instruction& instruction,
                     std::string ns);
 

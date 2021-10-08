@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/utils.h>
 
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 
 #include <tesseract_visualization/markers/arrow_marker.h>
 #include <tesseract_visualization/markers/axis_marker.h>
@@ -91,9 +91,9 @@ void ROSPlotting::waitForConnection(long seconds) const
   return;
 }
 
-void ROSPlotting::plotEnvironment(tesseract_environment::Environment::ConstPtr /*env*/, std::string /*ns*/) {}
+void ROSPlotting::plotEnvironment(const tesseract_environment::Environment& /*env*/, std::string /*ns*/) {}
 
-void ROSPlotting::plotEnvironmentState(tesseract_environment::EnvState::ConstPtr /*state*/, std::string /*ns*/) {}
+void ROSPlotting::plotEnvironmentState(const tesseract_scene_graph::SceneState& /*state*/, std::string /*ns*/) {}
 
 void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj, std::string /*ns*/)
 {
@@ -102,7 +102,7 @@ void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj, std::st
 }
 
 void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj,
-                                 tesseract_environment::StateSolver::Ptr /*state_solver*/,
+                                 const tesseract_scene_graph::StateSolver& /*state_solver*/,
                                  std::string /*ns*/)
 {
   tesseract_msgs::Trajectory msg;
@@ -113,15 +113,14 @@ void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj,
   plotTrajectory(msg);
 }
 
-void ROSPlotting::plotTrajectory(tesseract_environment::Environment::ConstPtr env,
+void ROSPlotting::plotTrajectory(const tesseract_environment::Environment& env,
                                  const tesseract_planning::Instruction& instruction,
                                  std::string /*ns*/)
 {
   tesseract_msgs::Trajectory msg;
 
   // Set tesseract state information
-  if (env != nullptr)
-    toMsg(msg.environment, *(env));
+  toMsg(msg.environment, env);
 
   // Convert to joint trajectory
   assert(tesseract_planning::isCompositeInstruction(instruction));
@@ -200,7 +199,7 @@ void ROSPlotting::plotMarkers(const std::vector<tesseract_visualization::Marker:
   ROS_ERROR("ROSPlotting: Plotting vector of markers is currently no implemented!");
 }
 
-void ROSPlotting::plotToolpath(tesseract_environment::Environment::ConstPtr env,
+void ROSPlotting::plotToolpath(const tesseract_environment::Environment& env,
                                const tesseract_planning::Instruction& instruction,
                                std::string ns)
 {

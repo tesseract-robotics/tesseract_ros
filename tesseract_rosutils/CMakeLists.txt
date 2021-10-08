@@ -57,8 +57,7 @@ tesseract_variables()
 
 add_library(${PROJECT_NAME} SHARED src/plotting.cpp src/conversions.cpp src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  tesseract::tesseract_environment_core
-  tesseract::tesseract_environment_ofkt
+  tesseract::tesseract_environment
   tesseract::tesseract_scene_graph
   tesseract::tesseract_srdf
   tesseract::tesseract_geometry
