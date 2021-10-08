@@ -37,12 +37,16 @@ int main(int argc, char** argv)
   bool plotting = true;
   bool rviz = true;
   bool write_to_file = false;
+  bool ifopt = false;
+  bool debug = false;
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
   pnh.param<bool>("write_to_file", write_to_file, write_to_file);
+  pnh.param("ifopt", ifopt, ifopt);
+  pnh.param("debug", debug, debug);
 
-  GlassUprightExample example(nh, plotting, rviz, write_to_file);
+  GlassUprightExample example(nh, plotting, rviz, write_to_file, ifopt, debug);
   example.run();
 }

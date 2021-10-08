@@ -39,13 +39,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <std_srvs/SetBool.h>
-#include <ifopt/problem.h>
+#include <trajopt_sqp/qp_problem.h>
 
 #include <trajopt_ifopt/constraints/cartesian_position_constraint.h>
 #include <tesseract_rosutils/plotting.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/example.h>
+#include <tesseract_visualization/trajectory_player.h>
 
 namespace tesseract_ros_examples
 {
@@ -56,11 +57,17 @@ namespace tesseract_ros_examples
 class OnlinePlanningExample : public tesseract_ros_examples::Example
 {
 public:
-  OnlinePlanningExample(const ros::NodeHandle& nh, bool plotting, bool rviz, int steps, double box_size);
+  OnlinePlanningExample(const ros::NodeHandle& nh,
+                        bool plotting,
+                        bool rviz,
+                        int steps,
+                        double box_size,
+                        bool update_start_state,
+                        bool use_continuous);
 
   ~OnlinePlanningExample() override = default;
-  OnlinePlanningExample(const OnlinePlanningExample&) = default;
-  OnlinePlanningExample& operator=(const OnlinePlanningExample&) = default;
+  OnlinePlanningExample(const OnlinePlanningExample&) = delete;
+  OnlinePlanningExample& operator=(const OnlinePlanningExample&) = delete;
   OnlinePlanningExample(OnlinePlanningExample&&) = default;
   OnlinePlanningExample& operator=(OnlinePlanningExample&&) = default;
 
@@ -74,7 +81,7 @@ public:
    * @brief Sets up the IFOPT problem
    * @return True if successful
    */
-  bool setupProblem();
+  bool setupProblem(std::vector<Eigen::VectorXd> initial_trajectory = std::vector<Eigen::VectorXd>());
 
   /**
    * @brief Runs the online planning process, occoasionally checking ROS callbacks until realtime_running_ = false
@@ -92,24 +99,29 @@ private:
   ros::NodeHandle nh_;
   int steps_;
   double box_size_;
+  bool update_start_state_{ false };
+  bool use_continuous_{ false };
 
   tesseract_kinematics::ForwardKinematics::Ptr manipulator_fk_;
   tesseract_kinematics::InverseKinematics::Ptr manipulator_ik_;
   std::shared_ptr<tesseract_rosutils::ROSPlotting> plotter_;
   tesseract_environment::AdjacencyMap::Ptr manipulator_adjacency_map_;
 
-  trajopt::TrajArray current_trajectory_;
+  tesseract_visualization::TrajectoryPlayer player_;
+  tesseract_common::TrajArray current_trajectory_;
   Eigen::Isometry3d target_pose_delta_;
   Eigen::Isometry3d target_pose_base_frame_;
   // We need to keep this around so we can update it
-  trajopt::CartPosConstraint::Ptr target_pose_constraint_;
+  trajopt_ifopt::CartPosConstraint::Ptr target_pose_constraint_;
 
   std::vector<std::string> joint_names_;
   ros::Subscriber joint_state_subscriber_;
   ros::ServiceServer toggle_realtime_service_;
-  ifopt::Problem nlp_;
+  trajopt_sqp::QPProblem::Ptr nlp_;
 
   bool realtime_running_;
+
+  void updateAndPlotTrajectory(const Eigen::VectorXd& osqp_vals);
 };
 }  // namespace tesseract_ros_examples
 

@@ -14,6 +14,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/kinematics_information.h>
 
 #include <tesseract_msgs/EnvironmentState.h>
+#include <tesseract_common/types.h>
+#include <Eigen/Eigen>
 
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -220,6 +222,58 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   EXPECT_EQ(kin_info2.group_default_inv_kin.size(), kin_info_msg.default_inv_kin.size());
   EXPECT_TRUE(kin_info2.group_default_inv_kin.find("manipulator2") != kin_info2.group_default_inv_kin.end());
   EXPECT_EQ(kin_info2.group_default_inv_kin.find("manipulator2")->second, "REPSolver");
+}
+
+TEST_F(TesseractROSUtilsUnit, toRosJointTrajectory)  // NOLINT
+{
+  std::vector<std::string> joint_names{ "joint1", "joint2", "joint3", "joint4" };
+  std::vector<tesseract_common::JointState> tesseract_joint_trajectory;
+  tesseract_common::JointState tesseract_joint_state;
+
+  trajectory_msgs::JointTrajectory ros_joint_trajectory;
+  trajectory_msgs::JointTrajectoryPoint ros_joint_state;
+  ros_joint_trajectory.joint_names = joint_names;
+
+  tesseract_environment::EnvState env_state;
+  env_state.joints[joint_names[0]] = 0;
+  env_state.joints[joint_names[1]] = 0;
+  env_state.joints[joint_names[2]] = 1;
+  env_state.joints[joint_names[3]] = 1;
+
+  // point 1
+  ros_joint_state.positions = std::vector<double>{ 40, 40, 2, 1 };
+  ros_joint_state.velocities = std::vector<double>{ 0, 0, 0, 0 };
+  ros_joint_state.accelerations = std::vector<double>{ 0, 0, 0, 0 };
+  ros_joint_state.effort = std::vector<double>{ 0, 0, 0, 0 };
+
+  tesseract_joint_state.joint_names = std::vector<std::string>{ "joint1", "joint2", "joint3" };
+  tesseract_joint_state.position.resize(3);
+  tesseract_joint_state.position << 40, 40, 2;
+  ros_joint_trajectory.points.push_back(ros_joint_state);
+  tesseract_joint_trajectory.push_back(tesseract_joint_state);
+
+  // point 2
+  ros_joint_state.positions = std::vector<double>{ 40, 10, 2, 40.1 };
+  ros_joint_state.velocities = std::vector<double>{ 0, 1, 0, 1 };
+  ros_joint_state.accelerations = std::vector<double>{ 0, 1, 0, 1 };
+  ros_joint_state.effort = std::vector<double>{ 0, 1, 0, 1 };
+
+  tesseract_joint_state.joint_names = std::vector<std::string>{ "joint2", "joint4" };
+  tesseract_joint_state.position.resize(2);
+  tesseract_joint_state.position << 10, 40.1;
+  tesseract_joint_state.velocity.resize(2);
+  tesseract_joint_state.velocity << 1, 1;
+  tesseract_joint_state.acceleration.resize(2);
+  tesseract_joint_state.acceleration << 1, 1;
+  tesseract_joint_state.effort.resize(2);
+  tesseract_joint_state.effort << 1, 1;
+  ros_joint_trajectory.points.push_back(ros_joint_state);
+  tesseract_joint_trajectory.push_back(tesseract_joint_state);
+
+  trajectory_msgs::JointTrajectory calculated_trajectory =
+      tesseract_rosutils::toMsg(tesseract_joint_trajectory, env_state);
+
+  EXPECT_EQ(ros_joint_trajectory, calculated_trajectory);
 }
 
 int main(int argc, char** argv)
