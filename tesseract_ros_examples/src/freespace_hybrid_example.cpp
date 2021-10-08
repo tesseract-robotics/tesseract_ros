@@ -29,8 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/freespace_hybrid_example.h>
-#include <tesseract_environment/core/utils.h>
-#include <tesseract_environment/core/commands.h>
+#include <tesseract_environment/utils.h>
+#include <tesseract_environment/commands.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
@@ -114,8 +114,8 @@ bool FreespaceHybridExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
@@ -164,7 +164,8 @@ bool FreespaceHybridExample::run()
   env_->setState(joint_names, joint_start_pos);
 
   // Create Program
-  CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+  CompositeInstruction program(
+      "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "base_link", "tool0"));
 
   // Start and End Joint Position for the program
   Waypoint wp0 = StateWaypoint(joint_names, joint_start_pos);
@@ -213,10 +214,11 @@ bool FreespaceHybridExample::run()
   {
     plotter->waitForInput();
     const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, env_);
+    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
     tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
-    plotter->plotTrajectory(trajectory, env_->getStateSolver());
+    plotter->plotTrajectory(trajectory, *state_solver);
   }
 
   ROS_INFO("Final trajectory is collision free");

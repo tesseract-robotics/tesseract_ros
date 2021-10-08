@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/scene_graph_example.h>
-#include <tesseract_environment/core/utils.h>
+#include <tesseract_environment/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
@@ -57,8 +57,8 @@ bool SceneGraphExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
