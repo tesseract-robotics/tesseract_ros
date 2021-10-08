@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
@@ -140,13 +140,12 @@ protected:
   ManipulatorState state_;
   InteractiveMarker::Ptr interactive_marker_;
   std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers_;
-  std::vector<std::string> manipulators_;
-  tesseract_kinematics::InverseKinematics::Ptr inv_kin_;
-  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin_;
+  std::set<std::string> manipulators_;
+  tesseract_kinematics::KinematicGroup::UPtr manip_;
   Eigen::VectorXd inv_seed_;
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
-  tesseract_environment::EnvState::Ptr env_state_;
+  tesseract_scene_graph::SceneState env_state_;
   Eigen::Isometry3d tcp_;
 
   ros::Publisher joint_state_pub_;

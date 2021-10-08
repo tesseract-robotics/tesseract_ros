@@ -14,7 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/subscriber.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <std_msgs/ColorRGBA.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #endif

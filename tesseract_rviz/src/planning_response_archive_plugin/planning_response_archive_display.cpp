@@ -91,14 +91,14 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
     results = Serialization::fromArchiveStringXML<Instruction>(msg->results);
 
   // Get the current find tcp callbacks
-  std::vector<tesseract_environment::FindTCPCallbackFn> env_cb;
+  std::vector<tesseract_environment::FindTCPOffsetCallbackFn> env_cb;
   if (env_ != nullptr)
-    env_cb = env_->getFindTCPCallbacks();
+    env_cb = env_->getFindTCPOffsetCallbacks();
 
   // Load Environment
   env_.swap(env);
   for (auto& f : env_cb)
-    env_->addFindTCPCallback(f);
+    env_->addFindTCPOffsetCallback(f);
   visualize_trajectory_widget_->setEnvironment(env_);
 
   // Convert TCL to tesseract_msgs::Trajectory

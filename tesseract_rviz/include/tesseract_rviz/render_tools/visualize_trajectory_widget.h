@@ -48,7 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_visualization/trajectory_player.h>
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -123,7 +123,7 @@ protected:
   bool cached_visible_{ false }; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 
   tesseract_visualization::TrajectoryPlayer trajectory_player_;
-  tesseract_environment::StateSolver::Ptr trajectory_state_solver_;
+  tesseract_scene_graph::StateSolver::UPtr trajectory_state_solver_;
   tesseract_common::JointTrajectory displaying_trajectory_;
   tesseract_common::JointTrajectory trajectory_to_display_;
 

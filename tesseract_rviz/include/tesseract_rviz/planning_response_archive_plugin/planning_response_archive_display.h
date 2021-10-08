@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 

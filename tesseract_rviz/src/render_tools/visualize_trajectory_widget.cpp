@@ -182,7 +182,7 @@ void VisualizeTrajectoryWidget::createTrajectoryTrail()
   long num_waypoints = trajectory_player_.size();
   num_trail_waypoints_ =
       static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
-  std::vector<tesseract_environment::EnvState::Ptr> states_data;
+  std::vector<tesseract_scene_graph::SceneState> states_data;
   states_data.reserve(num_trail_waypoints_);
   for (std::size_t i = 0; i < num_trail_waypoints_; i++)
   {
@@ -197,7 +197,7 @@ void VisualizeTrajectoryWidget::createTrajectoryTrail()
 
   // If current state is not visible must set trajectory for all links for a single state so static
   // objects will be visible
-  for (const auto& tf : states_data[0]->link_transforms)
+  for (const auto& tf : states_data[0].link_transforms)
   {
     // Active links get set in the next stage below do not set them here
     if (std::find(active_link_names.begin(), active_link_names.end(), tf.first) != active_link_names.end())
@@ -220,7 +220,7 @@ void VisualizeTrajectoryWidget::createTrajectoryTrail()
     link_trajectory.reserve(states_data.size());
     for (auto& state : states_data)
     {
-      link_trajectory.push_back(state->link_transforms[link_name]);
+      link_trajectory.push_back(state.link_transforms[link_name]);
     }
     LinkWidget* l = visualization_->getLink(link_name);
     l->setTrajectory(link_trajectory);
@@ -372,9 +372,9 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
     {
       trajectory_player_.reset();
       tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(0);
-      tesseract_environment::EnvState::Ptr state =
+      tesseract_scene_graph::SceneState state =
           trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
-      visualization_->setStartState(state->link_transforms);
+      visualization_->setStartState(state.link_transforms);
 
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->setSliderPosition(0);
@@ -388,9 +388,9 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
     {
       double duration = static_cast<double>(trajectory_slider_panel_->getSliderPosition()) * SLIDER_RESOLUTION;
       tesseract_common::JointState joint_state = trajectory_player_.setCurrentDuration(duration);
-      tesseract_environment::EnvState::Ptr state =
+      tesseract_scene_graph::SceneState state =
           trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
-      visualization_->setStartState(state->link_transforms);
+      visualization_->setStartState(state.link_transforms);
     }
     else
     {
@@ -403,7 +403,7 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
       else
       {
         tesseract_common::JointState joint_state = trajectory_player_.getNext();
-        tesseract_environment::EnvState::Ptr state =
+        tesseract_scene_graph::SceneState state =
             trajectory_state_solver_->getState(joint_state.joint_names, joint_state.position);
 
         if (trajectory_slider_panel_ != nullptr)
@@ -412,7 +412,7 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
           trajectory_slider_panel_->setSliderPosition(slider_index);
         }
 
-        visualization_->setStartState(state->link_transforms);
+        visualization_->setStartState(state.link_transforms);
       }
     }
   }
