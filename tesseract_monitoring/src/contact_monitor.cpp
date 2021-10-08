@@ -142,10 +142,10 @@ void ContactMonitor::computeCollisionReportThread()
       contacts.clear();
       contacts_msg.contacts.clear();
 
-      env_->setState(msg->name, msg->position);
-      tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
+      env_->setState(msg->name, Eigen::Map<Eigen::VectorXd>(msg->position.data(), msg->position.size()));
+      tesseract_scene_graph::SceneState state = env_->getState();
 
-      manager_->setCollisionObjectsTransform(state->link_transforms);
+      manager_->setCollisionObjectsTransform(state.link_transforms);
       manager_->contactTest(contacts, type_);
     }
 
@@ -216,10 +216,12 @@ bool ContactMonitor::callbackComputeContactResultVector(tesseract_msgs::ComputeC
   {
     std::scoped_lock lock(modify_mutex_);
 
-    env_->setState(request.joint_states.name, request.joint_states.position);
-    tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
+    env_->setState(
+        request.joint_states.name,
+        Eigen::Map<Eigen::VectorXd>(request.joint_states.position.data(), request.joint_states.position.size()));
+    tesseract_scene_graph::SceneState state = env_->getState();
 
-    manager_->setCollisionObjectsTransform(state->link_transforms);
+    manager_->setCollisionObjectsTransform(state.link_transforms);
     manager_->contactTest(contact_results, type_);
   }
 

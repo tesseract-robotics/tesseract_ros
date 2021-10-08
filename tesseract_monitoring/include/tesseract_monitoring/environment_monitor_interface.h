@@ -33,9 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/GetEnvironmentInformation.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/core/commands.h>
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+#include <tesseract_environment/commands.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/constants.h>
 
@@ -106,7 +105,7 @@ public:
    * @param monitor_namespace The namespace to extract the environment from.
    * @return Environment Shared Pointer, if nullptr it failed
    */
-  tesseract_environment::EnvState::Ptr getEnvironmentState(const std::string& monitor_namespace) const;
+  tesseract_scene_graph::SceneState getEnvironmentState(const std::string& monitor_namespace) const;
 
   /**
    * @brief Set environments state in the provided namespace
@@ -162,7 +161,7 @@ public:
     }
 
     auto env = std::make_shared<tesseract_environment::Environment>();
-    env->init<S>(commands);
+    env->init(commands);
 
     return env;
   }

@@ -32,8 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost/thread/thread.hpp>
 
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -90,8 +89,8 @@ int main(int argc, char** argv)
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
   auto env = std::make_shared<tesseract_environment::Environment>();
-  tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env->init<tesseract_environment::OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env->init(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;

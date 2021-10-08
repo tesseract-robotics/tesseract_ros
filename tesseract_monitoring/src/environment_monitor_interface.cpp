@@ -214,7 +214,7 @@ bool EnvironmentMonitorInterface::sendCommands(const std::string& ns,
   return true;
 }
 
-tesseract_environment::EnvState::Ptr
+tesseract_scene_graph::SceneState
 EnvironmentMonitorInterface::getEnvironmentState(const std::string& monitor_namespace) const
 {
   tesseract_msgs::GetEnvironmentInformation res;
@@ -224,15 +224,12 @@ EnvironmentMonitorInterface::getEnvironmentState(const std::string& monitor_name
 
   bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
   if (!status || !res.response.success)
-  {
-    ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironmentState: Failed to get monitor environment information!");
-    return nullptr;
-  }
+    throw std::runtime_error("getEnvironmentState: Failed to get monitor environment information!");
 
-  auto env_state = std::make_shared<tesseract_environment::EnvState>();
-  tesseract_rosutils::fromMsg(env_state->joints, res.response.joint_states);
-  tesseract_rosutils::fromMsg(env_state->link_transforms, res.response.link_transforms);
-  tesseract_rosutils::fromMsg(env_state->joint_transforms, res.response.joint_transforms);
+  tesseract_scene_graph::SceneState env_state;
+  tesseract_rosutils::fromMsg(env_state.joints, res.response.joint_states);
+  tesseract_rosutils::fromMsg(env_state.link_transforms, res.response.link_transforms);
+  tesseract_rosutils::fromMsg(env_state.joint_transforms, res.response.joint_transforms);
 
   return env_state;
 }

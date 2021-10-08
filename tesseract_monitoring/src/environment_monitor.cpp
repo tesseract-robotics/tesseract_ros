@@ -40,8 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/environment_monitor.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
-#include <tesseract_environment/core/utils.h>
+#include <tesseract_environment/utils.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_rosutils/utils.h>
 
@@ -74,8 +73,8 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
   root_nh_.getParam(robot_description + "_semantic", srdf_xml_string);
 
   env_ = std::make_shared<tesseract_environment::Environment>();
-  tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<tesseract_environment::OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return;
 
   if (!initialize())
@@ -305,9 +304,9 @@ bool EnvironmentMonitor::applyCommands(const tesseract_environment::Commands& co
 
 tesseract_scene_graph::SceneGraph::ConstPtr EnvironmentMonitor::getSceneGraph() const { return env_->getSceneGraph(); }
 
-const tesseract_srdf::KinematicsInformation& EnvironmentMonitor::getKinematicsInformation() const
+tesseract_srdf::KinematicsInformation EnvironmentMonitor::getKinematicsInformation() const
 {
-  return env_->getManipulatorManager()->getKinematicsInformation();
+  return env_->getKinematicsInformation();
 }
 
 tesseract_environment::Environment::Ptr EnvironmentMonitor::getEnvironment() { return env_; }
@@ -480,7 +479,7 @@ void EnvironmentMonitor::newEnvironmentStateCallback(const tesseract_msgs::Envir
         return;
       }
 
-      if (!env_->init<tesseract_environment::OFKTStateSolver>(commands))
+      if (!env_->init(commands))
       {
         ROS_ERROR_STREAM_NAMED(monitor_namespace_, "newEnvironmentStateCallback: Failed to initialize environment!");
         return;
@@ -859,7 +858,7 @@ void EnvironmentMonitor::updateEnvironmentWithCurrentState()
       last_update_time_ = last_robot_motion_time_ = current_state_monitor_->getCurrentStateTime();
       ROS_DEBUG_STREAM_NAMED(monitor_namespace_, "robot state update " << fmod(last_robot_motion_time_.toSec(), 10.));
 
-      env_->setState(current_state_monitor_->getCurrentState()->joints);
+      env_->setState(current_state_monitor_->getCurrentState().joints);
     }
     triggerEnvironmentUpdateEvent();
   }
@@ -1007,9 +1006,10 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
     }
   }
 
+  tesseract_scene_graph::SceneState state = env_->getState();
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::LINK_TRANSFORMS)
   {
-    for (const auto& link_pair : env_->getCurrentState()->link_transforms)
+    for (const auto& link_pair : state.link_transforms)
     {
       res.link_transforms.names.push_back(link_pair.first);
       geometry_msgs::Pose pose;
@@ -1020,7 +1020,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_TRANSFORMS)
   {
-    for (const auto& joint_pair : env_->getCurrentState()->joint_transforms)
+    for (const auto& joint_pair : state.joint_transforms)
     {
       res.joint_transforms.names.push_back(joint_pair.first);
       geometry_msgs::Pose pose;
@@ -1040,8 +1040,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::KINEMATICS_INFORMATION)
   {
-    auto manipulator_manager = env_->getManipulatorManager();
-    if (!tesseract_rosutils::toMsg(res.kinematics_information, manipulator_manager->getKinematicsInformation()))
+    if (!tesseract_rosutils::toMsg(res.kinematics_information, env_->getKinematicsInformation()))
     {
       res.success = false;
       return false;
@@ -1050,7 +1049,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_STATES)
   {
-    if (!tesseract_rosutils::toMsg(res.joint_states, env_->getCurrentState()->joints))
+    if (!tesseract_rosutils::toMsg(res.joint_states, state.joints))
     {
       res.success = false;
       return false;
