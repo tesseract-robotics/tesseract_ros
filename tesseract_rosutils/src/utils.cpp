@@ -146,13 +146,13 @@ bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geo
       const auto& s1 = static_cast<const tesseract_geometry::Mesh&>(shape1);
       const auto& s2 = static_cast<const tesseract_geometry::Mesh&>(shape2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
-      if (s1.getTriangleCount() != s2.getTriangleCount())
+      if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
-      if (s1.getTriangles() != s2.getTriangles())
+      if (s1.getFaces() != s2.getFaces())
         return false;
 
       if (s1.getVertices() != s2.getVertices())
@@ -165,7 +165,7 @@ bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geo
       const auto& s1 = static_cast<const tesseract_geometry::ConvexMesh&>(shape1);
       const auto& s2 = static_cast<const tesseract_geometry::ConvexMesh&>(shape2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
       if (s1.getFaceCount() != s2.getFaceCount())
@@ -184,13 +184,13 @@ bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geo
       const auto& s1 = static_cast<const tesseract_geometry::Mesh&>(shape1);
       const auto& s2 = static_cast<const tesseract_geometry::Mesh&>(shape2);
 
-      if (s1.getVerticeCount() != s2.getVerticeCount())
+      if (s1.getVertexCount() != s2.getVertexCount())
         return false;
 
-      if (s1.getTriangleCount() != s2.getTriangleCount())
+      if (s1.getFaceCount() != s2.getFaceCount())
         return false;
 
-      if (s1.getTriangles() != s2.getTriangles())
+      if (s1.getFaces() != s2.getFaces())
         return false;
 
       if (s1.getVertices() != s2.getVertices())
@@ -355,7 +355,7 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
         geometry_msgs.mesh.vertices[i].z = vertices[i](2);
       }
 
-      const Eigen::VectorXi& faces = *(mesh.getTriangles());
+      const Eigen::VectorXi& faces = *(mesh.getFaces());
       geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
       for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
         geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
@@ -437,7 +437,7 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
         geometry_msgs.mesh.vertices[i].z = vertices[i](2);
       }
 
-      const Eigen::VectorXi& faces = *(mesh.getTriangles());
+      const Eigen::VectorXi& faces = *(mesh.getFaces());
       geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
       for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
         geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
