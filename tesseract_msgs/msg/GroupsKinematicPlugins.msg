@@ -1,0 +1,2 @@
+string group
+tesseract_msgs/PluginInfoMap plugins
