@@ -37,10 +37,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
+
+#include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+
+#include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
 using namespace trajopt;
 using namespace tesseract_environment;
@@ -60,8 +64,13 @@ const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
-GlassUprightExample::GlassUprightExample(const ros::NodeHandle& nh, bool plotting, bool rviz, bool write_to_file)
-  : Example(plotting, rviz), nh_(nh), write_to_file_(write_to_file)
+GlassUprightExample::GlassUprightExample(const ros::NodeHandle& nh,
+                                         bool plotting,
+                                         bool rviz,
+                                         bool write_to_file,
+                                         bool ifopt,
+                                         bool debug)
+  : Example(plotting, rviz), nh_(nh), write_to_file_(write_to_file), ifopt_(ifopt), debug_(debug)
 {
 }
 
@@ -159,11 +168,14 @@ bool GlassUprightExample::run()
 
   env_->setState(joint_names, joint_start_pos);
 
+  if (debug_)
+    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+
   // Solve Trajectory
   ROS_INFO("glass upright plan example");
 
   // Create Program
-  CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+  CompositeInstruction program("UPRIGHT", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
   // Start and End Joint Position for the program
   Waypoint wp0 = StateWaypoint(joint_names, joint_start_pos);
@@ -184,23 +196,67 @@ bool GlassUprightExample::run()
   ProcessPlanningServer planning_server(std::make_shared<ROSProcessEnvironmentCache>(monitor_), 5);
   planning_server.loadDefaultProcessPlanners();
 
-  // Create TrajOpt Profile
-  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
-  trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
-  trajopt_plan_profile->cartesian_coeff(0) = 0;
-  trajopt_plan_profile->cartesian_coeff(1) = 0;
-  trajopt_plan_profile->cartesian_coeff(2) = 0;
-
-  // Add profile to Dictionary
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("UPRIGHT", trajopt_plan_profile);
-
   // Create Process Planning Request
   ProcessPlanningRequest request;
-  request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  if (ifopt_)
+  {
+    auto composite_profile = std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>();
+    composite_profile->collision_cost_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+    composite_profile->collision_cost_config->collision_margin_data.setDefaultCollisionMargin(0.01);
+    composite_profile->collision_cost_config->collision_margin_buffer = 0.01;
+    composite_profile->collision_constraint_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+    composite_profile->collision_constraint_config->collision_margin_data.setDefaultCollisionMargin(0.01);
+    composite_profile->collision_constraint_config->collision_margin_buffer = 0.01;
+    composite_profile->smooth_velocities = true;
+    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptIfoptCompositeProfile>("UPRIGHT",
+                                                                                                composite_profile);
+
+    auto plan_profile = std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>();
+    plan_profile->joint_coeff = Eigen::VectorXd::Ones(7);
+    plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
+    plan_profile->cartesian_coeff(0) = 0;
+    plan_profile->cartesian_coeff(1) = 0;
+    plan_profile->cartesian_coeff(2) = 0;
+    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptIfoptPlanProfile>("UPRIGHT", plan_profile);
+
+    request.name = tesseract_planning::process_planner_names::TRAJOPT_IFOPT_PLANNER_NAME;
+  }
+  else
+  {
+    auto composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+    composite_profile->collision_cost_config.enabled = true;
+    composite_profile->collision_cost_config.type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
+    composite_profile->collision_cost_config.safety_margin = 0.01;
+    composite_profile->collision_cost_config.coeff = 1;
+    composite_profile->collision_constraint_config.enabled = true;
+    composite_profile->collision_constraint_config.type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
+    composite_profile->collision_constraint_config.safety_margin = 0.01;
+    composite_profile->collision_constraint_config.coeff = 1;
+    composite_profile->smooth_velocities = true;
+    composite_profile->smooth_accelerations = false;
+    composite_profile->smooth_jerks = false;
+    composite_profile->velocity_coeff = Eigen::VectorXd::Ones(1);
+    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("UPRIGHT",
+                                                                                           composite_profile);
+
+    auto plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+    plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
+    plan_profile->cartesian_coeff(0) = 0;
+    plan_profile->cartesian_coeff(1) = 0;
+    plan_profile->cartesian_coeff(2) = 0;
+
+    // Add profile to Dictionary
+    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("UPRIGHT", plan_profile);
+
+    request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  }
   request.instructions = Instruction(program);
 
   // Print Diagnostics
   request.instructions.print("Program: ");
+
+  if (rviz_ && plotter != nullptr && plotter->isConnected())
+    plotter->waitForInput("Hit Enter to solve for trajectory.");
 
   // Solve process plan
   ProcessPlanningFuture response = planning_server.run(request);

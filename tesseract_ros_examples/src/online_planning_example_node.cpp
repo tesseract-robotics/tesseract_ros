@@ -39,17 +39,21 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
-  bool plotting = true;
-  bool rviz = true;
-  int steps = 12;
-  double box_size = 0.002;
+  bool plotting{ true };
+  bool rviz{ true };
+  int steps{ 12 };
+  double box_size{ 0.01 };
+  bool update_start_state{ false };
+  bool use_continuous{ false };
 
   // Get ROS Parameters
   pnh.param("plotting", plotting, plotting);
   pnh.param("rviz", rviz, rviz);
   pnh.param<int>("steps", steps, steps);
   pnh.param<double>("box_size", box_size, box_size);
+  pnh.param<bool>("update_start_state", update_start_state, update_start_state);
+  pnh.param<bool>("use_continuous", use_continuous, use_continuous);
 
-  OnlinePlanningExample example(nh, plotting, rviz, steps, box_size);
+  OnlinePlanningExample example(nh, plotting, rviz, steps, box_size, update_start_state, use_continuous);
   example.run();
 }
