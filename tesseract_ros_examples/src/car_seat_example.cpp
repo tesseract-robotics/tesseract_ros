@@ -195,7 +195,7 @@ std::vector<double> CarSeatExample::getPositionVector(const JointGroup& joint_gr
                                                       const std::unordered_map<std::string, double>& pos)
 {
   std::vector<double> result;
-  result.reserve(joint_group.numJoints());
+  result.reserve(static_cast<std::size_t>(joint_group.numJoints()));
   for (const auto& joint_name : joint_group.getJointNames())
     result.push_back(pos.at(joint_name));
 
@@ -298,7 +298,7 @@ bool CarSeatExample::run()
 
   {  // Create Program to pick up first seat
     CompositeInstruction program(
-        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "base_link", "end_effector"));
+        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "world", "end_effector"));
     program.setDescription("Pick up the first seat!");
 
     // Start and End Joint Position for the program
@@ -371,7 +371,7 @@ bool CarSeatExample::run()
 
   {  // Create Program to place first seat
     CompositeInstruction program(
-        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "base_link", "end_effector"));
+        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "world", "end_effector"));
     program.setDescription("Place the first seat!");
 
     // Start and End Joint Position for the program

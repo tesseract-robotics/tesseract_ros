@@ -62,6 +62,7 @@ const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 const double OFFSET = 0.005;
 
 const std::string LINK_BOX_NAME = "box";
+const std::string LINK_BASE_NAME = "world";
 const std::string LINK_END_EFFECTOR_NAME = "iiwa_link_ee";
 
 namespace tesseract_ros_examples
@@ -180,8 +181,9 @@ bool PickAndPlaceExample::run()
     plotter->waitForInput();
 
   // Create Program
-  CompositeInstruction pick_program(
-      "DEFAULT", CompositeInstructionOrder::ORDERED, ManipulatorInfo("Manipulator", "base_link", "tool0"));
+  CompositeInstruction pick_program("DEFAULT",
+                                    CompositeInstructionOrder::ORDERED,
+                                    ManipulatorInfo("manipulator", LINK_BASE_NAME, LINK_END_EFFECTOR_NAME));
 
   Waypoint pick_swp = StateWaypoint(joint_names, joint_pos);
   PlanInstruction start_instruction(pick_swp, PlanInstructionType::START);
@@ -313,8 +315,9 @@ bool PickAndPlaceExample::run()
   place_approach_pose.translation() += Eigen::Vector3d(0.0, -0.25, 0);
 
   // Create Program
-  CompositeInstruction place_program(
-      "DEFAULT", CompositeInstructionOrder::ORDERED, ManipulatorInfo("Manipulator", "base_link", "tool0"));
+  CompositeInstruction place_program("DEFAULT",
+                                     CompositeInstructionOrder::ORDERED,
+                                     ManipulatorInfo("manipulator", LINK_BASE_NAME, LINK_END_EFFECTOR_NAME));
 
   PlanInstruction place_start_instruction(pick_final_state->getWaypoint(), PlanInstructionType::START);
   place_program.setStartInstruction(place_start_instruction);

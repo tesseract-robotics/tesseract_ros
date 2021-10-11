@@ -119,6 +119,7 @@ bool GlassUprightExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
+  sleep(10);
   auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
