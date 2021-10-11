@@ -149,7 +149,7 @@ protected:
 
   void loadDefaultPlannerProfiles();
 
-  Eigen::Isometry3d tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info);
+  Eigen::Isometry3d tfFindTCPOffset(const tesseract_planning::ManipulatorInfo& manip_info);
 };
 }  // namespace tesseract_planning_server
 #endif  // TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
