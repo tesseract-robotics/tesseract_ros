@@ -308,4 +308,33 @@ EnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::string>&
   return failed_namespace;
 }
 
+tesseract_environment::Environment::Ptr EnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace)
+{
+  tesseract_msgs::GetEnvironmentInformation res;
+  res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
+
+  bool status = ros::service::call(R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, res);
+  if (!status || !res.response.success)
+  {
+    ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironment: Failed to get monitor environment information!");
+    return nullptr;
+  }
+
+  tesseract_environment::Commands commands;
+  try
+  {
+    commands = tesseract_rosutils::fromMsg(res.response.command_history);
+  }
+  catch (...)
+  {
+    ROS_ERROR_STREAM_NAMED(monitor_namespace, "getEnvironment: Failed to convert command history message!");
+    return nullptr;
+  }
+
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  env->init(commands);
+
+  return env;
+}
+
 }  // namespace tesseract_monitoring
