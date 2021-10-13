@@ -99,18 +99,21 @@ public:
 
 Q_SIGNALS:
   void availableManipulatorsChanged(QStringList manipulators);
-  void availableTCPLinksChanged(QStringList tcp_links);
+  void availableTCPFramesChanged(QStringList tcp_frames);
+  void availableTCPOffsetsChanged(tesseract_common::TransformMap tcp_offsets);
 
 public
   Q_SLOT : void enableCartesianManipulation(bool enabled);
   void enableJointManipulation(bool enabled);
   void resetToCurrentState();
   bool changeManipulator(const QString& manipulator);
-  bool changeTCP(const QString& tcp_link);
+  bool changeTCPFrame(const QString& tcp_frame);
+  bool changeTCPOffset(const QString& tcp_offset);
 
 private Q_SLOTS:
   void changedManipulator();
-  void changedTCP();
+  void changedTCPFrame();
+  void changedTCPOffset();
   void changedJointStateTopic();
   void changedCartesianMarkerScale();
   void changedCartesianManipulationEnabled();
@@ -146,11 +149,13 @@ protected:
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
   tesseract_scene_graph::SceneState env_state_;
-  Eigen::Isometry3d tcp_;
+  Eigen::Isometry3d tcp_offset_;
 
   ros::Publisher joint_state_pub_;
   QStringList available_manipulators_;
-  QStringList available_tcp_links_;
+  QStringList available_tcp_frames_;
+  QStringList available_working_frames_;
+  tesseract_common::TransformMap available_tcp_offsets_;
 
   //  TrajectoryPanel* trajectory_slider_panel_;
   //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
@@ -164,9 +169,12 @@ protected:
   rviz::BoolProperty* joint_manipulation_property_;
   rviz::FloatProperty* cartesian_marker_scale_property_;
   rviz::FloatProperty* joint_marker_scale_property_;
-  rviz::EnumProperty* tcp_property_;
+  rviz::EnumProperty* tcp_frame_property_;
+  rviz::EnumProperty* tcp_offset_property_;
   rviz::Property* joint_values_property_;
   rviz::StringProperty* joint_config_property_;
+  rviz::EnumProperty* joint_config_base_link_property_;
+  rviz::EnumProperty* joint_config_tip_link_property_;
   rviz::EnumProperty* joint3_sign_property_;
   rviz::EnumProperty* joint5_sign_property_;
 

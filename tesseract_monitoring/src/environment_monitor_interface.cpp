@@ -308,7 +308,8 @@ EnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::string>&
   return failed_namespace;
 }
 
-tesseract_environment::Environment::Ptr EnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace)
+tesseract_environment::Environment::Ptr
+EnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace)
 {
   tesseract_msgs::GetEnvironmentInformation res;
   res.request.flags = tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY;
