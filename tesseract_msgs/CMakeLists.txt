@@ -73,7 +73,6 @@ add_message_files(
     PlanningResponse.msg
     PlanningResponseArchive.msg
     PluginInfo.msg
-    PluginInfoMap.msg
     ProfileMap.msg
     SceneGraph.msg
     StringDoublePair.msg

@@ -1724,15 +1724,15 @@ tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPlu
   return msg;
 }
 
-tesseract_msgs::PluginInfoMap toMsg(const tesseract_common::PluginInfoMap& info_map)
+std::vector<tesseract_msgs::StringPluginInfoPair> toMsg(const tesseract_common::PluginInfoMap& info_map)
 {
-  tesseract_msgs::PluginInfoMap msg;
+  std::vector<tesseract_msgs::StringPluginInfoPair> msg;
   for (const auto& pair : info_map)
   {
     tesseract_msgs::StringPluginInfoPair pair_msg;
     pair_msg.first = pair.first;
     pair_msg.second = toMsg(pair.second);
-    msg.pairs.push_back(pair_msg);
+    msg.push_back(pair_msg);
   }
   return msg;
 }
@@ -1944,10 +1944,10 @@ tesseract_common::KinematicsPluginInfo fromMsg(const tesseract_msgs::KinematicsP
   return info;
 }
 
-tesseract_common::PluginInfoMap fromMsg(const tesseract_msgs::PluginInfoMap& info_map_msg)
+tesseract_common::PluginInfoMap fromMsg(const std::vector<tesseract_msgs::StringPluginInfoPair>& info_map_msg)
 {
   tesseract_common::PluginInfoMap info_map;
-  for (const auto& pair : info_map_msg.pairs)
+  for (const auto& pair : info_map_msg)
     info_map[pair.first] = fromMsg(pair.second);
 
   return info_map;

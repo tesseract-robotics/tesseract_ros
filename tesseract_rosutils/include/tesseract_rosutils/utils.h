@@ -66,7 +66,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/PlannerProfileRemapping.h>
 #include <tesseract_msgs/PluginInfo.h>
-#include <tesseract_msgs/PluginInfoMap.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 #include <ros/serialization.h>
@@ -271,7 +270,7 @@ tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPlu
  * @param info_map plugin info map
  * @return plugin info map
  */
-tesseract_msgs::PluginInfoMap toMsg(const tesseract_common::PluginInfoMap& info_map);
+std::vector<tesseract_msgs::StringPluginInfoPair> toMsg(const tesseract_common::PluginInfoMap& info_map);
 
 /**
  * @brief Convert plugin info to message
@@ -338,7 +337,7 @@ tesseract_common::KinematicsPluginInfo fromMsg(const tesseract_msgs::KinematicsP
  * @param info_map plugin info map message
  * @return plugin info map
  */
-tesseract_common::PluginInfoMap fromMsg(const tesseract_msgs::PluginInfoMap& info_map_msg);
+tesseract_common::PluginInfoMap fromMsg(const std::vector<tesseract_msgs::StringPluginInfoPair>& info_map_msg);
 
 /**
  * @brief Convert plugin info from message
