@@ -8,17 +8,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_ros_examples;
 
-TEST(TesseractROSExamples, GlassUprightCppExampleUnit)  // NOLINT
+TEST(TesseractROSExamples, GlassUprightTrajOptExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
-  GlassUprightExample example(nh, false, false, false);
+  GlassUprightExample example(nh, false, false, false, false, false);
   EXPECT_TRUE(example.run());
 }
 
-TEST(TesseractROSExamples, GlassUprightJsonExampleUnit)  // NOLINT
+TEST(TesseractROSExamples, GlassUprightTrajOptIfoptExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
-  GlassUprightExample example(nh, false, false, false);
+  GlassUprightExample example(nh, false, false, false, true, false);
   EXPECT_TRUE(example.run());
 }
 

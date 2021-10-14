@@ -62,6 +62,7 @@ const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 const double OFFSET = 0.005;
 
 const std::string LINK_BOX_NAME = "box";
+const std::string LINK_BASE_NAME = "world";
 const std::string LINK_END_EFFECTOR_NAME = "iiwa_link_ee";
 
 namespace tesseract_ros_examples
@@ -128,8 +129,8 @@ bool PickAndPlaceExample::run()
   nh_.getParam("box_y", box_y);
 
   // Initialize the environment
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
@@ -180,7 +181,9 @@ bool PickAndPlaceExample::run()
     plotter->waitForInput();
 
   // Create Program
-  CompositeInstruction pick_program("DEFAULT", CompositeInstructionOrder::ORDERED, ManipulatorInfo("Manipulator"));
+  CompositeInstruction pick_program("DEFAULT",
+                                    CompositeInstructionOrder::ORDERED,
+                                    ManipulatorInfo("manipulator", LINK_BASE_NAME, LINK_END_EFFECTOR_NAME));
 
   Waypoint pick_swp = StateWaypoint(joint_names, joint_pos);
   PlanInstruction start_instruction(pick_swp, PlanInstructionType::START);
@@ -250,10 +253,11 @@ bool PickAndPlaceExample::run()
   {
     plotter->waitForInput();
     const auto& cp = pick_response.results->as<CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(cp, env_);
+    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(cp, *env_);
     tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(cp);
+    auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
-    plotter->plotTrajectory(trajectory, env_->getStateSolver());
+    plotter->plotTrajectory(trajectory, *state_solver);
   }
 
   /////////////
@@ -311,7 +315,9 @@ bool PickAndPlaceExample::run()
   place_approach_pose.translation() += Eigen::Vector3d(0.0, -0.25, 0);
 
   // Create Program
-  CompositeInstruction place_program("DEFAULT", CompositeInstructionOrder::ORDERED, ManipulatorInfo("Manipulator"));
+  CompositeInstruction place_program("DEFAULT",
+                                     CompositeInstructionOrder::ORDERED,
+                                     ManipulatorInfo("manipulator", LINK_BASE_NAME, LINK_END_EFFECTOR_NAME));
 
   PlanInstruction place_start_instruction(pick_final_state->getWaypoint(), PlanInstructionType::START);
   place_program.setStartInstruction(place_start_instruction);
@@ -359,10 +365,11 @@ bool PickAndPlaceExample::run()
   {
     plotter->waitForInput();
     const auto& ci = place_response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, env_);
+    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
     tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
-    plotter->plotTrajectory(trajectory, env_->getStateSolver());
+    plotter->plotTrajectory(trajectory, *state_solver);
   }
 
   if (rviz_)

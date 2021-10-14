@@ -102,10 +102,8 @@ private:
   bool update_start_state_{ false };
   bool use_continuous_{ false };
 
-  tesseract_kinematics::ForwardKinematics::Ptr manipulator_fk_;
-  tesseract_kinematics::InverseKinematics::Ptr manipulator_ik_;
+  tesseract_kinematics::KinematicGroup::ConstPtr manip_;
   std::shared_ptr<tesseract_rosutils::ROSPlotting> plotter_;
-  tesseract_environment::AdjacencyMap::Ptr manipulator_adjacency_map_;
 
   tesseract_visualization::TrajectoryPlayer player_;
   tesseract_common::TrajArray current_trajectory_;

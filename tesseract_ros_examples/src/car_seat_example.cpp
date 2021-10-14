@@ -30,8 +30,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/car_seat_example.h>
-#include <tesseract_environment/core/utils.h>
-#include <tesseract_environment/core/commands.h>
+#include <tesseract_environment/utils.h>
+#include <tesseract_environment/commands.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_geometry/mesh_parser.h>
@@ -64,7 +64,7 @@ const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
 
 namespace tesseract_ros_examples
 {
-Commands addSeats(const ResourceLocator::Ptr& locator)
+Commands addSeats(const tesseract_common::ResourceLocator::ConstPtr& locator)
 {
   Commands cmds;
 
@@ -191,23 +191,24 @@ std::unordered_map<std::string, std::unordered_map<std::string, double>> CarSeat
   return result;
 }
 
-std::vector<double> CarSeatExample::getPositionVector(const ForwardKinematics::ConstPtr& kin,
+std::vector<double> CarSeatExample::getPositionVector(const JointGroup& joint_group,
                                                       const std::unordered_map<std::string, double>& pos)
 {
   std::vector<double> result;
-  for (const auto& joint_name : kin->getJointNames())
+  result.reserve(static_cast<std::size_t>(joint_group.numJoints()));
+  for (const auto& joint_name : joint_group.getJointNames())
     result.push_back(pos.at(joint_name));
 
   return result;
 }
 
-Eigen::VectorXd CarSeatExample::getPositionVectorXd(const ForwardKinematics::ConstPtr& kin,
+Eigen::VectorXd CarSeatExample::getPositionVectorXd(const JointGroup& joint_group,
                                                     const std::unordered_map<std::string, double>& pos)
 {
   Eigen::VectorXd result;
-  result.resize(kin->numJoints());
+  result.resize(joint_group.numJoints());
   int cnt = 0;
-  for (const auto& joint_name : kin->getJointNames())
+  for (const auto& joint_name : joint_group.getJointNames())
     result[cnt++] = pos.at(joint_name);
 
   return result;
@@ -236,8 +237,8 @@ bool CarSeatExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
@@ -246,10 +247,10 @@ bool CarSeatExample::run()
     monitor_->startPublishingEnvironment();
 
   // Get manipulator
-  ForwardKinematics::Ptr fwd_kin;
+  JointGroup::UPtr joint_group;
   {  // Need to lock monitor for read
     auto lock = monitor_->lockEnvironmentRead();
-    fwd_kin = monitor_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+    joint_group = monitor_->getEnvironment()->getJointGroup("manipulator");
   }
 
   // Create seats and add it to the local environment
@@ -296,14 +297,15 @@ bool CarSeatExample::run()
   ROS_INFO("Car Seat Demo Started");
 
   {  // Create Program to pick up first seat
-    CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+    CompositeInstruction program(
+        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "world", "end_effector"));
     program.setDescription("Pick up the first seat!");
 
     // Start and End Joint Position for the program
-    Eigen::VectorXd start_pos = getPositionVectorXd(fwd_kin, saved_positions_["Home"]);
-    Eigen::VectorXd pick_pose = getPositionVectorXd(fwd_kin, saved_positions_["Pick1"]);
-    Waypoint wp0 = StateWaypoint(fwd_kin->getJointNames(), start_pos);
-    Waypoint wp1 = StateWaypoint(fwd_kin->getJointNames(), pick_pose);
+    Eigen::VectorXd start_pos = getPositionVectorXd(*joint_group, saved_positions_["Home"]);
+    Eigen::VectorXd pick_pose = getPositionVectorXd(*joint_group, saved_positions_["Pick1"]);
+    Waypoint wp0 = StateWaypoint(joint_group->getJointNames(), start_pos);
+    Waypoint wp1 = StateWaypoint(joint_group->getJointNames(), pick_pose);
 
     // Start Joint Position for the program
     PlanInstruction start_instruction(wp0, PlanInstructionType::START);
@@ -334,16 +336,17 @@ bool CarSeatExample::run()
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
       const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, env_);
+      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
       tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+      auto state_solver = env_->getStateSolver();
       plotter->plotMarker(ToolpathMarker(toolpath));
-      plotter->plotTrajectory(trajectory, env_->getStateSolver());
+      plotter->plotTrajectory(trajectory, *state_solver);
       plotter->waitForInput();
     }
   }
 
   // Get the state at the end of pick 1 trajectory
-  EnvState::Ptr state = env_->getState(saved_positions_["Pick1"]);
+  SceneState state = env_->getState(saved_positions_["Pick1"]);
 
   // Now we to detach seat_1 and attach it to the robot end_effector
   Joint joint_seat_1_robot("joint_seat_1_robot");
@@ -351,7 +354,7 @@ bool CarSeatExample::run()
   joint_seat_1_robot.child_link_name = "seat_1";
   joint_seat_1_robot.type = JointType::FIXED;
   joint_seat_1_robot.parent_to_joint_origin_transform =
-      state->link_transforms["end_effector"].inverse() * state->link_transforms["seat_1"];
+      state.link_transforms.at("end_effector").inverse() * state.link_transforms.at("seat_1");
 
   cmds.clear();
   cmds.push_back(std::make_shared<MoveLinkCommand>(joint_seat_1_robot));
@@ -367,14 +370,15 @@ bool CarSeatExample::run()
     return false;
 
   {  // Create Program to place first seat
-    CompositeInstruction program("FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+    CompositeInstruction program(
+        "FREESPACE", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator", "world", "end_effector"));
     program.setDescription("Place the first seat!");
 
     // Start and End Joint Position for the program
-    Eigen::VectorXd start_pos = getPositionVectorXd(fwd_kin, saved_positions_["Pick1"]);
-    Eigen::VectorXd pick_pose = getPositionVectorXd(fwd_kin, saved_positions_["Place1"]);
-    Waypoint wp0 = StateWaypoint(fwd_kin->getJointNames(), start_pos);
-    Waypoint wp1 = StateWaypoint(fwd_kin->getJointNames(), pick_pose);
+    Eigen::VectorXd start_pos = getPositionVectorXd(*joint_group, saved_positions_["Pick1"]);
+    Eigen::VectorXd pick_pose = getPositionVectorXd(*joint_group, saved_positions_["Place1"]);
+    Waypoint wp0 = StateWaypoint(joint_group->getJointNames(), start_pos);
+    Waypoint wp1 = StateWaypoint(joint_group->getJointNames(), pick_pose);
 
     // Start Joint Position for the program
     PlanInstruction start_instruction(wp0, PlanInstructionType::START);
@@ -405,10 +409,11 @@ bool CarSeatExample::run()
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
       const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, env_);
+      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
       tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+      auto state_solver = env_->getStateSolver();
       plotter->plotMarker(ToolpathMarker(toolpath));
-      plotter->plotTrajectory(trajectory, env_->getStateSolver());
+      plotter->plotTrajectory(trajectory, *state_solver);
       plotter->waitForInput();
     }
   }

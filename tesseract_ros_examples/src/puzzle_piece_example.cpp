@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/puzzle_piece_example.h>
-#include <tesseract_environment/core/utils.h>
+#include <tesseract_environment/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_command_language/command_language.h>
@@ -135,7 +135,6 @@ bool PuzzlePieceExample::run()
   using tesseract_planning::ProcessPlanningRequest;
   using tesseract_planning::ProcessPlanningServer;
   using tesseract_planning::StateWaypoint;
-  using tesseract_planning::ToolCenterPoint;
   using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
@@ -146,8 +145,8 @@ bool PuzzlePieceExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 
   // Create monitor
@@ -188,7 +187,7 @@ bool PuzzlePieceExample::run()
   ManipulatorInfo mi;
   mi.manipulator = "manipulator";
   mi.working_frame = "part";
-  mi.tcp = ToolCenterPoint("grinder_frame", true);  // true - indicates this is an external TCP
+  mi.tcp_frame = "grinder_frame";
 
   // Create Program
   CompositeInstruction program("DEFAULT", CompositeInstructionOrder::ORDERED, mi);
@@ -275,7 +274,8 @@ bool PuzzlePieceExample::run()
     plotter->waitForInput();
     const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
     tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
-    plotter->plotTrajectory(trajectory, env_->getStateSolver());
+    auto state_solver = env_->getStateSolver();
+    plotter->plotTrajectory(trajectory, *state_solver);
   }
 
   ROS_INFO("Final trajectory is collision free");

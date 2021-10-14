@@ -47,9 +47,7 @@ add_message_files(
     Geometry.msg
     GroupsJointState.msg
     GroupsJointStates.msg
-    GroupsOPWKinematics.msg
-    GroupsREPKinematics.msg
-    GroupsROPKinematics.msg
+    GroupsKinematicPlugins.msg
     GroupsTCP.msg
     GroupsTCPs.msg
     Inertial.msg
@@ -62,6 +60,7 @@ add_message_files(
     JointSafety.msg
     JointState.msg
     KinematicsInformation.msg
+    KinematicsPluginInfo.msg
     Link.msg
     LinkGroup.msg
     Material.msg
@@ -73,11 +72,13 @@ add_message_files(
     PlanningRequestArchive.msg
     PlanningResponse.msg
     PlanningResponseArchive.msg
+    PluginInfo.msg
     ProfileMap.msg
     SceneGraph.msg
     StringDoublePair.msg
     StringLimitsPair.msg
     StringPair.msg
+    StringPluginInfoPair.msg
     TaskInfo.msg
     Trajectory.msg
     TransformMap.msg

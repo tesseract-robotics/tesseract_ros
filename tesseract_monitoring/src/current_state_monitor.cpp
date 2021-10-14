@@ -55,7 +55,7 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
                                          const ros::NodeHandle& nh)
   : nh_(nh)
   , env_(env)
-  , env_state_(*env->getCurrentState())
+  , env_state_(env->getState())
   , last_environment_revision_(env_->getRevision())
   , state_monitor_started_(false)
   , copy_dynamics_(false)
@@ -64,10 +64,10 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
 }
 
 CurrentStateMonitor::~CurrentStateMonitor() { stopStateMonitor(); }
-tesseract_environment::EnvState::Ptr CurrentStateMonitor::getCurrentState() const
+tesseract_scene_graph::SceneState CurrentStateMonitor::getCurrentState() const
 {
   std::scoped_lock slock(state_update_lock_);
-  return std::make_shared<tesseract_environment::EnvState>(env_state_);
+  return env_state_;
 }
 
 ros::Time CurrentStateMonitor::getCurrentStateTime() const
@@ -76,10 +76,10 @@ ros::Time CurrentStateMonitor::getCurrentStateTime() const
   return current_state_time_;
 }
 
-std::pair<tesseract_environment::EnvState::Ptr, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
+std::pair<tesseract_scene_graph::SceneState, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
 {
   std::scoped_lock slock(state_update_lock_);
-  return std::make_pair(std::make_shared<tesseract_environment::EnvState>(env_state_), current_state_time_);
+  return std::make_pair(env_state_, current_state_time_);
 }
 
 std::unordered_map<std::string, double> CurrentStateMonitor::getCurrentStateValues() const
@@ -289,7 +289,7 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
   std::vector<std::string> missing_joints;
   if (!haveCompleteState(missing_joints))
   {
-    tesseract_kinematics::ForwardKinematics::ConstPtr jmg = env_->getManipulatorManager()->getFwdKinematicSolver(manip);
+    tesseract_kinematics::JointGroup::UPtr jmg = env_->getJointGroup(manip);
     if (jmg)
     {
       std::set<std::string> mj;
@@ -324,7 +324,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     current_state_time_ = joint_state->header.stamp;
     if (last_environment_revision_ != env_->getRevision())
     {
-      env_state_ = tesseract_environment::EnvState(*env_->getCurrentState());
+      env_state_ = env_->getState();
       last_environment_revision_ = env_->getRevision();
     }
 
@@ -343,7 +343,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     }
 
     if (update)
-      env_state_ = tesseract_environment::EnvState(*(env_->getState(env_state_.joints)));
+      env_state_ = env_->getState(env_state_.joints);
 
     if (publish_tf_)
     {

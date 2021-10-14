@@ -57,8 +57,8 @@ Eigen::VectorXd toEigen(const std::vector<double>& vector);
 Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const std::vector<std::string>& joint_names);
 
 /**
- * @brief Convert a joint trajector to csv formate and write to file
- * @param trajectory Trajectory to be writen to file
+ * @brief Convert a joint trajectory to csv format and write to file
+ * @param trajectory Trajectory to be written to file
  * @param file_path The location to save the file
  * @param separator The separator to use
  * @return true if successful

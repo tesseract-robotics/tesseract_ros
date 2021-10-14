@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
@@ -99,18 +99,21 @@ public:
 
 Q_SIGNALS:
   void availableManipulatorsChanged(QStringList manipulators);
-  void availableTCPLinksChanged(QStringList tcp_links);
+  void availableTCPFramesChanged(QStringList tcp_frames);
+  void availableTCPOffsetsChanged(tesseract_common::TransformMap tcp_offsets);
 
 public
   Q_SLOT : void enableCartesianManipulation(bool enabled);
   void enableJointManipulation(bool enabled);
   void resetToCurrentState();
   bool changeManipulator(const QString& manipulator);
-  bool changeTCP(const QString& tcp_link);
+  bool changeTCPFrame(const QString& tcp_frame);
+  bool changeTCPOffset(const QString& tcp_offset);
 
 private Q_SLOTS:
   void changedManipulator();
-  void changedTCP();
+  void changedTCPFrame();
+  void changedTCPOffset();
   void changedJointStateTopic();
   void changedCartesianMarkerScale();
   void changedCartesianManipulationEnabled();
@@ -140,18 +143,19 @@ protected:
   ManipulatorState state_;
   InteractiveMarker::Ptr interactive_marker_;
   std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers_;
-  std::vector<std::string> manipulators_;
-  tesseract_kinematics::InverseKinematics::Ptr inv_kin_;
-  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin_;
+  std::set<std::string> manipulators_;
+  tesseract_kinematics::KinematicGroup::UPtr manip_;
   Eigen::VectorXd inv_seed_;
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
-  tesseract_environment::EnvState::Ptr env_state_;
-  Eigen::Isometry3d tcp_;
+  tesseract_scene_graph::SceneState env_state_;
+  Eigen::Isometry3d tcp_offset_;
 
   ros::Publisher joint_state_pub_;
   QStringList available_manipulators_;
-  QStringList available_tcp_links_;
+  QStringList available_tcp_frames_;
+  QStringList available_working_frames_;
+  tesseract_common::TransformMap available_tcp_offsets_;
 
   //  TrajectoryPanel* trajectory_slider_panel_;
   //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
@@ -165,9 +169,12 @@ protected:
   rviz::BoolProperty* joint_manipulation_property_;
   rviz::FloatProperty* cartesian_marker_scale_property_;
   rviz::FloatProperty* joint_marker_scale_property_;
-  rviz::EnumProperty* tcp_property_;
+  rviz::EnumProperty* tcp_frame_property_;
+  rviz::EnumProperty* tcp_offset_property_;
   rviz::Property* joint_values_property_;
   rviz::StringProperty* joint_config_property_;
+  rviz::EnumProperty* joint_config_base_link_property_;
+  rviz::EnumProperty* joint_config_tip_link_property_;
   rviz::EnumProperty* joint3_sign_property_;
   rviz::EnumProperty* joint5_sign_property_;
 

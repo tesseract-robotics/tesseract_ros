@@ -37,9 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Geometry.h>
 #include <tesseract_msgs/GroupsJointState.h>
 #include <tesseract_msgs/GroupsJointStates.h>
-#include <tesseract_msgs/GroupsOPWKinematics.h>
-#include <tesseract_msgs/GroupsREPKinematics.h>
-#include <tesseract_msgs/GroupsROPKinematics.h>
+#include <tesseract_msgs/GroupsKinematicPlugins.h>
 #include <tesseract_msgs/GroupsTCP.h>
 #include <tesseract_msgs/GroupsTCPs.h>
 #include <tesseract_msgs/Inertial.h>
@@ -67,7 +65,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/PlannerProfileRemapping.h>
-
+#include <tesseract_msgs/PluginInfo.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 #include <ros/serialization.h>
@@ -77,14 +75,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/core/manipulator_manager.h>
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
-#include <tesseract_environment/core/types.h>
-#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_motion_planners/core/types.h>
@@ -94,7 +89,7 @@ namespace tesseract_rosutils
 {
 std::string locateResource(const std::string& url);
 
-class ROSResourceLocator : public tesseract_scene_graph::SimpleResourceLocator
+class ROSResourceLocator : public tesseract_common::SimpleResourceLocator
 {
 public:
   ROSResourceLocator();
@@ -264,6 +259,27 @@ void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
            const ros::Time& stamp = ros::Time::now());
 
 /**
+ * @brief Convert kinematics plugin info to message
+ * @param info Kinematics plugin info
+ * @return Kinematics plugin info
+ */
+tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPluginInfo& info);
+
+/**
+ * @brief Convert plugin info map to message
+ * @param info_map plugin info map
+ * @return plugin info map
+ */
+std::vector<tesseract_msgs::StringPluginInfoPair> toMsg(const tesseract_common::PluginInfoMap& info_map);
+
+/**
+ * @brief Convert plugin info to message
+ * @param info plugin info
+ * @return plugin info
+ */
+tesseract_msgs::PluginInfo toMsg(const tesseract_common::PluginInfo& info);
+
+/**
  * @brief Convert a vector of Eigen::Isometry3d into a pose array
  * @param Pose Array
  * @param transforms A vector of transforms
@@ -277,27 +293,6 @@ bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorI
  * @return Chain group message
  */
 tesseract_msgs::ChainGroup toMsg(tesseract_srdf::ChainGroups::const_reference group);
-
-/**
- * @brief Convert a Robot on Positioner group to message
- * @param group Robot on Positioner group
- * @return Robot on Positioner group message
- */
-tesseract_msgs::GroupsROPKinematics toMsg(tesseract_srdf::GroupROPKinematics::const_reference group);
-
-/**
- * @brief Convert a Robot with External Positioner group to message
- * @param group  Robot with External Positioner group
- * @return Robot with External Positioner group message
- */
-tesseract_msgs::GroupsREPKinematics toMsg(tesseract_srdf::GroupREPKinematics::const_reference group);
-
-/**
- * @brief Convert a group's OPW kinematics to message
- * @param group Group's OPW kinematics
- * @return Group's OPW kinematics message
- */
-tesseract_msgs::GroupsOPWKinematics toMsg(tesseract_srdf::GroupOPWKinematics::const_reference group);
 
 /**
  * @brief Convert a group's joint state to message
@@ -331,17 +326,38 @@ bool fromMsg(tesseract_srdf::KinematicsInformation& kin_info,
              const tesseract_msgs::KinematicsInformation& kin_info_msg);
 
 /**
- * @brief This will populate a transfrom map message
- * @param transform_map_msg The transfrom map message
+ * @brief Convert kinematics plugin info from message
+ * @param info_msg Kinematics plugin info message
+ * @return Kinematics plugin info
+ */
+tesseract_common::KinematicsPluginInfo fromMsg(const tesseract_msgs::KinematicsPluginInfo& info_msg);
+
+/**
+ * @brief Convert plugin info map from message
+ * @param info_map plugin info map message
+ * @return plugin info map
+ */
+tesseract_common::PluginInfoMap fromMsg(const std::vector<tesseract_msgs::StringPluginInfoPair>& info_map_msg);
+
+/**
+ * @brief Convert plugin info from message
+ * @param info plugin info message
+ * @return plugin info
+ */
+tesseract_common::PluginInfo fromMsg(const tesseract_msgs::PluginInfo& info_msg);
+
+/**
+ * @brief This will populate a transform map message
+ * @param transform_map_msg The transform map message
  * @param transform_map The transform map
  * @return True if successful, otherwise false
  */
 bool toMsg(tesseract_msgs::TransformMap& transform_map_msg, const tesseract_common::TransformMap& transform_map);
 
 /**
- * @brief This will populate a transfrom map given a message
+ * @brief This will populate a transform map given a message
  * @param transform_map The transform map
- * @param transform_map_msg The transfrom map message
+ * @param transform_map_msg The transform map message
  * @return True if successful, otherwise false
  */
 bool fromMsg(tesseract_common::TransformMap& transform_map, const tesseract_msgs::TransformMap& transform_map_msg);
@@ -412,7 +428,7 @@ tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_i
  * @return Resulting Tesseract
  */
 trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory,
-                                       const tesseract_environment::EnvState& initial_state);
+                                       const tesseract_scene_graph::SceneState& initial_state);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

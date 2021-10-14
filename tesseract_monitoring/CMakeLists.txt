@@ -55,7 +55,7 @@ tesseract_variables()
 
 # Tesseract ROS Nodes
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::tesseract_environment ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_environment ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_environment PUBLIC VERSION 17)
@@ -72,7 +72,7 @@ target_include_directories(${PROJECT_NAME}_environment_node PUBLIC "$<BUILD_INTE
 target_include_directories(${PROJECT_NAME}_environment_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_contacts src/contact_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts PRIVATE tesseract::tesseract_environment_core ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_contacts PRIVATE tesseract::tesseract_environment ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_contacts ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_contacts PUBLIC VERSION 17)
@@ -81,7 +81,7 @@ target_include_directories(${PROJECT_NAME}_contacts SYSTEM PRIVATE ${catkin_INCL
 add_dependencies(${PROJECT_NAME}_contacts ${PROJECT_NAME}_gencfg)
 
 add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor_node.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract::tesseract_environment_core tesseract::tesseract_environment_ofkt ${PROJECT_NAME}_contacts ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract::tesseract_environment ${PROJECT_NAME}_contacts ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_contacts_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_contacts_node PRIVATE VERSION 17)
@@ -89,7 +89,7 @@ target_include_directories(${PROJECT_NAME}_contacts_node PRIVATE "$<BUILD_INTERF
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_environment_interface SHARED src/environment_monitor_interface.cpp)
-target_link_libraries(${PROJECT_NAME}_environment_interface PUBLIC tesseract::tesseract_environment_core ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment_interface PUBLIC tesseract::tesseract_environment ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment_interface PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_environment_interface ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_environment_interface PUBLIC VERSION 17)

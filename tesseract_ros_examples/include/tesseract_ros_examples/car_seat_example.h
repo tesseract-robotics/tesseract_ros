@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_ros_examples/example.h>
 
 namespace tesseract_ros_examples
@@ -61,9 +61,9 @@ private:
   std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_positions_;
 
   std::unordered_map<std::string, std::unordered_map<std::string, double>> getPredefinedPosition();
-  std::vector<double> getPositionVector(const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
+  std::vector<double> getPositionVector(const tesseract_kinematics::JointGroup& joint_group,
                                         const std::unordered_map<std::string, double>& pos);
-  Eigen::VectorXd getPositionVectorXd(const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
+  Eigen::VectorXd getPositionVectorXd(const tesseract_kinematics::JointGroup& joint_group,
                                       const std::unordered_map<std::string, double>& pos);
 };
 

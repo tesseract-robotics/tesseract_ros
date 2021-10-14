@@ -58,7 +58,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #include <tesseract_monitoring/current_state_monitor.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_monitoring/constants.h>
@@ -166,9 +166,9 @@ public:
 
   /**
    * @brief Get the kinematics information
-   * @return Const KinematicsInformatiion
+   * @return Const KinematicsInformation
    */
-  const tesseract_srdf::KinematicsInformation& getKinematicsInformation() const;
+  tesseract_srdf::KinematicsInformation getKinematicsInformation() const;
 
   /**
    * @brief Returns an @b unsafe pointer to the current environment.

@@ -91,18 +91,15 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-  if (!env_->init<OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
     assert(false);
 
   // Set up plotting
   plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getSceneGraph()->getRoot());
 
   // Extract necessary kinematic information
-  manipulator_fk_ = env_->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-  manipulator_adjacency_map_ = std::make_shared<tesseract_environment::AdjacencyMap>(
-      env_->getSceneGraph(), manipulator_fk_->getActiveLinkNames(), env_->getCurrentState()->link_transforms);
-  manipulator_ik_ = env_->getManipulatorManager()->getInvKinematicSolver("manipulator");
+  manip_ = env_->getKinematicGroup("manipulator");
 
   // Initialize the trajectory
   current_trajectory_ = tesseract_common::TrajArray::Zero(steps_, 10);
@@ -121,7 +118,8 @@ OnlinePlanningExample::OnlinePlanningExample(const ros::NodeHandle& nh,
 void OnlinePlanningExample::subscriberCallback(const sensor_msgs::JointState::ConstPtr& joint_state)
 {
   // Set the environment state to update the collision model
-  env_->setState(joint_state->name, joint_state->position);
+  env_->setState(joint_state->name,
+                 Eigen::Map<const Eigen::VectorXd>(joint_state->position.data(), joint_state->position.size()));
 
   // Update current_trajectory_ so the live trajectory will be visualized correctly
   for (Eigen::Index i = 0; i < current_trajectory_.rows(); i++)
@@ -174,10 +172,10 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   nlp_ = std::make_shared<trajopt_sqp::TrajOptQPProblem>();
 
   // 2) Add Variables
-  Eigen::MatrixX2d joint_limits_eigen = manipulator_fk_->getLimits().joint_limits;
-  Eigen::VectorXd current_position = env_->getCurrentJointValues(manipulator_fk_->getJointNames());
-  //  Eigen::VectorXd home_position = Eigen::VectorXd::Zero(manipulator_fk_->numJoints());
-  Eigen::VectorXd target_joint_position(manipulator_fk_->numJoints());
+  Eigen::MatrixX2d joint_limits_eigen = manip_->getLimits().joint_limits;
+  Eigen::VectorXd current_position = env_->getCurrentJointValues(manip_->getJointNames());
+  //  Eigen::VectorXd home_position = Eigen::VectorXd::Zero(manip_->numJoints());
+  Eigen::VectorXd target_joint_position(manip_->numJoints());
   target_joint_position << 5.5, 3, 0, 0, 0, 0, 0, 0;
 
   std::vector<trajopt_ifopt::JointPosition::ConstPtr> vars;
@@ -190,7 +188,7 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   for (std::size_t ind = 0; ind < static_cast<std::size_t>(steps_); ind++)
   {
     auto var = std::make_shared<trajopt_ifopt::JointPosition>(
-        initial_states[ind], manipulator_fk_->getJointNames(), "Joint_Position_" + std::to_string(ind));
+        initial_states[ind], manip_->getJointNames(), "Joint_Position_" + std::to_string(ind));
     var->SetBounds(joint_limits_eigen);
     vars.push_back(var);
     nlp_->addVariableSet(var);
@@ -201,22 +199,19 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   {
     //    auto home_position = Eigen::VectorXd::Zero(8);
     std::vector<trajopt_ifopt::JointPosition::ConstPtr> var_vec(1, vars[0]);
-    Eigen::VectorXd coeffs = Eigen::VectorXd::Constant(manipulator_fk_->numJoints(), 5);
+    Eigen::VectorXd coeffs = Eigen::VectorXd::Constant(manip_->numJoints(), 5);
     auto home_constraint =
         std::make_shared<trajopt_ifopt::JointPosConstraint>(current_position, var_vec, coeffs, "Home_Position");
     nlp_->addConstraintSet(home_constraint);
   }
   // Add the target pose constraint for the final step
   {
-    target_pose_base_frame_ = manipulator_fk_->calcFwdKin(target_joint_position);
-    Eigen::Isometry3d target_tf = target_pose_base_frame_ * target_pose_delta_;
+    target_pose_base_frame_ = manip_->calcFwdKin(target_joint_position).at("tool0");
     std::cout << "Target Joint Position: " << target_joint_position.transpose() << std::endl;
-    std::cout << "Target TF:\n" << target_tf.matrix() << std::endl;
+    std::cout << "Target TF:\n" << target_pose_base_frame_.matrix() << std::endl;
 
-    auto kinematic_info = std::make_shared<trajopt_ifopt::KinematicsInfo>(
-        manipulator_fk_, manipulator_adjacency_map_, Eigen::Isometry3d::Identity());
-
-    trajopt_ifopt::CartPosInfo cart_info(kinematic_info, target_tf, manipulator_fk_->getTipLinkName());
+    trajopt_ifopt::CartPosInfo cart_info(
+        manip_, "tool0", "world", Eigen::Isometry3d::Identity(), target_pose_base_frame_);
     target_pose_constraint_ = std::make_shared<trajopt_ifopt::CartPosConstraint>(cart_info, vars.back());
     nlp_->addConstraintSet(target_pose_constraint_);
   }
@@ -240,14 +235,8 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
     std::array<bool, 2> position_vars_fixed{ true, false };
     for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
     {
-      auto collision_evaluator =
-          std::make_shared<trajopt_ifopt::LVSDiscreteCollisionEvaluator>(collision_cache,
-                                                                         manipulator_fk_,
-                                                                         env_,
-                                                                         manipulator_adjacency_map_,
-                                                                         Eigen::Isometry3d::Identity(),
-                                                                         collision_config,
-                                                                         true);
+      auto collision_evaluator = std::make_shared<trajopt_ifopt::LVSDiscreteCollisionEvaluator>(
+          collision_cache, manip_, env_, collision_config, true);
 
       std::array<trajopt_ifopt::JointPosition::ConstPtr, 2> position_vars = { vars[i - 1], vars[i] };
       auto collision_constraint =
@@ -266,14 +255,8 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   {
     for (std::size_t i = 1; i < static_cast<std::size_t>(steps_); i++)
     {
-      auto collision_evaluator =
-          std::make_shared<trajopt_ifopt::SingleTimestepCollisionEvaluator>(collision_cache,
-                                                                            manipulator_fk_,
-                                                                            env_,
-                                                                            manipulator_adjacency_map_,
-                                                                            Eigen::Isometry3d::Identity(),
-                                                                            collision_config,
-                                                                            true);
+      auto collision_evaluator = std::make_shared<trajopt_ifopt::SingleTimestepCollisionEvaluator>(
+          collision_cache, manip_, env_, collision_config, true);
 
       auto collision_constraint = std::make_shared<trajopt_ifopt::DiscreteCollisionConstraint>(
           collision_evaluator, vars[i], collision_config->max_num_cnt, "SingleTimestepCollision_" + std::to_string(i));
@@ -316,7 +299,8 @@ void OnlinePlanningExample::updateAndPlotTrajectory(const Eigen::VectorXd& osqp_
   player_.setTrajectory(joint_traj);
 
   // Display Results
-  plotter_->plotTrajectory(joint_traj, env_->getStateSolver());
+  auto state_solver = env_->getStateSolver();
+  plotter_->plotTrajectory(joint_traj, *state_solver);
 }
 
 bool OnlinePlanningExample::onlinePlan()
@@ -358,7 +342,7 @@ bool OnlinePlanningExample::onlinePlan()
       for (Eigen::Index t = 0; t < steps_; t++)
       {
         tesseract_common::JointState state = player_.setCurrentDuration(time_state(t));
-        init_trajectory.push_back(state.position.head(manipulator_fk_->numJoints()));
+        init_trajectory.push_back(state.position.head(manip_->numJoints()));
       }
 
       env_->setState(state.joint_names, state.position);

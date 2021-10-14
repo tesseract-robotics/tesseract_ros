@@ -50,7 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tf2_ros/transform_broadcaster.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 
 namespace tesseract_monitoring
 {
@@ -129,14 +129,14 @@ public:
 
   /** @brief Get the current state
    *  @return Returns the current state */
-  tesseract_environment::EnvState::Ptr getCurrentState() const;
+  tesseract_scene_graph::SceneState getCurrentState() const;
 
   /** @brief Get the time stamp for the current state */
   ros::Time getCurrentStateTime() const;
 
   /** @brief Get the current state and its time stamp
    *  @return Returns a pair of the current state and its time stamp */
-  std::pair<tesseract_environment::EnvState::Ptr, ros::Time> getCurrentStateAndTime() const;
+  std::pair<tesseract_scene_graph::SceneState, ros::Time> getCurrentStateAndTime() const;
 
   /** @brief Get the current state values as a map from joint names to joint state values
    *  @return Returns the map from joint names to joint state values*/
@@ -184,7 +184,7 @@ private:
 
   ros::NodeHandle nh_;
   tesseract_environment::Environment::ConstPtr env_;
-  tesseract_environment::EnvState env_state_;
+  tesseract_scene_graph::SceneState env_state_;
   int last_environment_revision_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;

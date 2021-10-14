@@ -15,8 +15,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/utils.h>
 
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+#include <tesseract_environment/environment.h>
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/link_widget.h>
@@ -183,7 +182,7 @@ void EnvironmentWidget::onUpdate()
     if (update_required_ || state_timestamp_ != env_->getCurrentStateTimestamp())
     {
       update_required_ = false;
-      visualization_->update(env_->getCurrentState()->link_transforms);
+      visualization_->update(env_->getState().link_transforms);
       state_timestamp_ = env_->getCurrentStateTimestamp();
     }
   }
@@ -551,8 +550,8 @@ void EnvironmentWidget::loadEnvironment()
     }
     else
     {
-      tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-      if (env_->init<tesseract_environment::OFKTStateSolver>(urdf_xml_string, srdf_xml_string, locator))
+      auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+      if (env_->init(urdf_xml_string, srdf_xml_string, locator))
       {
         if (monitor_ != nullptr)
           monitor_->shutdown();

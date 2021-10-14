@@ -68,7 +68,7 @@ void JointStateMonitorWidget::onUpdate()
   if (visualization_ && update_required_ && env_)
   {
     update_required_ = false;
-    visualization_->update(env_->getCurrentState()->link_transforms);
+    visualization_->update(env_->getState().link_transforms);
   }
 }
 
@@ -76,7 +76,7 @@ void JointStateMonitorWidget::onReset() { changedJointStateTopic(); }
 
 bool JointStateMonitorWidget::isUpdateRequired(const sensor_msgs::JointState& joint_state)
 {
-  std::unordered_map<std::string, double> joints = env_->getCurrentState()->joints;
+  std::unordered_map<std::string, double> joints = env_->getState().joints;
   for (auto i = 0u; i < joint_state.name.size(); ++i)
     if (std::abs(joints[joint_state.name[i]] - joint_state.position[i]) > 1e-5)
       return true;

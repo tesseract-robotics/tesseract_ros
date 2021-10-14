@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/service_server.h>
 #include <sensor_msgs/JointState.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/environment.h>
 #endif
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>

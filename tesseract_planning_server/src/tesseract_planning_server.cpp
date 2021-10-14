@@ -102,10 +102,10 @@ tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnv
   // This is to make sure the cached items are updated if needed
   refreshCache();
 
-  tesseract_environment::EnvState current_state;
+  tesseract_scene_graph::SceneState current_state;
   {
     auto lock = environment_->lockEnvironmentRead();
-    current_state = *(environment_->getEnvironment()->getCurrentState());
+    current_state = environment_->getEnvironment()->getState();
   }
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
@@ -166,8 +166,8 @@ void TesseractPlanningServer::ctor()
   planning_server_->loadDefaultProcessPlanners();
   loadDefaultPlannerProfiles();
   auto lock = environment_->lockEnvironmentWrite();
-  environment_->getEnvironment()->addFindTCPCallback(
-      std::bind(&TesseractPlanningServer::tfFindTCP, this, std::placeholders::_1));
+  environment_->getEnvironment()->addFindTCPOffsetCallback(
+      std::bind(&TesseractPlanningServer::tfFindTCPOffset, this, std::placeholders::_1));
 }
 
 tesseract_monitoring::EnvironmentMonitor& TesseractPlanningServer::getEnvironmentMonitor() { return *environment_; }
@@ -193,7 +193,7 @@ const tesseract_planning::EnvironmentCache& TesseractPlanningServer::getEnvironm
 
 void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
 {
-  ROS_INFO("Tesseract Planning Server Recieved Request!");
+  ROS_INFO("Tesseract Planning Server Received Request!");
   tesseract_msgs::GetMotionPlanResult result;
 
   // Check if process planner exist
@@ -233,8 +233,8 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   if (!goal->request.seed.empty())
     process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.seed);
 
-  auto env_state = std::make_shared<tesseract_environment::EnvState>();
-  tesseract_rosutils::fromMsg(env_state->joints, goal->request.environment_state.joint_state);
+  tesseract_scene_graph::SceneState env_state;
+  tesseract_rosutils::fromMsg(env_state.joints, goal->request.environment_state.joint_state);
 
   process_request.env_state = env_state;
   process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
@@ -272,20 +272,18 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
       tesseract_planning::DEFAULT_PROFILE_KEY, std::make_shared<tesseract_planning::SimplePlannerLVSPlanProfile>());
 }
 
-Eigen::Isometry3d TesseractPlanningServer::tfFindTCP(const tesseract_planning::ManipulatorInfo& manip_info)
+Eigen::Isometry3d TesseractPlanningServer::tfFindTCPOffset(const tesseract_planning::ManipulatorInfo& manip_info)
 {
-  if (!manip_info.tcp.isString())
-    throw std::runtime_error("tfFindTCP: TCP is not a string!");
+  if (manip_info.tcp_offset.index() == 1)
+    throw std::runtime_error("tfFindTCPOffset: TCP offset is not a string!");
 
-  auto composite_mi_fwd_kin =
-      environment_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
-  if (composite_mi_fwd_kin == nullptr)
-    throw std::runtime_error("tfFindTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
+  if (manip_info.tcp_frame.empty())
+    throw std::runtime_error("tfFindTCPOffset: TCP offset is empty!");
 
-  const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
-  const std::string& tcp_name = manip_info.tcp.getString();
+  const std::string& tcp_frame = manip_info.tcp_frame;
+  const std::string& tcp_name = std::get<0>(manip_info.tcp_offset);
 
-  auto tcp_msg = tf_buffer_->lookupTransform(tip_link, tcp_name, ros::Time(0), ros::Duration(2));
+  auto tcp_msg = tf_buffer_->lookupTransform(tcp_frame, tcp_name, ros::Time(0), ros::Duration(2));
   return tf2::transformToEigen(tcp_msg.transform);
 }
 
