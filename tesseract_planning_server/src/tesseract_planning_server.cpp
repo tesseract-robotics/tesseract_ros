@@ -131,10 +131,6 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
                                                                             continuous_plugin))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
   , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
-  , motion_plan_server_(nh_,
-                        DEFAULT_GET_MOTION_PLAN_ACTION,
-                        boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
-                        true)
   , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
   , tf_listener_(*tf_buffer_)
 {
@@ -151,10 +147,6 @@ TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environm
         std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env, name, discrete_plugin, continuous_plugin))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
   , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
-  , motion_plan_server_(nh_,
-                        DEFAULT_GET_MOTION_PLAN_ACTION,
-                        boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
-                        true)
   , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
   , tf_listener_(*tf_buffer_)
 {
@@ -163,6 +155,7 @@ TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environm
 
 void TesseractPlanningServer::ctor()
 {
+  motion_plan_server_ = nh_.advertiseService(DEFAULT_GET_MOTION_PLAN_ACTION, &TesseractPlanningServer::onMotionPlanningCallback, this);
   planning_server_->loadDefaultProcessPlanners();
   loadDefaultPlannerProfiles();
   auto lock = environment_->lockEnvironmentWrite();
@@ -191,56 +184,54 @@ const tesseract_planning::EnvironmentCache& TesseractPlanningServer::getEnvironm
   return *environment_cache_;
 }
 
-void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
+bool TesseractPlanningServer::onMotionPlanningCallback(tesseract_msgs::GetMotionPlan::Request &req,
+                                                       tesseract_msgs::GetMotionPlan::Response &res)
 {
   ROS_INFO("Tesseract Planning Server Received Request!");
-  tesseract_msgs::GetMotionPlanResult result;
 
   // Check if process planner exist
-  if (!planning_server_->hasProcessPlanner(goal->request.name))
+  if (!planning_server_->hasProcessPlanner(req.request.name))
   {
-    result.response.successful = false;
+    res.response.successful = false;
     std::ostringstream oss;
-    oss << "Requested process planner '" << goal->request.name << "' is not supported!" << std::endl;
+    oss << "Requested process planner '" << req.request.name << "' is not supported!" << std::endl;
     oss << "   Available Process Planners:" << std::endl;
     for (const auto& planner : planning_server_->getAvailableProcessPlanners())
       oss << "      - " << planner << std::endl;
     ROS_ERROR_STREAM(oss.str());
-    motion_plan_server_.setSucceeded(result);
-    return;
+    return true;
   }
 
   tesseract_planning::ProcessPlanningRequest process_request;
-  process_request.name = goal->request.name;
+  process_request.name = req.request.name;
 
   try
   {
     process_request.instructions =
-        Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.instructions);
+        Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(req.request.instructions);
   }
   catch (const std::exception& e)
   {
-    result.response.successful = false;
+    res.response.successful = false;
     std::ostringstream oss;
     oss << "Failed to deserialize program instruction with error: '" << e.what() << "'!" << std::endl;
     oss << "   Make sure the program was serialized from an Instruction type and not a CompositeInstruction type."
         << std::endl;
     ROS_ERROR_STREAM(oss.str());
-    motion_plan_server_.setSucceeded(result);
-    return;
+    return true;
   }
 
-  if (!goal->request.seed.empty())
-    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.seed);
+  if (!req.request.seed.empty())
+    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(req.request.seed);
 
   tesseract_scene_graph::SceneState env_state;
-  tesseract_rosutils::fromMsg(env_state.joints, goal->request.environment_state.joint_state);
+  tesseract_rosutils::fromMsg(env_state.joints, req.request.environment_state.joint_state);
 
   process_request.env_state = env_state;
-  process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
-  process_request.profile = goal->request.profile;
-  process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(goal->request.plan_profile_remapping);
-  process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
+  process_request.commands = tesseract_rosutils::fromMsg(req.request.commands);
+  process_request.profile = req.request.profile;
+  process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(req.request.plan_profile_remapping);
+  process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(req.request.composite_profile_remapping);
 
   tesseract_common::Timer timer;
   timer.start();
@@ -248,12 +239,12 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   plan_future.wait();  // Wait for results
   timer.stop();
 
-  result.response.successful = plan_future.interface->isSuccessful();
-  result.response.results = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
+  res.response.successful = plan_future.interface->isSuccessful();
+  res.response.results = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
   plan_future.clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
-  motion_plan_server_.setSucceeded(result);
+  return true;
 }
 
 void TesseractPlanningServer::loadDefaultPlannerProfiles()

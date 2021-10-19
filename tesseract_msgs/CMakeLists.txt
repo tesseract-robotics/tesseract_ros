@@ -91,13 +91,9 @@ add_service_files(
     ComputeContactResultVector.srv
     GetEnvironmentChanges.srv
     GetEnvironmentInformation.srv
+    GetMotionPlan.srv
     ModifyEnvironment.srv
     SaveSceneGraph.srv
-)
-
-add_action_files(
-  DIRECTORY action
-  FILES GetMotionPlan.action
 )
 
 generate_messages(

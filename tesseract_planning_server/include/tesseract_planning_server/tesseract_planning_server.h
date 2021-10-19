@@ -32,9 +32,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <shared_mutex>
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
+#include <ros/service_server.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-#include <tesseract_msgs/GetMotionPlanAction.h>
+#include <tesseract_msgs/GetMotionPlan.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/environment_monitor.h>
@@ -122,7 +123,7 @@ public:
   tesseract_planning::EnvironmentCache& getEnvironmentCache();
   const tesseract_planning::EnvironmentCache& getEnvironmentCache() const;
 
-  void onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
+  bool onMotionPlanningCallback(tesseract_msgs::GetMotionPlan::Request& req, tesseract_msgs::GetMotionPlan::Response& res);
 
 protected:
   ros::NodeHandle nh_;
@@ -137,7 +138,8 @@ protected:
   tesseract_planning::ProcessPlanningServer::Ptr planning_server_;
 
   /** @brief The motion planning action server */
-  actionlib::SimpleActionServer<tesseract_msgs::GetMotionPlanAction> motion_plan_server_;
+  ros::ServiceServer motion_plan_server_;
+//  actionlib::SimpleActionServer<tesseract_msgs::GetMotionPlanAction> motion_plan_server_;
 
   /** @brief TF buffer to track TCP transforms */
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
