@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   tesseract_rosutils
   tf2_ros
   tf2_eigen
+  std_srvs
 )
 
 find_package(Boost REQUIRED)
@@ -27,6 +28,7 @@ catkin_package(
     tesseract_rosutils
     tf2_ros
     tf2_eigen
+    std_srvs
   DEPENDS
     tesseract_command_language
     tesseract_process_managers

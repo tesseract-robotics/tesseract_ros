@@ -156,6 +156,9 @@ TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environm
 void TesseractPlanningServer::ctor()
 {
   motion_plan_server_ = nh_.advertiseService(DEFAULT_GET_MOTION_PLAN_ACTION, &TesseractPlanningServer::onMotionPlanningCallback, this);
+  motion_plan_trigger_server_ = nh_.advertiseService("tesseract_trigger_motion_plan", &TesseractPlanningServer::onTriggerMotionPlanningCallback, this);
+  motion_trajectory_pub_ = nh_.advertise<tesseract_msgs::Trajectory>("tesseract_display_trajectory", 10);
+
   planning_server_->loadDefaultProcessPlanners();
   loadDefaultPlannerProfiles();
   auto lock = environment_->lockEnvironmentWrite();
@@ -241,6 +244,68 @@ bool TesseractPlanningServer::onMotionPlanningCallback(tesseract_msgs::GetMotion
 
   res.response.successful = plan_future.interface->isSuccessful();
   res.response.results = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
+  plan_future.clear();
+
+  ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
+  return true;
+}
+
+bool TesseractPlanningServer::onTriggerMotionPlanningCallback(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res)
+{
+  ROS_INFO("Tesseract Planning Server Received Request!");
+
+  // Check if process planner exist
+  if (!planning_server_->hasProcessPlanner("RasterGFTPlanner"))
+  {
+    res.success = false;
+    std::ostringstream oss;
+    oss << "Requested process planner '" << "RasterGFTPlanner" << "' is not supported!" << std::endl;
+    oss << "   Available Process Planners:" << std::endl;
+    for (const auto& planner : planning_server_->getAvailableProcessPlanners())
+      oss << "      - " << planner << std::endl;
+    ROS_ERROR_STREAM(oss.str());
+    return true;
+  }
+
+  tesseract_planning::ProcessPlanningRequest process_request;
+  process_request.name = "RasterGFTPlanner";
+
+  try
+  {
+    process_request.instructions =
+        Serialization::fromArchiveFileXML<tesseract_planning::Instruction>("/tmp/motion_planning_instructions.xml");
+  }
+  catch (const std::exception& e)
+  {
+    res.success = false;
+    std::ostringstream oss;
+    oss << "Failed to deserialize program instruction with error: '" << e.what() << "'!" << std::endl;
+    oss << "   Make sure the program was serialized from an Instruction type and not a CompositeInstruction type."
+        << std::endl;
+    ROS_ERROR_STREAM(oss.str());
+    return true;
+  }
+
+  tesseract_common::Timer timer;
+  timer.start();
+  tesseract_planning::ProcessPlanningFuture plan_future = planning_server_->run(process_request);
+  plan_future.wait();  // Wait for results
+  timer.stop();
+
+  res.success = plan_future.interface->isSuccessful();
+  res.message = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
+
+  {
+    tesseract_msgs::Trajectory msg;
+
+    const auto& ci = plan_future.results->as<tesseract_planning::CompositeInstruction>();
+    tesseract_common::JointTrajectory traj = tesseract_planning::toJointTrajectory(ci);
+
+    // Set the joint trajectory message
+    tesseract_rosutils::toMsg(msg.joint_trajectory, traj);
+
+    motion_trajectory_pub_.publish(msg);
+  }
   plan_future.clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());

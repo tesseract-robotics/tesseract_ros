@@ -19,6 +19,7 @@
   <depend>tesseract_rosutils</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
+  <depend>std_srvs</depend>
 
   <export>
   </export>
