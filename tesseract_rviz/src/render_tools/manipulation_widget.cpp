@@ -319,7 +319,6 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 
     // Need to update state information (transforms) because manipulator changes and
     env_state_ = env_->getState(joints_);
-    updateJointConfig();
 
     // Get available TCP's
     QString current_tcp_frame = tcp_frame_property_->getString();
@@ -396,6 +395,9 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
       joint_config_tip_link_property_->setString(available_tcp_frames_[0]);
     else
       joint_config_tip_link_property_->setString(current_robot_config_tip_link);
+
+    // Update the robot config
+    updateJointConfig();
 
     // Add 6 DOF interactive marker at the end of the manipulator
     interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF",
