@@ -101,6 +101,7 @@ Q_SIGNALS:
   void availableManipulatorsChanged(QStringList manipulators);
   void availableTCPFramesChanged(QStringList tcp_frames);
   void availableTCPOffsetsChanged(tesseract_common::TransformMap tcp_offsets);
+  void availableWorkingFramesChanged(QStringList working_frames);
 
 public
   Q_SLOT : void enableCartesianManipulation(bool enabled);
@@ -109,11 +110,13 @@ public
   bool changeManipulator(const QString& manipulator);
   bool changeTCPFrame(const QString& tcp_frame);
   bool changeTCPOffset(const QString& tcp_offset);
+  bool changeWorkingFrame(const QString& working_frame);
 
 private Q_SLOTS:
   void changedManipulator();
   void changedTCPFrame();
   void changedTCPOffset();
+  void changedWorkingFrame();
   void changedJointStateTopic();
   void changedCartesianMarkerScale();
   void changedCartesianManipulationEnabled();
@@ -171,6 +174,7 @@ protected:
   rviz::FloatProperty* joint_marker_scale_property_;
   rviz::EnumProperty* tcp_frame_property_;
   rviz::EnumProperty* tcp_offset_property_;
+  rviz::EnumProperty* working_frame_property_;
   rviz::Property* joint_values_property_;
   rviz::StringProperty* joint_config_property_;
   rviz::EnumProperty* joint_config_base_link_property_;

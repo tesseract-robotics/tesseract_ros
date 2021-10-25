@@ -69,10 +69,8 @@ public:
 
   InteractiveMarker(std::string name,
                     std::string description,
-                    std::string reference_frame,
                     Ogre::SceneNode* scene_node,
                     rviz::DisplayContext* context,
-                    bool reference_frame_locked,
                     float scale = 1);
   virtual ~InteractiveMarker();
 
@@ -99,13 +97,13 @@ public:
   void startDragging();
   void stopDragging();
 
-  const Ogre::Vector3& getPosition() { return position_; }
-  const Ogre::Quaternion& getOrientation() { return orientation_; }
+  const Ogre::Vector3& getPosition() const { return position_; }
+  const Ogre::Quaternion& getOrientation() const { return orientation_; }
 
   void setSize(float scale);
-  float getSize() { return scale_; }
-  const std::string& getReferenceFrame() { return reference_frame_; }
-  const std::string& getName() { return name_; }
+  float getSize() const { return scale_; }
+
+  const std::string& getName() const { return name_; }
 
   /**
    * @brief Set visibility
@@ -180,9 +178,6 @@ protected:
 
   void reset();
 
-  // set the pose of the parent frame, relative to the fixed frame
-  void updateReferencePose();
-
   QString makeMenuString(const std::string& entry);
 
   // Recursively append menu and submenu entries to menu, based on a
@@ -201,10 +196,6 @@ protected:
 
   bool visible_;
   rviz::DisplayContext* context_;
-
-  // pose of parent coordinate frame
-  std::string reference_frame_;
-  bool reference_frame_locked_;
 
   // node representing reference frame in tf, like /map, /base_link, /head, etc.
   Ogre::SceneNode* reference_node_;
