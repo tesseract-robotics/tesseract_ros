@@ -45,6 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 
 using namespace tesseract_environment;
 using namespace tesseract_kinematics;
