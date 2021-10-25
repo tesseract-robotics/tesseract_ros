@@ -87,6 +87,9 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   manipulator_property_ = new rviz::EnumProperty(
       "Manipulator", "", "The manipulator to move around.", main_property_, SLOT(changedManipulator()), this);
 
+  working_frame_property_ = new rviz::EnumProperty(
+      "Working Frame", "", "The marker working frame", main_property_, SLOT(changedWorkingFrame()), this);
+
   tcp_frame_property_ = new rviz::EnumProperty(
       "TCP Frame", "", "The tool center point frame", main_property_, SLOT(changedTCPFrame()), this);
   tcp_offset_property_ = new rviz::EnumProperty(
@@ -286,9 +289,16 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 {
   if (env_->isInitialized())
   {
-    manip_ = env_->getKinematicGroup(manipulator.toStdString());
-    if (manip_ == nullptr)
+    try
+    {
+      manip_ = env_->getKinematicGroup(manipulator.toStdString());
+      assert(manip_ != nullptr);
+    }
+    catch (...)
+    {
+      manip_ = nullptr;
       return false;
+    }
 
     manipulator_property_->setString(manipulator);
 
@@ -321,11 +331,29 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     env_state_ = env_->getState(joints_);
 
     // Get available TCP's
+    QString current_working_frame = working_frame_property_->getString();
     QString current_tcp_frame = tcp_frame_property_->getString();
     QString current_tcp_offset = tcp_offset_property_->getString();
 
     QString current_robot_config_base_link = joint_config_base_link_property_->getString();
     QString current_robot_config_tip_link = joint_config_tip_link_property_->getString();
+
+    std::vector<std::string> working_frames = manip_->getAllValidWorkingFrames();
+    available_working_frames_.clear();
+    joint_config_base_link_property_->clearOptions();
+    for (const auto& working_frame : working_frames)
+    {
+      available_working_frames_.push_back(QString::fromStdString(working_frame));
+      working_frame_property_->addOptionStd(working_frame);
+      joint_config_base_link_property_->addOptionStd(working_frame);
+    }
+
+    if (current_working_frame.isEmpty() || !available_working_frames_.contains(current_working_frame))
+      working_frame_property_->setString(available_working_frames_[0]);
+    else
+      working_frame_property_->setString(current_working_frame);
+
+    Q_EMIT availableWorkingFramesChanged(available_working_frames_);
 
     std::vector<std::string> tcp_frames = manip_->getAllPossibleTipLinkNames();
     available_tcp_frames_.clear();
@@ -335,15 +363,6 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
       available_tcp_frames_.push_back(QString::fromStdString(tcp_frame));
       tcp_frame_property_->addOptionStd(tcp_frame);
       joint_config_tip_link_property_->addOptionStd(tcp_frame);
-    }
-
-    std::vector<std::string> working_frames = manip_->getAllValidWorkingFrames();
-    available_working_frames_.clear();
-    joint_config_base_link_property_->clearOptions();
-    for (const auto& working_frame : working_frames)
-    {
-      available_working_frames_.push_back(QString::fromStdString(working_frame));
-      joint_config_base_link_property_->addOptionStd(working_frame);
     }
 
     available_tcp_offsets_.clear();
@@ -400,13 +419,8 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     updateJointConfig();
 
     // Add 6 DOF interactive marker at the end of the manipulator
-    interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF",
-                                                                "Move Robot",
-                                                                env_->getRootLinkName(),
-                                                                root_interactive_node_,
-                                                                context_,
-                                                                true,
-                                                                cartesian_marker_scale_property_->getFloat());
+    interactive_marker_ = boost::make_shared<InteractiveMarker>(
+        "6DOF", "Move Robot", root_interactive_node_, context_, cartesian_marker_scale_property_->getFloat());
     make6Dof(*interactive_marker_);
 
     Eigen::Isometry3d pose =
@@ -432,14 +446,8 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     {
       std::string name = joint_name + "_interactive_marker";
       std::string disc = "Move joint: " + joint_name;
-      InteractiveMarker::Ptr interactive_marker =
-          boost::make_shared<InteractiveMarker>(name,
-                                                disc,
-                                                env_->getRootLinkName(),
-                                                root_interactive_node_,
-                                                context_,
-                                                true,
-                                                joint_marker_scale_property_->getFloat());
+      InteractiveMarker::Ptr interactive_marker = boost::make_shared<InteractiveMarker>(
+          name, disc, root_interactive_node_, context_, joint_marker_scale_property_->getFloat());
       const auto& joint = scene_graph->getJoint(joint_name);
 
       switch (joint->type)
@@ -581,6 +589,33 @@ bool ManipulationWidget::changeTCPOffset(const QString& tcp_offset)
   return success;
 }
 
+bool ManipulationWidget::changeWorkingFrame(const QString& working_frame)
+{
+  bool success = false;
+  if (working_frame.isEmpty() || !available_working_frames_.contains(working_frame))
+  {
+    if (manip_)
+    {
+      if (available_working_frames_.empty())
+        working_frame_property_->setString("");
+      else
+        working_frame_property_->setString(available_working_frames_[0]);
+    }
+  }
+  else
+  {
+    working_frame_property_->setString(working_frame);
+    success = true;
+  }
+
+  if (manip_ && !env_state_.link_transforms.empty() && interactive_marker_)
+  {
+    updateCartesianMarkerVisualization();
+  }
+
+  return success;
+}
+
 void ManipulationWidget::clickedResetToCurrentState() { resetToCurrentState(); }
 
 void ManipulationWidget::changedManipulator()
@@ -606,6 +641,7 @@ void ManipulationWidget::changedManipulator()
 
 void ManipulationWidget::changedTCPFrame() { changeTCPFrame(tcp_frame_property_->getString()); }
 void ManipulationWidget::changedTCPOffset() { changeTCPOffset(tcp_offset_property_->getString()); }
+void ManipulationWidget::changedWorkingFrame() { changeWorkingFrame(working_frame_property_->getString()); }
 
 void ManipulationWidget::changedCartesianMarkerScale()
 {
@@ -645,12 +681,28 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
 {
   if (manip_ && !env_state_.link_transforms.empty())
   {
-    tesseract_kinematics::KinGroupIKInput ik_input(
-        transform * tcp_offset_.inverse(), reference_frame, tcp_frame_property_->getStdString());
+    Eigen::Isometry3d tf_world = env_state_.link_transforms.at(reference_frame) * transform;
+    Eigen::Isometry3d tf_working_frame =
+        env_state_.link_transforms.at(working_frame_property_->getStdString()).inverse() * tf_world;
+    tesseract_kinematics::KinGroupIKInput ik_input(tf_working_frame * tcp_offset_.inverse(),
+                                                   working_frame_property_->getStdString(),
+                                                   tcp_frame_property_->getStdString());
     tesseract_kinematics::IKSolutions solutions = manip_->calcInvKin({ ik_input }, inv_seed_);
     if (!solutions.empty())
     {
-      const Eigen::VectorXd& temp_seed = solutions[0];
+      // get the closest solution to the seed
+      double dist = std::numeric_limits<double>::max();
+      Eigen::VectorXd temp_seed = inv_seed_;
+      for (const auto& solution : solutions)
+      {
+        double d = (solution - inv_seed_).norm();
+        if (d < dist)
+        {
+          temp_seed = solution;
+          dist = d;
+        }
+      }
+
       if (!tesseract_common::satisfiesPositionLimits(temp_seed, manip_->getLimits().joint_limits))
         return;
 
