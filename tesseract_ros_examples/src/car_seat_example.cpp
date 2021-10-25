@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/car_seat_example.h>
+#include <tesseract_collision/bullet/convex_hull_utils.h>
 #include <tesseract_environment/utils.h>
 #include <tesseract_environment/commands.h>
 #include <tesseract_rosutils/plotting.h>
