@@ -69,7 +69,7 @@ bool SceneGraphExample::run()
   ros::spinOnce();
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example.dot");
+    monitor_->getEnvironment().getSceneGraph()->saveDOT("scene_graph_example.dot");
   }
 
   // Create plotting tool
@@ -90,7 +90,7 @@ bool SceneGraphExample::run()
   // Save the scene graph to a file and publish the change
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
+    monitor_->getEnvironment().getSceneGraph()->saveDOT("scene_graph_example_moveJoint.dot");
   }
 
   if (plotting_)
@@ -115,7 +115,7 @@ bool SceneGraphExample::run()
   // Save the scene graph to a file and publish the change
   {
     auto lock = monitor_->lockEnvironmentRead();
-    monitor_->getEnvironment()->getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
+    monitor_->getEnvironment().getSceneGraph()->saveDOT("scene_graph_example_moveLink.dot");
   }
 
   if (plotting_)

@@ -23,6 +23,9 @@
     <!-- Groups kinematic plugins -->
     <kinematics_plugin_config filename="package://tesseract_ros_examples/config/pick_and_place_plan_plugins.yaml"/>
 
+    <!--Contact Managers plugins -->
+    <contact_managers_plugin_config filename="package://tesseract_ros_examples/config/contact_manager_plugins.yaml"/>
+
     <!--DISABLE COLLISIONS By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="cabinet_1" link2="iiwa_link_0" reason="Never" />
     <disable_collisions link1="cabinet_1" link2="iiwa_link_1" reason="Never" />

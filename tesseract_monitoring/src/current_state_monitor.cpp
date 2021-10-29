@@ -63,6 +63,8 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
 {
 }
 
+const tesseract_environment::Environment& CurrentStateMonitor::getEnvironment() const { return *env_; }
+
 CurrentStateMonitor::~CurrentStateMonitor() { stopStateMonitor(); }
 tesseract_scene_graph::SceneState CurrentStateMonitor::getCurrentState() const
 {

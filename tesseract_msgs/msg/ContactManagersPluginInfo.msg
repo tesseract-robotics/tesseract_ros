@@ -1,0 +1,4 @@
+string[] search_paths
+string[] search_libraries
+tesseract_msgs/PluginInfoContainer discrete_plugin_container
+tesseract_msgs/PluginInfoContainer continuous_plugin_container

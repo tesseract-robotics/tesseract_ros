@@ -38,6 +38,7 @@ add_message_files(
     CollisionGeometry.msg
     CollisionMarginData.msg
     CollisionMarginOverrideType.msg
+    ContactManagersPluginInfo.msg
     ContactMarginPair.msg
     ContactResult.msg
     ContactResultVector.msg
@@ -73,6 +74,7 @@ add_message_files(
     PlanningResponse.msg
     PlanningResponseArchive.msg
     PluginInfo.msg
+    PluginInfoContainer.msg
     ProfileMap.msg
     SceneGraph.msg
     StringDoublePair.msg

@@ -88,7 +88,7 @@ int main(int argc, char** argv)
   nh.getParam(robot_description, urdf_xml_string);
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
-  auto env = std::make_shared<tesseract_environment::Environment>();
+  auto env = std::make_unique<tesseract_environment::Environment>();
   auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!env->init(urdf_xml_string, srdf_xml_string, locator))
   {
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
   tesseract_monitoring::ContactMonitor cm(
-      monitor_namespace, env, nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
+      monitor_namespace, std::move(env), nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
 
   if (publish_environment)
     cm.startPublishingEnvironment();

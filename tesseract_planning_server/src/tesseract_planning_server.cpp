@@ -57,7 +57,7 @@ namespace tesseract_planning_server
 {
 const std::string TesseractPlanningServer::DEFAULT_GET_MOTION_PLAN_ACTION = "tesseract_get_motion_plan";
 
-ROSProcessEnvironmentCache::ROSProcessEnvironmentCache(tesseract_monitoring::EnvironmentMonitor::Ptr env)
+ROSProcessEnvironmentCache::ROSProcessEnvironmentCache(tesseract_monitoring::EnvironmentMonitor::ConstPtr env)
   : environment_(std::move(env))
 {
 }
@@ -70,16 +70,16 @@ void ROSProcessEnvironmentCache::setCacheSize(long size)
 
 long ROSProcessEnvironmentCache::getCacheSize() const { return static_cast<long>(cache_size_); }
 
-void ROSProcessEnvironmentCache::refreshCache()
+void ROSProcessEnvironmentCache::refreshCache() const
 {
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract_environment::Environment::Ptr env;
+  tesseract_environment::Environment::UPtr env;
   {
     auto lock = environment_->lockEnvironmentRead();
-    int rev = environment_->getEnvironment()->getRevision();
+    int rev = environment_->getEnvironment().getRevision();
     if (rev != cache_env_revision_ || cache_.empty())
     {
-      env = environment_->getEnvironment()->clone();
+      env = environment_->getEnvironment().clone();
       cache_env_revision_ = rev;
     }
   }
@@ -88,16 +88,16 @@ void ROSProcessEnvironmentCache::refreshCache()
   {
     cache_.clear();
     for (std::size_t i = 0; i < cache_size_; ++i)
-      cache_.push_back(env->clone());
+      cache_.emplace_back(env->clone());
   }
   else if (cache_.size() <= 2)
   {
     for (std::size_t i = (cache_.size() - 1); i < cache_size_; ++i)
-      cache_.push_back(cache_.front()->clone());
+      cache_.emplace_back(cache_.front()->clone());
   }
 }
 
-tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnvironment()
+tesseract_environment::Environment::UPtr ROSProcessEnvironmentCache::getCachedEnvironment() const
 {
   // This is to make sure the cached items are updated if needed
   refreshCache();
@@ -105,11 +105,11 @@ tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnv
   tesseract_scene_graph::SceneState current_state;
   {
     auto lock = environment_->lockEnvironmentRead();
-    current_state = environment_->getEnvironment()->getState();
+    current_state = environment_->getEnvironment().getState();
   }
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract_environment::Environment::Ptr env = cache_.back();
+  tesseract_environment::Environment::UPtr env = std::move(cache_.back());
 
   // Update to the current joint values
   env->setState(current_state.joints);
@@ -119,18 +119,11 @@ tesseract_environment::Environment::Ptr ROSProcessEnvironmentCache::getCachedEnv
   return env;
 }
 
-TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_description,
-                                                 std::string name,
-                                                 size_t n,
-                                                 std::string discrete_plugin,
-                                                 std::string continuous_plugin)
+TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_description, std::string name, size_t n)
   : nh_("~")
-  , environment_(std::make_shared<tesseract_monitoring::EnvironmentMonitor>(robot_description,
-                                                                            name,
-                                                                            discrete_plugin,
-                                                                            continuous_plugin))
+  , environment_(std::make_shared<tesseract_monitoring::EnvironmentMonitor>(robot_description, name))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
-  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
+  , planning_server_(std::make_unique<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
@@ -141,16 +134,13 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
   ctor();
 }
 
-TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environment::Ptr env,
+TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environment::UPtr env,
                                                  std::string name,
-                                                 size_t n,
-                                                 std::string discrete_plugin,
-                                                 std::string continuous_plugin)
+                                                 size_t n)
   : nh_("~")
-  , environment_(
-        std::make_shared<tesseract_monitoring::EnvironmentMonitor>(env, name, discrete_plugin, continuous_plugin))
+  , environment_(std::make_shared<tesseract_monitoring::EnvironmentMonitor>(std::move(env), name))
   , environment_cache_(std::make_shared<ROSProcessEnvironmentCache>(environment_))
-  , planning_server_(std::make_shared<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
+  , planning_server_(std::make_unique<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
@@ -166,7 +156,7 @@ void TesseractPlanningServer::ctor()
   planning_server_->loadDefaultProcessPlanners();
   loadDefaultPlannerProfiles();
   auto lock = environment_->lockEnvironmentWrite();
-  environment_->getEnvironment()->addFindTCPOffsetCallback(
+  environment_->getEnvironment().addFindTCPOffsetCallback(
       std::bind(&TesseractPlanningServer::tfFindTCPOffset, this, std::placeholders::_1));
 }
 

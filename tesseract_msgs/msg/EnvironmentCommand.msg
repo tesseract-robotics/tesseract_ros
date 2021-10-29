@@ -19,6 +19,9 @@ uint8 CHANGE_JOINT_ACCELERATION_LIMITS=16
 uint8 ADD_KINEMATICS_INFORMATION=17
 uint8 REPLACE_JOINT=18
 uint8 CHANGE_COLLISION_MARGINS=19
+uint8 ADD_CONTACT_MANAGERS_PLUGIN_INFO=20
+uint8 SET_ACTIVE_DISCRETE_CONTACT_MANAGER=21
+uint8 SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER=22
 
 # Specifies the type of command. Dictates which of the fields below are used
 uint8 command
@@ -89,6 +92,15 @@ tesseract_msgs/StringDoublePair[] change_joint_acceleration_limits
 # ADD_KINEMATICS_INFORMATION Command
 tesseract_msgs/KinematicsInformation add_kinematics_information
 
-# CHANGE_COLLISION_MARGINS
+# CHANGE_COLLISION_MARGINS Command
 tesseract_msgs/CollisionMarginData collision_margin_data
 tesseract_msgs/CollisionMarginOverrideType collision_margin_override_type
+
+# ADD_CONTACT_MANAGERS_PLUGIN_INFO Command
+tesseract_msgs/ContactManagersPluginInfo add_contact_managers_plugin_info
+
+# SET_ACTIVE_DISCRETE_CONTACT_MANAGER Command
+string set_active_discrete_contact_manager
+
+# SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER Command
+string set_active_continuous_contact_manager

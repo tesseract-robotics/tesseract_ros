@@ -109,23 +109,19 @@ class EnvironmentMonitor
 public:
   using Ptr = std::shared_ptr<EnvironmentMonitor>;
   using ConstPtr = std::shared_ptr<const EnvironmentMonitor>;
+  using UPtr = std::unique_ptr<EnvironmentMonitor>;
+  using ConstUPtr = std::unique_ptr<const EnvironmentMonitor>;
 
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
    *  @param monitor_namespace A name identifying this monitor, must be unique
    */
-  EnvironmentMonitor(const std::string& robot_description,
-                     std::string monitor_namespace,
-                     std::string discrete_plugin = "",
-                     std::string continuous_plugin = "");
+  EnvironmentMonitor(const std::string& robot_description, std::string monitor_namespace);
 
   /** @brief Constructor
    *  @param monitor_namespace A name identifying this monitor, must be unique
    */
-  EnvironmentMonitor(tesseract_environment::Environment::Ptr env,
-                     std::string monitor_namespace,
-                     std::string discrete_plugin = "",
-                     std::string continuous_plugin = "");
+  EnvironmentMonitor(tesseract_environment::Environment::Ptr env, std::string monitor_namespace);
 
   ~EnvironmentMonitor();
   EnvironmentMonitor(const EnvironmentMonitor&) = delete;
@@ -171,23 +167,23 @@ public:
   tesseract_srdf::KinematicsInformation getKinematicsInformation() const;
 
   /**
-   * @brief Returns an @b unsafe pointer to the current environment.
+   * @brief Returns an @b unsafe reference to the current environment.
    * @warning TesseractMonitor has a background thread which repeatedly updates and clobbers various contents of its
    *          internal tesseract instance.  This function just returns a pointer to that dynamic internal object.
    *          The correct thing is to call lockEnvironmentRead or lockEnvironmentWrite before accessing the contents.
    * @see lockEnvironmentRead
    * @see lockEnvironmentWrite
-   * @return A pointer to the current environment.*/
-  tesseract_environment::Environment::Ptr getEnvironment();
+   * @return The current environment.*/
+  tesseract_environment::Environment& getEnvironment();
 
   /**
-   * @brief Returns an @b unsafe const pointer to the current environment.
+   * @brief Returns an @b unsafe const reference to the current environment.
    * @warning TesseractMonitor has a background thread which repeatedly updates and clobbers various contents of its
    *          internal tesseract instance.  This function just returns a pointer to that dynamic internal object.
    *          The correct thing is to call lockEnvironmentRead before accessing the contents.
    * @see lockEnvironmentRead
-   * @return A pointer to the current environment.*/
-  tesseract_environment::Environment::ConstPtr getEnvironment() const;
+   * @return The current environment.*/
+  const tesseract_environment::Environment& getEnvironment() const;
 
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
@@ -219,8 +215,8 @@ public:
 
   /** @brief Get the stored instance of the stored current state monitor
    *  @return An instance of the stored current state monitor*/
-  CurrentStateMonitor::ConstPtr getStateMonitor() const;
-  CurrentStateMonitor::Ptr getStateMonitor();
+  const CurrentStateMonitor& getStateMonitor() const;
+  CurrentStateMonitor& getStateMonitor();
 
   /** @brief Start the current state monitor
       @param joint_states_topic the topic to listen to for joint states
@@ -276,7 +272,7 @@ public:
   bool waitForCurrentState(const ros::Time& t, double wait_time = 1.);
 
   /** \brief Lock the scene for reading (multiple threads can lock for reading at the same time) */
-  std::shared_lock<std::shared_mutex> lockEnvironmentRead();
+  std::shared_lock<std::shared_mutex> lockEnvironmentRead() const;
 
   /** \brief Lock the scene for writing (only one thread can lock for writing and no other thread can lock for reading)
    */
@@ -297,11 +293,6 @@ protected:
 
   /// The name of this scene monitor
   std::string monitor_namespace_;
-  std::string discrete_plugin_name_;
-  std::string continuous_plugin_name_;
-
-  DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;
-  ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;
 
   tesseract_environment::Environment::Ptr env_;
   mutable std::shared_mutex scene_update_mutex_;  /// mutex for stored scene
@@ -339,7 +330,7 @@ protected:
   ros::ServiceServer save_scene_graph_server_;
 
   // include a current state monitor
-  CurrentStateMonitor::Ptr current_state_monitor_;
+  CurrentStateMonitor::UPtr current_state_monitor_;
 
   /// lock access to update_callbacks_
   std::recursive_mutex update_lock_;

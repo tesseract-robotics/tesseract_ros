@@ -1375,6 +1375,27 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.collision_margin_override_type = toMsg(cmd.getCollisionMarginOverrideType());
       return true;
     }
+    case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_CONTACT_MANAGERS_PLUGIN_INFO;
+      const auto& cmd = static_cast<const tesseract_environment::AddContactManagersPluginInfoCommand&>(command);
+      command_msg.add_contact_managers_plugin_info = toMsg(cmd.getContactManagersPluginInfo());
+      return true;
+    }
+    case tesseract_environment::CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::SET_ACTIVE_DISCRETE_CONTACT_MANAGER;
+      const auto& cmd = static_cast<const tesseract_environment::SetActiveDiscreteContactManagerCommand&>(command);
+      command_msg.set_active_discrete_contact_manager = cmd.getName();
+      return true;
+    }
+    case tesseract_environment::CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER;
+      const auto& cmd = static_cast<const tesseract_environment::SetActiveContinuousContactManagerCommand&>(command);
+      command_msg.set_active_continuous_contact_manager = cmd.getName();
+      return true;
+    }
     default:
     {
       CONSOLE_BRIDGE_logWarn("Unhandled CommandType '%d' in toMsg", command.getType());
@@ -1535,6 +1556,21 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
       return std::make_shared<tesseract_environment::ChangeCollisionMarginsCommand>(collision_margin_data,
                                                                                     override_type);
     }
+    case tesseract_msgs::EnvironmentCommand::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
+    {
+      tesseract_common::ContactManagersPluginInfo info = fromMsg(command_msg.add_contact_managers_plugin_info);
+      return std::make_shared<tesseract_environment::AddContactManagersPluginInfoCommand>(info);
+    }
+    case tesseract_msgs::EnvironmentCommand::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
+    {
+      return std::make_shared<tesseract_environment::SetActiveDiscreteContactManagerCommand>(
+          command_msg.set_active_discrete_contact_manager);
+    }
+    case tesseract_msgs::EnvironmentCommand::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
+    {
+      return std::make_shared<tesseract_environment::SetActiveContinuousContactManagerCommand>(
+          command_msg.set_active_continuous_contact_manager);
+    }
     default:
     {
       throw std::runtime_error("Unsupported command type " + std::to_string(command_msg.command));
@@ -1634,11 +1670,6 @@ bool processMsg(tesseract_environment::Environment& env,
   return env.applyCommands(commands);
 }
 
-bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg)
-{
-  return processMsg(*env, joint_state_msg);
-}
-
 void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
            const tesseract_collision::ContactResult& contact_result,
            const ros::Time& stamp)
@@ -1710,7 +1741,8 @@ tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPlu
   {
     tesseract_msgs::GroupsKinematicPlugins pair_msg;
     pair_msg.group = pair.first;
-    pair_msg.plugins = toMsg(pair.second);
+    pair_msg.plugin_container.default_plugin = pair.second.default_plugin;
+    pair_msg.plugin_container.plugins = toMsg(pair.second.plugins);
     msg.group_fwd_plugins.push_back(pair_msg);
   }
 
@@ -1718,9 +1750,22 @@ tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPlu
   {
     tesseract_msgs::GroupsKinematicPlugins pair_msg;
     pair_msg.group = pair.first;
-    pair_msg.plugins = toMsg(pair.second);
+    pair_msg.plugin_container.default_plugin = pair.second.default_plugin;
+    pair_msg.plugin_container.plugins = toMsg(pair.second.plugins);
     msg.group_inv_plugins.push_back(pair_msg);
   }
+  return msg;
+}
+
+tesseract_msgs::ContactManagersPluginInfo toMsg(const tesseract_common::ContactManagersPluginInfo& info)
+{
+  tesseract_msgs::ContactManagersPluginInfo msg;
+  msg.search_paths.insert(msg.search_paths.begin(), info.search_paths.begin(), info.search_paths.end());
+  msg.search_libraries.insert(msg.search_libraries.begin(), info.search_libraries.begin(), info.search_libraries.end());
+  msg.discrete_plugin_container.default_plugin = info.discrete_plugin_infos.default_plugin;
+  msg.discrete_plugin_container.plugins = toMsg(info.discrete_plugin_infos.plugins);
+  msg.continuous_plugin_container.default_plugin = info.continuous_plugin_infos.default_plugin;
+  msg.continuous_plugin_container.plugins = toMsg(info.continuous_plugin_infos.plugins);
   return msg;
 }
 
@@ -1741,7 +1786,6 @@ tesseract_msgs::PluginInfo toMsg(const tesseract_common::PluginInfo& info)
 {
   tesseract_msgs::PluginInfo msg;
   msg.class_name = info.class_name;
-  msg.is_default = info.is_default;
 
   if (info.config)
   {
@@ -1936,10 +1980,33 @@ tesseract_common::KinematicsPluginInfo fromMsg(const tesseract_msgs::KinematicsP
   info.search_libraries.insert(info_msg.search_libraries.begin(), info_msg.search_libraries.end());
 
   for (const auto& pair : info_msg.group_fwd_plugins)
-    info.fwd_plugin_infos[pair.group] = fromMsg(pair.plugins);
+  {
+    tesseract_common::PluginInfoContainer container;
+    container.default_plugin = pair.plugin_container.default_plugin;
+    container.plugins = fromMsg(pair.plugin_container.plugins);
+    info.fwd_plugin_infos[pair.group] = container;
+  }
 
   for (const auto& pair : info_msg.group_inv_plugins)
-    info.inv_plugin_infos[pair.group] = fromMsg(pair.plugins);
+  {
+    tesseract_common::PluginInfoContainer container;
+    container.default_plugin = pair.plugin_container.default_plugin;
+    container.plugins = fromMsg(pair.plugin_container.plugins);
+    info.inv_plugin_infos[pair.group] = container;
+  }
+
+  return info;
+}
+
+tesseract_common::ContactManagersPluginInfo fromMsg(const tesseract_msgs::ContactManagersPluginInfo& info_msg)
+{
+  tesseract_common::ContactManagersPluginInfo info;
+  info.search_paths.insert(info_msg.search_paths.begin(), info_msg.search_paths.end());
+  info.search_libraries.insert(info_msg.search_libraries.begin(), info_msg.search_libraries.end());
+  info.discrete_plugin_infos.default_plugin = info_msg.discrete_plugin_container.default_plugin;
+  info.discrete_plugin_infos.plugins = fromMsg(info_msg.discrete_plugin_container.plugins);
+  info.continuous_plugin_infos.default_plugin = info_msg.continuous_plugin_container.default_plugin;
+  info.continuous_plugin_infos.plugins = fromMsg(info_msg.continuous_plugin_container.plugins);
 
   return info;
 }
@@ -1957,7 +2024,6 @@ tesseract_common::PluginInfo fromMsg(const tesseract_msgs::PluginInfo& info_msg)
 {
   tesseract_common::PluginInfo info;
   info.class_name = info_msg.class_name;
-  info.is_default = info_msg.is_default;
 
   if (!info_msg.config.empty())
     info.config = YAML::Load(info_msg.config);

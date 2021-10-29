@@ -45,6 +45,8 @@ class EnvironmentMonitorInterface
 public:
   using Ptr = std::shared_ptr<EnvironmentMonitorInterface>;
   using ConstPtr = std::shared_ptr<const EnvironmentMonitorInterface>;
+  using UPtr = std::unique_ptr<EnvironmentMonitorInterface>;
+  using ConstUPtr = std::unique_ptr<const EnvironmentMonitorInterface>;
 
   EnvironmentMonitorInterface(const std::string& env_name);
   virtual ~EnvironmentMonitorInterface() = default;
@@ -136,7 +138,7 @@ public:
    * @param monitor_namespace The namespace to extract the environment from.
    * @return Environment Shared Pointer, if nullptr it failed
    */
-  static tesseract_environment::Environment::Ptr getEnvironment(const std::string& monitor_namespace);
+  static tesseract_environment::Environment::UPtr getEnvironment(const std::string& monitor_namespace);
 
 protected:
   ros::NodeHandle nh_;

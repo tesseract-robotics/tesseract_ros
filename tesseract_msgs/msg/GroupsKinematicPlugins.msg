@@ -1,2 +1,2 @@
 string group
-tesseract_msgs/StringPluginInfoPair[] plugins
+tesseract_msgs/PluginInfoContainer plugin_container

@@ -63,6 +63,8 @@ class CurrentStateMonitor
 public:
   using Ptr = std::shared_ptr<CurrentStateMonitor>;
   using ConstPtr = std::shared_ptr<const CurrentStateMonitor>;
+  using UPtr = std::unique_ptr<CurrentStateMonitor>;
+  using ConstUPtr = std::unique_ptr<const CurrentStateMonitor>;
 
   /**
    * @brief Constructor.
@@ -99,7 +101,8 @@ public:
   bool isActive() const;
 
   /** @brief Get the RobotModel for which we are monitoring state */
-  const tesseract_environment::Environment::ConstPtr& getEnvironment() const { return env_; }
+  const tesseract_environment::Environment& getEnvironment() const;
+
   /** @brief Get the name of the topic being monitored. Returns an empty string if the monitor is inactive. */
   std::string getMonitoredTopic() const;
 
@@ -173,7 +176,7 @@ public:
    *  @return The stored value for the "allowed bounds error"
    */
   double getBoundsError() const { return error_; }
-  /** @brief Allow the joint_state arrrays velocity and effort to be copied into the robot state
+  /** @brief Allow the joint_state arrays velocity and effort to be copied into the robot state
    *  this is useful in some but not all applications
    */
   void enableCopyDynamics(bool enabled) { copy_dynamics_ = enabled; }

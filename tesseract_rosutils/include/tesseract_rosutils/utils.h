@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/CollisionGeometry.h>
 #include <tesseract_msgs/ContactMarginPair.h>
 #include <tesseract_msgs/ContactResultVector.h>
+#include <tesseract_msgs/ContactManagersPluginInfo.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
 #include <tesseract_msgs/Geometry.h>
 #include <tesseract_msgs/GroupsJointState.h>
@@ -223,7 +224,6 @@ void toMsg(std::vector<tesseract_msgs::JointState>& traj_msg, const tesseract_co
 tesseract_common::JointTrajectory fromMsg(const std::vector<tesseract_msgs::JointState>& traj_msg);
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
-bool processMsg(const tesseract_environment::Environment::Ptr& env, const sensor_msgs::JointState& joint_state_msg);
 
 /**
  * @brief Apply the provided commands to the environment
@@ -264,6 +264,13 @@ void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
  * @return Kinematics plugin info
  */
 tesseract_msgs::KinematicsPluginInfo toMsg(const tesseract_common::KinematicsPluginInfo& info);
+
+/**
+ * @brief Convert contact managers plugin info to message
+ * @param info contact managers plugin info
+ * @return contact managers plugin info
+ */
+tesseract_msgs::ContactManagersPluginInfo toMsg(const tesseract_common::ContactManagersPluginInfo& info);
 
 /**
  * @brief Convert plugin info map to message
@@ -331,6 +338,13 @@ bool fromMsg(tesseract_srdf::KinematicsInformation& kin_info,
  * @return Kinematics plugin info
  */
 tesseract_common::KinematicsPluginInfo fromMsg(const tesseract_msgs::KinematicsPluginInfo& info_msg);
+
+/**
+ * @brief Convert contact managers plugin info from message
+ * @param info_msg Contact managers plugin info message
+ * @return Contact managers plugin info
+ */
+tesseract_common::ContactManagersPluginInfo fromMsg(const tesseract_msgs::ContactManagersPluginInfo& info_msg);
 
 /**
  * @brief Convert plugin info map from message

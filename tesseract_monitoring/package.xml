@@ -16,7 +16,6 @@
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_msgs</depend>
   <depend>tesseract_common</depend>
-  <exec_depend>tesseract_plugins</exec_depend>
 
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
