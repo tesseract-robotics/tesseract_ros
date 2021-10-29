@@ -49,7 +49,7 @@ class ContactMonitor
 {
 public:
   ContactMonitor(std::string monitor_namespace,
-                 const tesseract_environment::Environment::Ptr& env,
+                 tesseract_environment::Environment::UPtr env,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
@@ -59,7 +59,7 @@ public:
   ~ContactMonitor();
   /**
    * @brief Custom copy constructor, copy assignment, move constructor, and move
-   * assignment.  Because the condition vairable current_joint_states_evt_
+   * assignment.  Because the condition variable current_joint_states_evt_
    * requires a 'cleanup' function call, a custom destructor is required.
    * When a custom destructor is required, it is best to explicitly create
    * these functions.  Here, we do so by assigning them to default values.
@@ -90,7 +90,7 @@ public:
   /**
    * @brief Compute collision results and publish results.
    *
-   * This also publishes environment and contact markers if correct flags are enabled for visualization and debuging.
+   * This also publishes environment and contact markers if correct flags are enabled for visualization and debugging.
    */
   void computeCollisionReportThread();
 
@@ -108,14 +108,13 @@ private:
   std::string monitor_namespace_;
   std::string monitored_namespace_;
   int env_revision_{ 0 };
-  tesseract_monitoring::EnvironmentMonitor::Ptr monitor_;
-  tesseract_environment::Environment::Ptr env_;
+  tesseract_monitoring::EnvironmentMonitor::UPtr monitor_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;
   tesseract_collision::ContactTestType type_;
   double contact_distance_;
-  tesseract_collision::DiscreteContactManager::Ptr manager_;
+  tesseract_collision::DiscreteContactManager::UPtr manager_;
   bool publish_contact_markers_{ false };
   ros::Subscriber joint_states_sub_;
   ros::Publisher contact_results_pub_;

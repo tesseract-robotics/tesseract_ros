@@ -251,7 +251,7 @@ bool CarSeatExample::run()
   JointGroup::UPtr joint_group;
   {  // Need to lock monitor for read
     auto lock = monitor_->lockEnvironmentRead();
-    joint_group = monitor_->getEnvironment()->getJointGroup("manipulator");
+    joint_group = monitor_->getEnvironment().getJointGroup("manipulator");
   }
 
   // Create seats and add it to the local environment

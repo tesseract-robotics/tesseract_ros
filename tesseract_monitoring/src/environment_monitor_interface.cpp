@@ -308,7 +308,7 @@ EnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::string>&
   return failed_namespace;
 }
 
-tesseract_environment::Environment::Ptr
+tesseract_environment::Environment::UPtr
 EnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace)
 {
   tesseract_msgs::GetEnvironmentInformation res;
@@ -332,7 +332,7 @@ EnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace
     return nullptr;
   }
 
-  auto env = std::make_shared<tesseract_environment::Environment>();
+  auto env = std::make_unique<tesseract_environment::Environment>();
   env->init(commands);
 
   return env;

@@ -12,6 +12,9 @@
     <!-- Groups kinematic plugins -->
     <kinematics_plugin_config filename="package://tesseract_ros_examples/config/car_seat_demo_plugins.yaml"/>
 
+    <!--Contact Managers plugins -->
+    <contact_managers_plugin_config filename="package://tesseract_ros_examples/config/contact_manager_plugins.yaml"/>
+
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="base_link" link2="car" reason="Never" />
     <disable_collisions link1="base_link" link2="carriage" reason="Adjacent" />

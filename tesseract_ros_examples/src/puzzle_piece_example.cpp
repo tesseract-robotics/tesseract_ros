@@ -253,7 +253,7 @@ bool PuzzlePieceExample::run()
   tesseract_planning::CompositeInstruction naive_seed;
   {
     auto lock = monitor_->lockEnvironmentRead();
-    naive_seed = tesseract_planning::generateNaiveSeed(program, *(monitor_->getEnvironment()));
+    naive_seed = tesseract_planning::generateNaiveSeed(program, monitor_->getEnvironment());
   }
   request.seed = Instruction(naive_seed);
 

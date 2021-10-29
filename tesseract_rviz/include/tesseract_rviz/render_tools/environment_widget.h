@@ -70,9 +70,9 @@ protected:
   rviz::Property* widget_;
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
-  tesseract_environment::Environment::Ptr env_;
   ros::NodeHandle nh_;
   std::unique_ptr<tesseract_monitoring::EnvironmentMonitor> monitor_;
+  tesseract_environment::Environment::Ptr env_;
   int revision_{ 0 }; /**< The current revision of the visualization environment */
   bool update_required_;
   bool update_state_;    /**< @brief Update visualization current state from environment message */

@@ -54,7 +54,7 @@ void JointStateMonitorWidget::newJointStateCallback(const sensor_msgs::JointStat
 
   if (isUpdateRequired(*joint_state_msg))
   {
-    tesseract_rosutils::processMsg(env_, *joint_state_msg);
+    tesseract_rosutils::processMsg(*env_, *joint_state_msg);
     update_required_ = true;
   }
 }

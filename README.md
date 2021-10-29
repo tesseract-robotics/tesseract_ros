@@ -18,7 +18,6 @@ Lint  (Clang Tidy)   | [![Build Status](https://github.com/ros-industrial-consor
 ## Tesseract ROS Packages
 
 * **tesseract_examples** – This package contains examples using tesseract and tesseract_ros for motion planning and collision checking.
-* **tesseract_plugins** – This contains plugins for collision and kinematics which are automatically loaded by the monitors.
 * **tesseract_rosutils** – This package contains the utilities like converting from ROS message types to native Tesseract types and the reverse.
 * **tesseract_msgs** – This package contains the ROS message types used by Tesseract ROS.
 * **tesseract_rviz** – This package contains the ROS visualization plugins for Rviz to visualize Tesseract. All of the features have been composed in libraries to enable to the ability to create custom displays quickly.
