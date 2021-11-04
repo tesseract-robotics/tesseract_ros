@@ -13,7 +13,7 @@
 - git:
     local-name: tesseract_planning
     uri: https://github.com/ros-industrial-consortium/tesseract_planning.git
-    version: 0.6.2
+    version: 0.6.3
 - git:
     local-name: descartes_light
     uri: https://github.com/swri-robotics/descartes_light.git
