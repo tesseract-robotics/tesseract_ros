@@ -36,11 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/types.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_process_managers/core/default_process_planners.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
 
@@ -213,11 +213,7 @@ bool PuzzlePieceExample::run()
   // Create a trajopt taskflow without post collision checking
   /** @todo This matches the original example, but should update to include post collision check */
   const std::string new_planner_name = "TRAJOPT_NO_POST_CHECK";
-  tesseract_planning::TrajOptTaskflowParams params;
-  params.enable_post_contact_discrete_check = false;
-  params.enable_post_contact_continuous_check = false;
-  planning_server.registerProcessPlanner(new_planner_name,
-                                         std::make_unique<tesseract_planning::TrajOptTaskflow>(params));
+  planning_server.registerProcessPlanner(new_planner_name, tesseract_planning::createTrajOptGenerator(true, false));
 
   // Create TrajOpt Profile
   auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
