@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_rviz)
+
+# Extract package name and version
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -19,7 +23,6 @@ find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(ros_industrial_cmake_boilerplate REQUIRED)
 
 # Ogre
 find_package(PkgConfig REQUIRED)
