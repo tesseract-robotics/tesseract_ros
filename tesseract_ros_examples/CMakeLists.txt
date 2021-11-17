@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(tesseract_ros_examples)
+cmake_minimum_required(VERSION 3.5.0)
+
+# Extract package name and version
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
+extract_package_metadata(pkg)
+project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -19,7 +23,6 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(trajopt_sqp REQUIRED)
 find_package(trajopt_ifopt REQUIRED)
-find_package(ros_industrial_cmake_boilerplate REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 
 catkin_package()
