@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_ros_examples/pick_and_place_example.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_motion_planners/default_planner_namespaces.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
@@ -48,6 +49,7 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 using namespace tesseract_visualization;
+using namespace tesseract_planning;
 
 /** @brief Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -97,19 +99,6 @@ Command::Ptr PickAndPlaceExample::addBox(double box_x, double box_y, double box_
 
 bool PickAndPlaceExample::run()
 {
-  using tesseract_planning::CartesianWaypoint;
-  using tesseract_planning::CompositeInstruction;
-  using tesseract_planning::CompositeInstructionOrder;
-  using tesseract_planning::Instruction;
-  using tesseract_planning::ManipulatorInfo;
-  using tesseract_planning::MoveInstruction;
-  using tesseract_planning::PlanInstruction;
-  using tesseract_planning::PlanInstructionType;
-  using tesseract_planning::ProcessPlanningFuture;
-  using tesseract_planning::ProcessPlanningRequest;
-  using tesseract_planning::ProcessPlanningServer;
-  using tesseract_planning::StateWaypoint;
-  using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   /////////////
@@ -216,28 +205,29 @@ bool PickAndPlaceExample::run()
   planning_server.loadDefaultProcessPlanners();
 
   // Create TrajOpt Profile
-  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  auto trajopt_plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 10);
 
-  auto trajopt_composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
   trajopt_composite_profile->collision_constraint_config.enabled = false;
   trajopt_composite_profile->collision_cost_config.safety_margin = 0.005;
   trajopt_composite_profile->collision_cost_config.coeff = 50;
 
-  auto trajopt_solver_profile = std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>();
+  auto trajopt_solver_profile = std::make_shared<TrajOptDefaultSolverProfile>();
   trajopt_solver_profile->opt_info.max_iter = 100;
 
   // Add profile to Dictionary
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("CARTESIAN", trajopt_plan_profile);
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("DEFAULT",
-                                                                                         trajopt_composite_profile);
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptSolverProfile>("DEFAULT",
-                                                                                      trajopt_solver_profile);
+  planning_server.getProfiles()->addProfile<TrajOptPlanProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "CARTESIAN", trajopt_plan_profile);
+  planning_server.getProfiles()->addProfile<TrajOptCompositeProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "DEFAULT", trajopt_composite_profile);
+  planning_server.getProfiles()->addProfile<TrajOptSolverProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "DEFAULT", trajopt_solver_profile);
 
   ROS_INFO("Pick plan");
   // Create Process Planning Request
   ProcessPlanningRequest pick_request;
-  pick_request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  pick_request.name = process_planner_names::TRAJOPT_PLANNER_NAME;
   pick_request.instructions = Instruction(pick_program);
 
   // Print Diagnostics
@@ -252,8 +242,8 @@ bool PickAndPlaceExample::run()
   {
     plotter->waitForInput();
     const auto& cp = pick_response.results->as<CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(cp, *env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(cp);
+    tesseract_common::Toolpath toolpath = toToolpath(cp, *env_);
+    tesseract_common::JointTrajectory trajectory = toJointTrajectory(cp);
     auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
     plotter->plotTrajectory(trajectory, *state_solver);
@@ -285,7 +275,7 @@ bool PickAndPlaceExample::run()
 
   // Get the last move instruction
   const CompositeInstruction& pick_composite = pick_response.results->as<CompositeInstruction>();
-  const MoveInstruction* pick_final_state = tesseract_planning::getLastMoveInstruction(pick_composite);
+  const MoveInstruction* pick_final_state = getLastMoveInstruction(pick_composite);
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = pick_approach_pose;
@@ -349,7 +339,7 @@ bool PickAndPlaceExample::run()
 
   // Create Process Planning Request
   ProcessPlanningRequest place_request;
-  place_request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+  place_request.name = process_planner_names::TRAJOPT_PLANNER_NAME;
   place_request.instructions = Instruction(place_program);
 
   // Print Diagnostics
@@ -363,9 +353,9 @@ bool PickAndPlaceExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto& ci = place_response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    const auto& ci = place_response.results->as<CompositeInstruction>();
+    tesseract_common::Toolpath toolpath = toToolpath(ci, *env_);
+    tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
     auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
     plotter->plotTrajectory(trajectory, *state_solver);

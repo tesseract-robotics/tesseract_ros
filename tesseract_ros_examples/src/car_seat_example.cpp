@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/core/default_process_planners.h>
+#include <tesseract_motion_planners/default_planner_namespaces.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
@@ -53,6 +54,7 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 using namespace tesseract_visualization;
+using namespace tesseract_planning;
 
 /**@ Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -217,18 +219,6 @@ Eigen::VectorXd CarSeatExample::getPositionVectorXd(const JointGroup& joint_grou
 
 bool CarSeatExample::run()
 {
-  using tesseract_planning::CartesianWaypoint;
-  using tesseract_planning::CompositeInstruction;
-  using tesseract_planning::CompositeInstructionOrder;
-  using tesseract_planning::Instruction;
-  using tesseract_planning::ManipulatorInfo;
-  using tesseract_planning::PlanInstruction;
-  using tesseract_planning::PlanInstructionType;
-  using tesseract_planning::ProcessPlanningFuture;
-  using tesseract_planning::ProcessPlanningRequest;
-  using tesseract_planning::ProcessPlanningServer;
-  using tesseract_planning::StateWaypoint;
-  using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
@@ -278,21 +268,21 @@ bool CarSeatExample::run()
   planning_server.loadDefaultProcessPlanners();
 
   // Create TrajOpt Profile
-  auto trajopt_composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
   trajopt_composite_profile->collision_constraint_config.enabled = false;
   trajopt_composite_profile->collision_cost_config.safety_margin = 0.005;
   trajopt_composite_profile->collision_cost_config.coeff = 50;
 
-  auto trajopt_solver_profile = std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>();
+  auto trajopt_solver_profile = std::make_shared<TrajOptDefaultSolverProfile>();
   trajopt_solver_profile->opt_info.max_iter = 200;
   trajopt_solver_profile->opt_info.min_approx_improve = 1e-3;
   trajopt_solver_profile->opt_info.min_trust_box_size = 1e-3;
 
   // Add profile to Dictionary
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("FREESPACE",
-                                                                                         trajopt_composite_profile);
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptSolverProfile>("FREESPACE",
-                                                                                      trajopt_solver_profile);
+  planning_server.getProfiles()->addProfile<TrajOptCompositeProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "FREESPACE", trajopt_composite_profile);
+  planning_server.getProfiles()->addProfile<TrajOptSolverProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "FREESPACE", trajopt_solver_profile);
 
   // Solve Trajectory
   ROS_INFO("Car Seat Demo Started");
@@ -323,7 +313,7 @@ bool CarSeatExample::run()
 
     // Create Process Planning Request
     ProcessPlanningRequest request;
-    request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+    request.name = process_planner_names::TRAJOPT_PLANNER_NAME;
     request.instructions = Instruction(program);
 
     // Print Diagnostics
@@ -336,9 +326,9 @@ bool CarSeatExample::run()
     // Plot Process Trajectory
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
-      const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
-      tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+      const auto& ci = response.results->as<CompositeInstruction>();
+      tesseract_common::Toolpath toolpath = toToolpath(ci, *env_);
+      tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
       auto state_solver = env_->getStateSolver();
       plotter->plotMarker(ToolpathMarker(toolpath));
       plotter->plotTrajectory(trajectory, *state_solver);
@@ -396,7 +386,7 @@ bool CarSeatExample::run()
 
     // Create Process Planning Request
     ProcessPlanningRequest request;
-    request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
+    request.name = process_planner_names::TRAJOPT_PLANNER_NAME;
     request.instructions = Instruction(program);
 
     // Print Diagnostics
@@ -409,9 +399,9 @@ bool CarSeatExample::run()
     // Plot Process Trajectory
     if (rviz_ && plotter != nullptr && plotter->isConnected())
     {
-      const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-      tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
-      tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+      const auto& ci = response.results->as<CompositeInstruction>();
+      tesseract_common::Toolpath toolpath = toToolpath(ci, *env_);
+      tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
       auto state_solver = env_->getStateSolver();
       plotter->plotMarker(ToolpathMarker(toolpath));
       plotter->plotTrajectory(trajectory, *state_solver);
