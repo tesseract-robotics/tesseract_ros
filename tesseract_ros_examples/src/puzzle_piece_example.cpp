@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/types.h>
 #include <tesseract_command_language/utils/utils.h>
+#include <tesseract_motion_planners/default_planner_namespaces.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
@@ -50,6 +51,7 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 using namespace tesseract_visualization;
+using namespace tesseract_planning;
 
 /** @brief Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -124,18 +126,6 @@ tesseract_common::VectorIsometry3d PuzzlePieceExample::makePuzzleToolPoses()
 
 bool PuzzlePieceExample::run()
 {
-  using tesseract_planning::CartesianWaypoint;
-  using tesseract_planning::CompositeInstruction;
-  using tesseract_planning::CompositeInstructionOrder;
-  using tesseract_planning::Instruction;
-  using tesseract_planning::ManipulatorInfo;
-  using tesseract_planning::PlanInstruction;
-  using tesseract_planning::PlanInstructionType;
-  using tesseract_planning::ProcessPlanningFuture;
-  using tesseract_planning::ProcessPlanningRequest;
-  using tesseract_planning::ProcessPlanningServer;
-  using tesseract_planning::StateWaypoint;
-  using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
@@ -213,32 +203,33 @@ bool PuzzlePieceExample::run()
   // Create a trajopt taskflow without post collision checking
   /** @todo This matches the original example, but should update to include post collision check */
   const std::string new_planner_name = "TRAJOPT_NO_POST_CHECK";
-  planning_server.registerProcessPlanner(new_planner_name, tesseract_planning::createTrajOptGenerator(true, false));
+  planning_server.registerProcessPlanner(new_planner_name, createTrajOptGenerator(true, false));
 
   // Create TrajOpt Profile
-  auto trajopt_plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+  auto trajopt_plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 10);
   trajopt_plan_profile->cartesian_coeff(5) = 0;
 
-  auto trajopt_composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+  auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
   trajopt_composite_profile->collision_constraint_config.enabled = false;
   trajopt_composite_profile->collision_cost_config.enabled = true;
   trajopt_composite_profile->collision_cost_config.safety_margin = 0.025;
   trajopt_composite_profile->collision_cost_config.type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
   trajopt_composite_profile->collision_cost_config.coeff = 20;
 
-  auto trajopt_solver_profile = std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>();
+  auto trajopt_solver_profile = std::make_shared<TrajOptDefaultSolverProfile>();
   trajopt_solver_profile->convex_solver = sco::ModelType::OSQP;
   trajopt_solver_profile->opt_info.max_iter = 200;
   trajopt_solver_profile->opt_info.min_approx_improve = 1e-3;
   trajopt_solver_profile->opt_info.min_trust_box_size = 1e-3;
 
   // Add profile to Dictionary
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("CARTESIAN", trajopt_plan_profile);
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("DEFAULT",
-                                                                                         trajopt_composite_profile);
-  planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptSolverProfile>("DEFAULT",
-                                                                                      trajopt_solver_profile);
+  planning_server.getProfiles()->addProfile<TrajOptPlanProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "CARTESIAN", trajopt_plan_profile);
+  planning_server.getProfiles()->addProfile<TrajOptCompositeProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "DEFAULT", trajopt_composite_profile);
+  planning_server.getProfiles()->addProfile<TrajOptSolverProfile>(
+      profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "DEFAULT", trajopt_solver_profile);
   // Create Process Planning Request
   ProcessPlanningRequest request;
   request.name = new_planner_name;
@@ -246,10 +237,10 @@ bool PuzzlePieceExample::run()
 
   // Create Naive Seed
   /** @todo Need to improve simple planners to support external tcp definitions */
-  tesseract_planning::CompositeInstruction naive_seed;
+  CompositeInstruction naive_seed;
   {
     auto lock = monitor_->lockEnvironmentRead();
-    naive_seed = tesseract_planning::generateNaiveSeed(program, monitor_->getEnvironment());
+    naive_seed = generateNaiveSeed(program, monitor_->getEnvironment());
   }
   request.seed = Instruction(naive_seed);
 
@@ -268,8 +259,8 @@ bool PuzzlePieceExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    const auto& ci = response.results->as<CompositeInstruction>();
+    tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
     auto state_solver = env_->getStateSolver();
     plotter->plotTrajectory(trajectory, *state_solver);
   }

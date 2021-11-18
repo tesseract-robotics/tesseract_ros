@@ -306,6 +306,8 @@ install(
     ${PROJECT_NAME}_car_seat_example_node
     ${PROJECT_NAME}_freespace_ompl_example
     ${PROJECT_NAME}_freespace_ompl_example_node
+    ${PROJECT_NAME}_freespace_hybrid_example
+    ${PROJECT_NAME}_freespace_hybrid_example_node
     ${PROJECT_NAME}_glass_upright_example
     ${PROJECT_NAME}_glass_upright_example_node
     ${PROJECT_NAME}_online_planning_example

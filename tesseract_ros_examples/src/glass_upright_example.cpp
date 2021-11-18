@@ -39,6 +39,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
 
+#include <tesseract_motion_planners/default_planner_namespaces.h>
+
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 
@@ -51,6 +53,7 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 using namespace tesseract_visualization;
+using namespace tesseract_planning;
 
 /** @brief Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -99,18 +102,6 @@ tesseract_environment::Command::Ptr GlassUprightExample::addSphere()
 
 bool GlassUprightExample::run()
 {
-  using tesseract_planning::CartesianWaypoint;
-  using tesseract_planning::CompositeInstruction;
-  using tesseract_planning::CompositeInstructionOrder;
-  using tesseract_planning::Instruction;
-  using tesseract_planning::ManipulatorInfo;
-  using tesseract_planning::PlanInstruction;
-  using tesseract_planning::PlanInstructionType;
-  using tesseract_planning::ProcessPlanningFuture;
-  using tesseract_planning::ProcessPlanningRequest;
-  using tesseract_planning::ProcessPlanningServer;
-  using tesseract_planning::StateWaypoint;
-  using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   // Initial setup
@@ -201,7 +192,7 @@ bool GlassUprightExample::run()
   ProcessPlanningRequest request;
   if (ifopt_)
   {
-    auto composite_profile = std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>();
+    auto composite_profile = std::make_shared<TrajOptIfoptDefaultCompositeProfile>();
     composite_profile->collision_cost_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
     composite_profile->collision_cost_config->collision_margin_data.setDefaultCollisionMargin(0.01);
     composite_profile->collision_cost_config->collision_margin_buffer = 0.01;
@@ -209,22 +200,23 @@ bool GlassUprightExample::run()
     composite_profile->collision_constraint_config->collision_margin_data.setDefaultCollisionMargin(0.01);
     composite_profile->collision_constraint_config->collision_margin_buffer = 0.01;
     composite_profile->smooth_velocities = true;
-    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptIfoptCompositeProfile>("UPRIGHT",
-                                                                                                composite_profile);
+    planning_server.getProfiles()->addProfile<TrajOptIfoptCompositeProfile>(
+        profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE, "UPRIGHT", composite_profile);
 
-    auto plan_profile = std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>();
+    auto plan_profile = std::make_shared<TrajOptIfoptDefaultPlanProfile>();
     plan_profile->joint_coeff = Eigen::VectorXd::Ones(7);
     plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
     plan_profile->cartesian_coeff(0) = 0;
     plan_profile->cartesian_coeff(1) = 0;
     plan_profile->cartesian_coeff(2) = 0;
-    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptIfoptPlanProfile>("UPRIGHT", plan_profile);
+    planning_server.getProfiles()->addProfile<TrajOptIfoptPlanProfile>(
+        profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE, "UPRIGHT", plan_profile);
 
     request.name = tesseract_planning::process_planner_names::TRAJOPT_IFOPT_PLANNER_NAME;
   }
   else
   {
-    auto composite_profile = std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>();
+    auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
     composite_profile->collision_cost_config.enabled = true;
     composite_profile->collision_cost_config.type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
     composite_profile->collision_cost_config.safety_margin = 0.01;
@@ -237,17 +229,18 @@ bool GlassUprightExample::run()
     composite_profile->smooth_accelerations = false;
     composite_profile->smooth_jerks = false;
     composite_profile->velocity_coeff = Eigen::VectorXd::Ones(1);
-    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptCompositeProfile>("UPRIGHT",
-                                                                                           composite_profile);
+    planning_server.getProfiles()->addProfile<TrajOptCompositeProfile>(
+        profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "UPRIGHT", composite_profile);
 
-    auto plan_profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
+    auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
     plan_profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
     plan_profile->cartesian_coeff(0) = 0;
     plan_profile->cartesian_coeff(1) = 0;
     plan_profile->cartesian_coeff(2) = 0;
 
     // Add profile to Dictionary
-    planning_server.getProfiles()->addProfile<tesseract_planning::TrajOptPlanProfile>("UPRIGHT", plan_profile);
+    planning_server.getProfiles()->addProfile<TrajOptPlanProfile>(
+        profile_ns::TRAJOPT_DEFAULT_NAMESPACE, "UPRIGHT", plan_profile);
 
     request.name = tesseract_planning::process_planner_names::TRAJOPT_PLANNER_NAME;
   }
@@ -267,9 +260,9 @@ bool GlassUprightExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    const auto& ci = response.results->as<CompositeInstruction>();
+    tesseract_common::Toolpath toolpath = toToolpath(ci, *env_);
+    tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
     auto state_solver = env_->getStateSolver();
 
     plotter->plotMarker(ToolpathMarker(toolpath));

@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
+#include <tesseract_motion_planners/default_planner_namespaces.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_visualization/markers/toolpath_marker.h>
@@ -45,6 +46,7 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_rosutils;
 using namespace tesseract_visualization;
+using namespace tesseract_planning;
 
 /** @brief Default ROS parameter for robot description */
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
@@ -92,18 +94,6 @@ Command::Ptr FreespaceOMPLExample::addSphere()
 
 bool FreespaceOMPLExample::run()
 {
-  using tesseract_planning::CartesianWaypoint;
-  using tesseract_planning::CompositeInstruction;
-  using tesseract_planning::CompositeInstructionOrder;
-  using tesseract_planning::Instruction;
-  using tesseract_planning::ManipulatorInfo;
-  using tesseract_planning::PlanInstruction;
-  using tesseract_planning::PlanInstructionType;
-  using tesseract_planning::ProcessPlanningFuture;
-  using tesseract_planning::ProcessPlanningRequest;
-  using tesseract_planning::ProcessPlanningServer;
-  using tesseract_planning::StateWaypoint;
-  using tesseract_planning::Waypoint;
   using tesseract_planning_server::ROSProcessEnvironmentCache;
 
   // Initial setup
@@ -185,18 +175,19 @@ bool FreespaceOMPLExample::run()
   planning_server.loadDefaultProcessPlanners();
 
   // Create OMPL Profile
-  auto ompl_profile = std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>();
-  auto ompl_planner_config = std::make_shared<tesseract_planning::RRTConnectConfigurator>();
+  auto ompl_profile = std::make_shared<OMPLDefaultPlanProfile>();
+  auto ompl_planner_config = std::make_shared<RRTConnectConfigurator>();
   ompl_planner_config->range = range_;
   ompl_profile->planning_time = planning_time_;
   ompl_profile->planners = { ompl_planner_config, ompl_planner_config };
 
   // Add profile to Dictionary
-  planning_server.getProfiles()->addProfile<tesseract_planning::OMPLPlanProfile>("FREESPACE", ompl_profile);
+  planning_server.getProfiles()->addProfile<OMPLPlanProfile>(
+      profile_ns::OMPL_DEFAULT_NAMESPACE, "FREESPACE", ompl_profile);
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
-  request.name = tesseract_planning::process_planner_names::FREESPACE_PLANNER_NAME;
+  request.name = process_planner_names::FREESPACE_PLANNER_NAME;
   request.instructions = Instruction(program);
 
   // Print Diagnostics
@@ -210,9 +201,9 @@ bool FreespaceOMPLExample::run()
   if (rviz_ && plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    const auto& ci = response.results->as<tesseract_planning::CompositeInstruction>();
-    tesseract_common::Toolpath toolpath = tesseract_planning::toToolpath(ci, *env_);
-    tesseract_common::JointTrajectory trajectory = tesseract_planning::toJointTrajectory(ci);
+    const auto& ci = response.results->as<CompositeInstruction>();
+    tesseract_common::Toolpath toolpath = toToolpath(ci, *env_);
+    tesseract_common::JointTrajectory trajectory = toJointTrajectory(ci);
     auto state_solver = env_->getStateSolver();
     plotter->plotMarker(ToolpathMarker(toolpath));
     plotter->plotTrajectory(trajectory, *state_solver);
