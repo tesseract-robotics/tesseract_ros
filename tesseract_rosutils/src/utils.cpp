@@ -1085,6 +1085,10 @@ fromMsg(const tesseract_msgs::CollisionMarginOverrideType& contact_margin_overri
     {
       return tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
     }
+    case tesseract_msgs::CollisionMarginOverrideType::MODIFY:
+    {
+      return tesseract_common::CollisionMarginOverrideType::MODIFY;
+    }
     case tesseract_msgs::CollisionMarginOverrideType::REPLACE:
     {
       return tesseract_common::CollisionMarginOverrideType::REPLACE;
@@ -1119,6 +1123,11 @@ toMsg(const tesseract_common::CollisionMarginOverrideType& contact_margin_overri
     case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN):
     {
       contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
+      break;
+    }
+    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::MODIFY):
+    {
+      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::MODIFY;
       break;
     }
     case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::REPLACE):
