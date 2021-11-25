@@ -9,11 +9,11 @@
 - git:
     local-name: trajopt
     uri: https://github.com/tesseract-robotics/trajopt.git
-    version: 0.1.0
+    version: c02b1dfb1ad49c688856b482092700439f57c867
 - git:
     local-name: tesseract_planning
     uri: https://github.com/tesseract-robotics/tesseract_planning.git
-    version: 40733e223f441486cbe823511ce6336a00c77371
+    version: b8a95bfbd2efc46eb2dda69f108e2bac822310cf
 - git:
     local-name: descartes_light
     uri: https://github.com/swri-robotics/descartes_light.git

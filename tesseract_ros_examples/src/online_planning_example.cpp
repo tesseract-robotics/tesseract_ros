@@ -218,7 +218,8 @@ bool OnlinePlanningExample::setupProblem(std::vector<Eigen::VectorXd> initial_tr
   // Add joint velocity cost for all timesteps
   {
     Eigen::VectorXd vel_target = Eigen::VectorXd::Zero(8);
-    auto vel_constraint = std::make_shared<trajopt_ifopt::JointVelConstraint>(vel_target, vars, "JointVelocity");
+    auto vel_constraint = std::make_shared<trajopt_ifopt::JointVelConstraint>(
+        vel_target, vars, Eigen::VectorXd::Ones(1), "JointVelocity");
     nlp_->addCostSet(vel_constraint, trajopt_sqp::CostPenaltyType::SQUARED);
   }
   // Add a collision cost for all steps
