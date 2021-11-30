@@ -2,8 +2,8 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2021-11-30)
+------------------
 * Update to leverage trajopt ifopt vel, accel and jerk coeffs (`#134 <https://github.com/tesseract-robotics/tesseract_ros/issues/134>`_)
 * Update to leverage namespaces in profile dictionary
 * Cleanup CMakeLists.txt

@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2021-11-30)
+------------------
 * Update to leverage namespaces in profile dictionary
 * Cleanup CMakeLists.txt
 * Contributors: Levi Armstrong
