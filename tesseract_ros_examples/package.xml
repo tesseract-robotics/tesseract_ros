@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_ros_examples</name>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <description>This package contains examples related to this trajopt_ros repository.</description>
 
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>

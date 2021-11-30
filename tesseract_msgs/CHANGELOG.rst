@@ -2,8 +2,8 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2021-11-30)
+------------------
 * Add missing build depend to tesseract_msgs
 * Contributors: Levi Armstrong
 
