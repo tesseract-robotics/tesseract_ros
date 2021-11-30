@@ -2,6 +2,9 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.1 (2021-11-30)
 ------------------
 * Cleanup CMakeLists.txt

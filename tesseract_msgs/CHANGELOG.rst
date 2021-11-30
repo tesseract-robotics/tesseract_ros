@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing build depend to tesseract_msgs
+* Contributors: Levi Armstrong
+
 0.2.1 (2021-11-30)
 ------------------
 * Add contact margin data override MODIFY (`#133 <https://github.com/tesseract-robotics/tesseract_ros/issues/133>`_)
