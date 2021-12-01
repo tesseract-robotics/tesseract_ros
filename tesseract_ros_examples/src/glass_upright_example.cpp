@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_common/timer.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
@@ -200,6 +201,9 @@ bool GlassUprightExample::run()
     composite_profile->collision_constraint_config->collision_margin_data.setDefaultCollisionMargin(0.01);
     composite_profile->collision_constraint_config->collision_margin_buffer = 0.01;
     composite_profile->smooth_velocities = true;
+    composite_profile->smooth_accelerations = false;
+    composite_profile->smooth_jerks = false;
+    composite_profile->velocity_coeff = Eigen::VectorXd::Ones(1);
     planning_server.getProfiles()->addProfile<TrajOptIfoptCompositeProfile>(
         profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE, "UPRIGHT", composite_profile);
 
@@ -220,10 +224,12 @@ bool GlassUprightExample::run()
     composite_profile->collision_cost_config.enabled = true;
     composite_profile->collision_cost_config.type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
     composite_profile->collision_cost_config.safety_margin = 0.01;
+    composite_profile->collision_cost_config.safety_margin_buffer = 0.01;
     composite_profile->collision_cost_config.coeff = 1;
     composite_profile->collision_constraint_config.enabled = true;
     composite_profile->collision_constraint_config.type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
     composite_profile->collision_constraint_config.safety_margin = 0.01;
+    composite_profile->collision_constraint_config.safety_margin_buffer = 0.01;
     composite_profile->collision_constraint_config.coeff = 1;
     composite_profile->smooth_velocities = true;
     composite_profile->smooth_accelerations = false;
@@ -253,8 +259,12 @@ bool GlassUprightExample::run()
     plotter->waitForInput("Hit Enter to solve for trajectory.");
 
   // Solve process plan
+  tesseract_common::Timer stopwatch;
+  stopwatch.start();
   ProcessPlanningFuture response = planning_server.run(request);
   planning_server.waitForAll();
+  stopwatch.stop();
+  ROS_INFO("Planning took %f seconds.", stopwatch.elapsedSeconds());
 
   // Plot Process Trajectory
   if (rviz_ && plotter != nullptr && plotter->isConnected())

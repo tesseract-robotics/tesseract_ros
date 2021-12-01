@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_common/timer.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
@@ -221,6 +222,9 @@ bool BasicCartesianExample::run()
     composite_profile->collision_cost_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
     composite_profile->collision_constraint_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
     composite_profile->smooth_velocities = true;
+    composite_profile->smooth_accelerations = false;
+    composite_profile->smooth_jerks = false;
+    composite_profile->velocity_coeff = Eigen::VectorXd::Ones(1);
     planning_server.getProfiles()->addProfile<TrajOptIfoptCompositeProfile>(
         profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE, "cartesian_program", composite_profile);
 
@@ -265,8 +269,12 @@ bool BasicCartesianExample::run()
     plotter->waitForInput("Hit Enter to solve for trajectory.");
 
   // Solve process plan
+  tesseract_common::Timer stopwatch;
+  stopwatch.start();
   ProcessPlanningFuture response = planning_server.run(request);
   planning_server.waitForAll();
+  stopwatch.stop();
+  ROS_INFO("Planning took %f seconds.", stopwatch.elapsedSeconds());
 
   // Plot Process Trajectory
   if (rviz_ && plotter != nullptr && plotter->isConnected())
