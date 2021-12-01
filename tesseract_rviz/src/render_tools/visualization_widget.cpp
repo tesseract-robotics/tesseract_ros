@@ -30,7 +30,7 @@
 #include "tesseract_rviz/render_tools/visualization_widget.h"
 #include "tesseract_rviz/render_tools/joint_widget.h"
 #include "tesseract_rviz/render_tools/link_widget.h"
-#include "tesseract_scene_graph/allowed_collision_matrix.h"
+#include "tesseract_common/allowed_collision_matrix.h"
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH

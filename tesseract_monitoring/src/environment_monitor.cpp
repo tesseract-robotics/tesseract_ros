@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_environment/utils.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_rosutils/utils.h>
 
 namespace tesseract_monitoring
