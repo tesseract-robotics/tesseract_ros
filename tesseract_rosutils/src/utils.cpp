@@ -1145,7 +1145,7 @@ toMsg(const tesseract_common::CollisionMarginOverrideType& contact_margin_overri
 }
 
 bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
-           const tesseract_scene_graph::AllowedCollisionMatrix& acm)
+           const tesseract_common::AllowedCollisionMatrix& acm)
 {
   for (const auto& entry : acm.getAllAllowedCollisions())
   {

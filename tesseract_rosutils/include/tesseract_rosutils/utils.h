@@ -186,7 +186,7 @@ tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg);
  * @return True if successful, otherwise false
  */
 bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
-           const tesseract_scene_graph::AllowedCollisionMatrix& acm);
+           const tesseract_common::AllowedCollisionMatrix& acm);
 
 void toMsg(tesseract_msgs::SceneGraph& scene_graph_msg, const tesseract_scene_graph::SceneGraph& scene_graph);
 
