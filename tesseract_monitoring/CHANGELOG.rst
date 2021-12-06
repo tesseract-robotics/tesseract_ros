@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support moving AllowedCollisionMatrix into tesseract_common namespace
+* Contributors: Matthew Powelson
+
 0.2.2 (2021-11-30)
 ------------------
 

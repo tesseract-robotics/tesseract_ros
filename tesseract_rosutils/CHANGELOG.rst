@@ -2,6 +2,12 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update renaming of ContactManagerConfig variables
+* Support moving AllowedCollisionMatrix into tesseract_common namespace
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.2.2 (2021-11-30)
 ------------------
 
