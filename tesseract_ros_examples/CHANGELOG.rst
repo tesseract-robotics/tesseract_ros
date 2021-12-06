@@ -2,8 +2,8 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2021-12-06)
+------------------
 * Update renaming of ContactManagerConfig variables
 * Add ContactManagerConfig inside CollisionCheckConfig
 * Add timing to basic cartesian and glass upright example
