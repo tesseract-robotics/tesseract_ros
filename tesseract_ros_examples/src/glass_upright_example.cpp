@@ -195,10 +195,11 @@ bool GlassUprightExample::run()
   {
     auto composite_profile = std::make_shared<TrajOptIfoptDefaultCompositeProfile>();
     composite_profile->collision_cost_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
-    composite_profile->collision_cost_config->contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.01);
+    composite_profile->collision_cost_config->contact_manager_config = tesseract_collision::ContactManagerConfig(0.01);
     composite_profile->collision_cost_config->collision_margin_buffer = 0.01;
     composite_profile->collision_constraint_config->type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
-    composite_profile->collision_constraint_config->contact_manager_config.collision_margin_data.setDefaultCollisionMargin(0.01);
+    composite_profile->collision_constraint_config->contact_manager_config =
+        tesseract_collision::ContactManagerConfig(0.01);
     composite_profile->collision_constraint_config->collision_margin_buffer = 0.01;
     composite_profile->smooth_velocities = true;
     composite_profile->smooth_accelerations = false;
