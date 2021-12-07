@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   geometry_msgs
   std_msgs
+  visualization_msgs
 )
 
 find_package(Boost REQUIRED)
@@ -41,6 +42,7 @@ catkin_package(
     roslib
     geometry_msgs
     std_msgs
+    visualization_msgs
   DEPENDS
     Boost
     EIGEN3
