@@ -1065,42 +1065,46 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
           // voxels
           if ((static_cast<unsigned>(octree->isNodeOccupied(*it)) + 1) & render_mode_mask)
           {
-            // check if current voxel has neighbors on all sides -> no need to be
-            // displayed
-            bool allNeighborsFound = true;
+            // Disabling because it does not work correctly with a pruned octomap
+            display_voxel = true;
 
-            octomap::OcTreeKey key;
-            octomap::OcTreeKey nKey = it.getKey();
+            //            // check if current voxel has neighbors on all sides -> no need to be
+            //            // displayed
+            //            bool allNeighborsFound = true;
 
-            for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1);
-                 allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1);
-                 ++key[2])
-            {
-              for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1);
-                   allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1);
-                   ++key[1])
-              {
-                for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1);
-                     allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1);
-                     ++key[0])
-                {
-                  if (key != nKey)
-                  {
-                    octomap::OcTreeNode* node = octree->search(key);
+            //            octomap::OcTreeKey key;
+            //            octomap::OcTreeKey nKey = it.getKey();
 
-                    // the left part evaluates to 1 for free voxels and 2 for
-                    // occupied voxels
-                    if (!(node && (static_cast<unsigned>(octree->isNodeOccupied(node)) + 1) & render_mode_mask))
-                    {
-                      // we do not have a neighbor => break!
-                      allNeighborsFound = false;
-                    }
-                  }
-                }
-              }
-            }
+            //            for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1);
+            //                 allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1);
+            //                 ++key[2])
+            //            {
+            //              for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1);
+            //                   allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1);
+            //                   ++key[1])
+            //              {
+            //                for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1);
+            //                     allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1);
+            //                     ++key[0])
+            //                {
+            //                  if (key != nKey)
+            //                  {
+            //                    octomap::OcTreeNode* node = octree->search(key);
 
-            display_voxel |= !allNeighborsFound;
+            //                    // the left part evaluates to 1 for free voxels and 2 for
+            //                    // occupied voxels
+            //                    if (!(node && (static_cast<unsigned>(octree->isNodeOccupied(node)) + 1) &
+            //                    render_mode_mask))
+            //                    {
+            //                      // we do not have a neighbor => break!
+            //                      allNeighborsFound = false;
+            //                    }
+            //                  }
+            //                }
+            //              }
+            //            }
+
+            //            display_voxel |= !allNeighborsFound;
           }
 
           if (display_voxel)
