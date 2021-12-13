@@ -338,6 +338,7 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
 
       geometry_msgs.type = tesseract_msgs::Geometry::OCTREE;
       octomap_msgs::fullMapToMsg(*(octree.getOctree()), geometry_msgs.octomap);
+      geometry_msgs.octomap_sub_type.type = static_cast<uint8_t>(octree.getSubType());
       break;
     }
     case tesseract_geometry::GeometryType::MESH:
