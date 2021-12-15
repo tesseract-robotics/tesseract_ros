@@ -1,0 +1,7 @@
+# Since catkin does not support modern cmake and as a result linking leveraging targets causes
+# these depends to not be include in the generated cmake package config.
+include(CMakeFindDependencyMacro)
+find_dependency(tesseract_environment)
+find_dependency(orocos_kdl)
+find_dependency(tesseract_common)
+find_dependency(Eigen3)

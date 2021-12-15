@@ -34,6 +34,8 @@ catkin_package(
     tesseract_command_language
     tesseract_process_managers
     tesseract_common
+  CFG_EXTRAS
+    tesseract_planning_server-extras.cmake
 )
 
 # Load variable for clang tidy args, compiler options and cxx version

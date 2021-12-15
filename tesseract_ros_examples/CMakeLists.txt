@@ -25,7 +25,10 @@ find_package(trajopt_sqp REQUIRED)
 find_package(trajopt_ifopt REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 
-catkin_package()
+catkin_package(
+  CFG_EXTRAS
+    tesseract_ros_examples-extras.cmake
+)
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()

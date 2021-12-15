@@ -1,0 +1,17 @@
+# Since catkin does not support modern cmake and as a result linking leveraging targets causes
+# these depends to not be include in the generated cmake package config.
+include(CMakeFindDependencyMacro)
+find_dependency(tesseract_environment)
+find_dependency(tesseract_command_language)
+find_dependency(tesseract_motion_planners)
+find_dependency(tesseract_process_managers)
+find_dependency(tesseract_common)
+find_dependency(tesseract_collision)
+find_dependency(trajopt_sqp)
+find_dependency(trajopt_ifopt)
+
+if(${CMAKE_VERSION} VERSION_LESS "3.15.0")
+    find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
+else()
+    find_dependency(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
+endif()

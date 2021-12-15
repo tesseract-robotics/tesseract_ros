@@ -46,6 +46,8 @@ catkin_package(
     orocos_kdl
     tesseract_common
     tesseract_environment
+  CFG_EXTRAS
+    tesseract_monitoring-extras.cmake
 )
 
 include_directories(

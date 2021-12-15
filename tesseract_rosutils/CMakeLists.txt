@@ -57,6 +57,8 @@ catkin_package(
     tesseract_environment
     tesseract_process_managers
     yaml-cpp
+  CFG_EXTRAS
+    tesseract_rosutils-extras.cmake
 )
 
 # Load variable for clang tidy args, compiler options and cxx version

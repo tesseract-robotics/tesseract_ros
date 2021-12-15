@@ -79,6 +79,8 @@ catkin_package(
     tesseract_common
     tesseract_visualization
     tesseract_motion_planners
+  CFG_EXTRAS
+    tesseract_rviz-extras.cmake
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
