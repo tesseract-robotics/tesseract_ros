@@ -6,6 +6,7 @@
   <arg name="discrete_plugin" default="BulletDiscreteBVHManager"/>
   <arg name="continuous_plugin" default="BulletCastBVHManager"/>
   <arg name="monitor_links" default=""/>
+  <arg name="disabled_links" default=""/>
   <arg name="publish_environment" default="false"/>
   <arg name="publish_markers" default="false"/>
 
@@ -18,12 +19,13 @@
   <arg name="contact_test_type" default="2"/>
   <arg name="contact_distance"/>
 
-  <node pkg="tesseract_monitoring" type="tesseract_monitoring_contacts_node" name="tesseract_monitoring_contacts">
+  <node pkg="tesseract_monitoring" type="tesseract_monitoring_contacts_node" name="tesseract_monitoring_contacts" output="screen">
     <param name="robot_description" type="string" value="$(arg robot_description)"/>
     <param name="discrete_plugin" type="string" value="$(arg discrete_plugin)"/>
     <param name="continuous_plugin" type="string" value="$(arg continuous_plugin)"/>
     <param name="contact_distance" value="$(arg contact_distance)"/>
     <param name="monitor_links" value="$(arg monitor_links)"/>
+    <param name="disabled_links" value="$(arg disabled_links)"/>
     <param name="contact_test_type" value="$(arg contact_test_type)"/>
     <param name="monitor_namespace" type="string" value="$(arg monitor_namespace)"/>
     <param name="monitored_namespace" type="string" value="$(arg monitored_namespace)"/>
