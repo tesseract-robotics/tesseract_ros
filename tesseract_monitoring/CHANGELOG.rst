@@ -2,8 +2,8 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.1 (2021-12-16)
+------------------
 * Add ability to disable links when launching contact monitor
 * Contributors: Levi Armstrong
 
