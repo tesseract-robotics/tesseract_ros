@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add ability to disable links when launching contact monitor
+* Contributors: Levi Armstrong
+
 0.3.0 (2021-12-06)
 ------------------
 * Support moving AllowedCollisionMatrix into tesseract_common namespace

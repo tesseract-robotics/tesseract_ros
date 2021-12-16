@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix bug in how geometry octree are converted from message and visualized
+* Contributors: Levi Armstrong
+
 0.3.0 (2021-12-06)
 ------------------
 * Support moving AllowedCollisionMatrix into tesseract_common namespace

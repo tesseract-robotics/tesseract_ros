@@ -2,6 +2,12 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix bug in how geometry octree are converted from message and visualized
+* Add missing visualization_msgs to tesseract_rosutils CMakelists.txt
+* Contributors: Levi Armstrong
+
 0.3.0 (2021-12-06)
 ------------------
 * Update renaming of ContactManagerConfig variables
