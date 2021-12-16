@@ -99,12 +99,54 @@ int main(int argc, char** argv)
   pnh.param<double>("contact_distance", contact_distance, DEFAULT_CONTACT_DISTANCE);
 
   std::vector<std::string> monitored_link_names;
-  monitored_link_names = env->getLinkNames();
   if (pnh.hasParam("monitor_links"))
-    pnh.getParam("monitor_links", monitored_link_names);
+  {
+    std::string monitored_link_names_str;
+    pnh.getParam("monitor_links", monitored_link_names_str);
+    if (!monitored_link_names_str.empty())
+      boost::split(monitored_link_names, monitored_link_names_str, boost::is_any_of(" "));
+  }
 
   if (monitored_link_names.empty())
     monitored_link_names = env->getLinkNames();
+
+  std::vector<std::string> disabled_link_names;
+  if (pnh.hasParam("disabled_links"))
+  {
+    std::string disabled_link_names_str;
+    pnh.getParam("disabled_links", disabled_link_names_str);
+    if (!disabled_link_names_str.empty())
+      boost::split(disabled_link_names, disabled_link_names_str, boost::is_any_of(" "));
+  }
+
+  std::string disabled_link_names_str;
+  for (const auto& disabled_link : disabled_link_names)
+  {
+    if (disabled_link_names_str.empty())
+      disabled_link_names_str = disabled_link;
+    else
+      disabled_link_names_str += (", " + disabled_link);
+  }
+
+  ROS_INFO("DISABLED_LINKS: %s", disabled_link_names_str.c_str());
+
+  auto pred = [&disabled_link_names](const std::string& key) -> bool {
+    return std::find(disabled_link_names.begin(), disabled_link_names.end(), key) != disabled_link_names.end();
+  };
+
+  monitored_link_names.erase(std::remove_if(monitored_link_names.begin(), monitored_link_names.end(), pred),
+                             monitored_link_names.end());
+
+  std::string monitored_link_names_str;
+  for (const auto& monitor_link : monitored_link_names)
+  {
+    if (monitored_link_names_str.empty())
+      monitored_link_names_str = monitor_link;
+    else
+      monitored_link_names_str += (", " + monitor_link);
+  }
+
+  ROS_INFO("MONITORED_LINKS: %s", monitored_link_names_str.c_str());
 
   int contact_test_type = 2;
   if (pnh.hasParam("contact_test_type"))
@@ -117,8 +159,15 @@ int main(int argc, char** argv)
   }
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
-  tesseract_monitoring::ContactMonitor cm(
-      monitor_namespace, std::move(env), nh, pnh, monitored_link_names, type, contact_distance, joint_state_topic);
+  tesseract_monitoring::ContactMonitor cm(monitor_namespace,
+                                          std::move(env),
+                                          nh,
+                                          pnh,
+                                          monitored_link_names,
+                                          disabled_link_names,
+                                          type,
+                                          contact_distance,
+                                          joint_state_topic);
 
   if (publish_environment)
     cm.startPublishingEnvironment();

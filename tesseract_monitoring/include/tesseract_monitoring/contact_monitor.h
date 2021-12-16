@@ -53,6 +53,7 @@ public:
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
+                 const std::vector<std::string>& disabled_link_names,
                  const tesseract_collision::ContactTestType& type,
                  double contact_distance = 0.1,
                  const std::string& joint_state_topic = DEFAULT_JOINT_STATES_TOPIC);
@@ -112,6 +113,7 @@ private:
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;
+  std::vector<std::string> disabled_link_names_;
   tesseract_collision::ContactTestType type_;
   double contact_distance_;
   tesseract_collision::DiscreteContactManager::UPtr manager_;
