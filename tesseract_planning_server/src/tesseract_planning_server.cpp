@@ -234,6 +234,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   process_request.env_state = env_state;
   process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
   process_request.profile = goal->request.profile;
+  process_request.save_io = goal->request.save_io;
   process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(goal->request.plan_profile_remapping);
   process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
 
