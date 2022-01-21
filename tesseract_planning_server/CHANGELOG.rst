@@ -2,6 +2,13 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add save_io to planning request message (`#142 <https://github.com/tesseract-robotics/tesseract_ros/issues/142>`_)
+  * Add save_io to planning request message
+  * Update dependency version in rosinstall
+* Contributors: Levi Armstrong
+
 0.3.1 (2021-12-16)
 ------------------
 
