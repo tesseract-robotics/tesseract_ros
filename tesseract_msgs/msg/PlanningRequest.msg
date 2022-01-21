@@ -6,6 +6,7 @@ string instructions # This should an xml string of the command language instruct
 string seed # This should an xml string of the command language instructions (Optional)
 bool debug # Enable debug content
 bool profile # Enable profiling of the planning request
+bool save_io # Enable saving of input and output for task infos
 
 tesseract_msgs/PlannerProfileRemapping plan_profile_remapping
 tesseract_msgs/PlannerProfileRemapping composite_profile_remapping
