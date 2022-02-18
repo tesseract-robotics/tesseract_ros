@@ -8,6 +8,7 @@ project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
+  std_srvs
   tesseract_monitoring
   tesseract_rosutils
   tesseract_planning_server
