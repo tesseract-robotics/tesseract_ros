@@ -2,6 +2,11 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding std_srvs to dependencies in CMakeLists and package
+* Contributors: Kyle Staub
+
 0.3.2 (2022-01-21)
 ------------------
 
