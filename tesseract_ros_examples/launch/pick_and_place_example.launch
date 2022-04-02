@@ -10,10 +10,10 @@
     <arg name="testing" default="false"/>
 
     <!-- Load Robot Model    -->
-    <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find tesseract_ros_examples)/urdf/pick_and_place_plan.xacro"/>
+    <param name="robot_description"  command="$(find xacro)/xacro --inorder $(find tesseract_support)/urdf/pick_and_place_plan.xacro"/>
 
     <!-- Load Robot Semantic -->
-    <param name="robot_description_semantic" textfile="$(find tesseract_ros_examples)/config/pick_and_place_plan.srdf" />
+    <param name="robot_description_semantic" textfile="$(find tesseract_support)/urdf/pick_and_place_plan.srdf" />
 
     <!-- Set simulated box parameters -->
     <param name="box_side" value="$(arg box_side)"/>
