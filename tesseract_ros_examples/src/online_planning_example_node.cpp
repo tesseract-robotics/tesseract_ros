@@ -29,9 +29,27 @@
  * limitations under the License.
  */
 
-#include <tesseract_ros_examples/online_planning_example.h>
+#include <tesseract_examples/online_planning_example.h>
+#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_rosutils/plotting.h>
+#include <std_srvs/SetBool.h>
+#include <ros/subscriber.h>
+#include <ros/service.h>
 
-using namespace tesseract_ros_examples;
+using namespace tesseract_examples;
+using namespace tesseract_rosutils;
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
+
+/** @brief Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+
+/** @brief RViz Example Namespace */
+const std::string EXAMPLE_MONITOR_NAMESPACE = "tesseract_ros_examples";
+
+/** @brief Dynamic object joint states topic */
+const std::string DYNAMIC_OBJECT_JOINT_STATE = "/joint_states";
 
 int main(int argc, char** argv)
 {
@@ -54,6 +72,41 @@ int main(int argc, char** argv)
   pnh.param<bool>("update_start_state", update_start_state, update_start_state);
   pnh.param<bool>("use_continuous", use_continuous, use_continuous);
 
-  OnlinePlanningExample example(nh, plotting, rviz, steps, box_size, update_start_state, use_continuous);
+  // Initial setup
+  std::string urdf_xml_string, srdf_xml_string;
+  nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
+  nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
+
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  if (!env->init(urdf_xml_string, srdf_xml_string, locator))
+    exit(1);
+
+  // Create monitor
+  auto monitor = std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(env, EXAMPLE_MONITOR_NAMESPACE);
+  if (rviz)
+    monitor->startPublishingEnvironment();
+
+  ROSPlottingPtr plotter;
+  if (plotting)
+    plotter = std::make_shared<ROSPlotting>(env->getSceneGraph()->getRoot());
+
+  OnlinePlanningExample example(env, plotter, steps, box_size, update_start_state, use_continuous);
+
+  auto fn1 = [&example](std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res) {
+    example.toggleRealtime(req.data);
+    res.success = true;
+    return true;
+  };
+
+  auto fn2 = [&example](const sensor_msgs::JointState::ConstPtr& joint_state) {
+    example.updateState(joint_state->name, joint_state->position);
+  };
+
+  // Set up ROS interfaces
+  ros::Subscriber joint_state_subscriber = nh.subscribe<sensor_msgs::JointState>(DYNAMIC_OBJECT_JOINT_STATE, 1, fn2);
+  ros::ServiceServer toggle_realtime_service =
+      nh.advertiseService<std_srvs::SetBool::Request, std_srvs::SetBool::Response>("toggle_realtime", fn1);
+
   example.run();
 }
