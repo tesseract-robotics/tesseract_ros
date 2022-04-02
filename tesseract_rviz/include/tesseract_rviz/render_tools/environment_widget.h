@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <ros/service_server.h>
 #include <ros/subscriber.h>
-#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_environment/environment_monitor.h>
 #include <std_msgs/ColorRGBA.h>
 #include <tesseract_environment/environment.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -71,14 +71,14 @@ protected:
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
   ros::NodeHandle nh_;
-  std::unique_ptr<tesseract_monitoring::EnvironmentMonitor> monitor_;
+  std::unique_ptr<tesseract_environment::EnvironmentMonitor> monitor_;
   tesseract_environment::Environment::Ptr env_;
   int revision_{ 0 }; /**< The current revision of the visualization environment */
   bool update_required_;
   bool update_state_;    /**< @brief Update visualization current state from environment message */
   bool load_tesseract_;  // for delayed initialization
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
-  std::chrono::high_resolution_clock::duration state_timestamp_{
+  std::chrono::system_clock::time_point state_timestamp_{
     std::chrono::high_resolution_clock::now().time_since_epoch()
   };
 

@@ -37,57 +37,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/GetMotionPlanAction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_environment/environment_monitor.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
 
 namespace tesseract_planning_server
 {
-class ROSProcessEnvironmentCache : public tesseract_planning::EnvironmentCache
-{
-public:
-  using Ptr = std::shared_ptr<ROSProcessEnvironmentCache>;
-  using ConstPtr = std::shared_ptr<const ROSProcessEnvironmentCache>;
-
-  ROSProcessEnvironmentCache(tesseract_monitoring::EnvironmentMonitor::ConstPtr env);
-
-  /**
-   * @brief Set the cache size used to hold tesseract objects for motion planning
-   * @param size The size of the cache.
-   */
-  void setCacheSize(long size) override final;
-
-  /**
-   * @brief Get the cache size used to hold tesseract objects for motion planning
-   * @return The size of the cache.
-   */
-  long getCacheSize() const override final;
-
-  /** @brief If the environment has changed it will rebuild the cache of tesseract objects */
-  void refreshCache() const override final;
-
-  /**
-   * @brief This will pop a Tesseract object from the queue
-   * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
-   */
-  tesseract_environment::Environment::UPtr getCachedEnvironment() const override final;
-
-protected:
-  /** @brief The tesseract_object used to create the cache */
-  tesseract_monitoring::EnvironmentMonitor::ConstPtr environment_;
-
-  /** @brief The assigned cache size */
-  std::size_t cache_size_{ 5 };
-
-  /** @brief The environment revision number at the time the cache was populated */
-  mutable int cache_env_revision_{ 0 };
-
-  /** @brief A vector of cached Tesseract objects */
-  mutable std::deque<tesseract_environment::Environment::UPtr> cache_;
-
-  /** @brief The mutex used when reading and writing to cache_ */
-  mutable std::shared_mutex cache_mutex_;
-};
-
 class TesseractPlanningServer
 {
 public:
@@ -109,8 +63,8 @@ public:
   TesseractPlanningServer(TesseractPlanningServer&&) = delete;
   TesseractPlanningServer& operator=(TesseractPlanningServer&&) = delete;
 
-  tesseract_monitoring::EnvironmentMonitor& getEnvironmentMonitor();
-  const tesseract_monitoring::EnvironmentMonitor& getEnvironmentMonitor() const;
+  tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor();
+  const tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor() const;
 
   tesseract_planning::ProcessPlanningServer& getProcessPlanningServer();
   const tesseract_planning::ProcessPlanningServer& getProcessPlanningServer() const;
@@ -124,7 +78,7 @@ protected:
   ros::NodeHandle nh_;
 
   /** @brief The environment monitor to keep the planning server updated with the latest */
-  tesseract_monitoring::EnvironmentMonitor::Ptr environment_;
+  tesseract_environment::EnvironmentMonitor::Ptr monitor_;
 
   /** @brief The environment cache being used by the process planning server */
   tesseract_planning::EnvironmentCache::Ptr environment_cache_;

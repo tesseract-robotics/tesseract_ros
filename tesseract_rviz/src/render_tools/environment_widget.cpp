@@ -16,6 +16,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 
 #include <tesseract_environment/environment.h>
+#include <tesseract_monitoring/environment_monitor.h>
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/link_widget.h>
@@ -161,7 +162,7 @@ void EnvironmentWidget::onUpdate()
 
   std::shared_lock<std::shared_mutex> lock;
   if (monitor_ != nullptr)
-    lock = monitor_->lockEnvironmentRead();
+    lock = monitor_->environment().lockRead();
 
   if (visualization_ && env_->isInitialized())
   {
@@ -169,7 +170,7 @@ void EnvironmentWidget::onUpdate()
     if (monitor_revision > revision_)
     {
       tesseract_environment::Commands commands = env_->getCommandHistory();
-      for (std::size_t i = static_cast<std::size_t>(revision_); i < static_cast<std::size_t>(monitor_revision); ++i)
+      for (auto i = static_cast<std::size_t>(revision_); i < static_cast<std::size_t>(monitor_revision); ++i)
         applyEnvironmentCommands(*commands[i]);
 
       revision_ = monitor_revision;
@@ -556,7 +557,7 @@ void EnvironmentWidget::loadEnvironment()
         if (monitor_ != nullptr)
           monitor_->shutdown();
 
-        monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(env_, widget_ns_);
+        monitor_ = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(env_, widget_ns_);
         revision_ = env_->getRevision();
         //        setStatus(rviz::StatusProperty::Ok, "Tesseract", "Tesseract Environment Loaded Successfully");
       }
@@ -572,7 +573,7 @@ void EnvironmentWidget::loadEnvironment()
     if (monitor_ != nullptr)
       monitor_->shutdown();
 
-    monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(env_, widget_ns_);
+    monitor_ = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(env_, widget_ns_);
     if (env_->isInitialized())
       revision_ = env_->getRevision();
     else
@@ -582,7 +583,7 @@ void EnvironmentWidget::loadEnvironment()
       monitor_->startMonitoringEnvironment(display_mode_string_property_->getStdString());
   }
 
-  if (load_tesseract_ == false && env_->isInitialized())
+  if (!load_tesseract_ && env_->isInitialized())
   {
     visualization_->addSceneGraph(*(env_->getSceneGraph()));
     visualization_->update();

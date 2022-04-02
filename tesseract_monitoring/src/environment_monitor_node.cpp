@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   pnh.param<std::string>("joint_state_topic", joint_state_topic, "");
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
 
-  tesseract_monitoring::EnvironmentMonitor monitor(robot_description, monitor_namespace);
+  tesseract_monitoring::ROSEnvironmentMonitor monitor(robot_description, monitor_namespace);
 
   if (publish_environment)
     monitor.startPublishingEnvironment();

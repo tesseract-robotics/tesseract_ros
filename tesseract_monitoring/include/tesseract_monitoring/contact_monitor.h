@@ -39,9 +39,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <condition_variable>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_monitoring/constants.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_environment/environment.h>
-#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_environment/environment_monitor.h>
 
 namespace tesseract_monitoring
 {
@@ -52,9 +53,9 @@ public:
                  tesseract_environment::Environment::UPtr env,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
-                 const std::vector<std::string>& monitored_link_names,
-                 const std::vector<std::string>& disabled_link_names,
-                 const tesseract_collision::ContactTestType& type,
+                 std::vector<std::string> monitored_link_names,
+                 std::vector<std::string> disabled_link_names,
+                 tesseract_collision::ContactTestType type,
                  double contact_distance = 0.1,
                  const std::string& joint_state_topic = DEFAULT_JOINT_STATES_TOPIC);
   ~ContactMonitor();
@@ -109,7 +110,7 @@ private:
   std::string monitor_namespace_;
   std::string monitored_namespace_;
   int env_revision_{ 0 };
-  tesseract_monitoring::EnvironmentMonitor::UPtr monitor_;
+  tesseract_environment::EnvironmentMonitor::UPtr monitor_;
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
   std::vector<std::string> monitored_link_names_;
