@@ -26,6 +26,7 @@
  */
 
 #include <tesseract_monitoring/contact_monitor.h>
+#include <tesseract_monitoring/environment_monitor.h>
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -43,16 +44,16 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
                                tesseract_environment::Environment::UPtr env,
                                ros::NodeHandle& nh,
                                ros::NodeHandle& pnh,
-                               const std::vector<std::string>& monitored_link_names,
-                               const std::vector<std::string>& disabled_link_names,
-                               const tesseract_collision::ContactTestType& type,
+                               std::vector<std::string> monitored_link_names,
+                               std::vector<std::string> disabled_link_names,
+                               tesseract_collision::ContactTestType type,
                                double contact_distance,
                                const std::string& joint_state_topic)
   : monitor_namespace_(std::move(monitor_namespace))
   , nh_(nh)
   , pnh_(pnh)
-  , monitored_link_names_(monitored_link_names)
-  , disabled_link_names_(disabled_link_names)
+  , monitored_link_names_(std::move(monitored_link_names))
+  , disabled_link_names_(std::move(disabled_link_names))
   , type_(type)
   , contact_distance_(contact_distance)
 {
@@ -60,18 +61,14 @@ ContactMonitor::ContactMonitor(std::string monitor_namespace,
     throw std::runtime_error("Null pointer passed for environment object to contact monitor.");
 
   // Create Environment Monitor
-  monitor_ = std::make_unique<tesseract_monitoring::EnvironmentMonitor>(std::move(env), monitor_namespace_);
-
-  {
-    monitor_->lockEnvironmentRead();
-    manager_ = monitor_->getEnvironment().getDiscreteContactManager();
-  }
+  monitor_ = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env), monitor_namespace_);
+  manager_ = monitor_->environment().getDiscreteContactManager();
 
   if (manager_ == nullptr)
     throw std::runtime_error("Contact monitor failed to get discrete contact manager from environment!");
 
-  manager_->setActiveCollisionObjects(monitored_link_names);
-  manager_->setDefaultCollisionMarginData(contact_distance);
+  manager_->setActiveCollisionObjects(monitored_link_names_);
+  manager_->setDefaultCollisionMarginData(contact_distance_);
   for (const auto& disabled_link_name : disabled_link_names_)
     manager_->disableCollisionObject(disabled_link_name);
 
@@ -118,18 +115,24 @@ void ContactMonitor::computeCollisionReportThread()
     // Limit the lock
     {
       std::unique_lock lock(modify_mutex_);
-      monitor_->lockEnvironmentWrite();
-      root_link = monitor_->getEnvironment().getRootLinkName();
-      if (env_revision_ != monitor_->getEnvironment().getRevision())
+      root_link = monitor_->environment().getRootLinkName();
+      if (env_revision_ != monitor_->environment().getRevision())
       {
-        env_revision_ = monitor_->getEnvironment().getRevision();
-
         // Create a new manager
-        std::vector<std::string> active = manager_->getActiveCollisionObjects();
-        tesseract_collision::CollisionMarginData contact_margin_data = manager_->getCollisionMarginData();
-        tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
+        std::vector<std::string> active;
+        tesseract_collision::CollisionMarginData contact_margin_data;
+        tesseract_collision::IsContactAllowedFn fn;
 
-        manager_ = monitor_->getEnvironment().getDiscreteContactManager();
+        {
+          auto lock_read = monitor_->environment().lockRead();
+
+          env_revision_ = monitor_->environment().getRevision();
+          active = manager_->getActiveCollisionObjects();
+          contact_margin_data = manager_->getCollisionMarginData();
+          fn = manager_->getIsContactAllowedFn();
+          manager_ = monitor_->environment().getDiscreteContactManager();
+        }
+
         manager_->setActiveCollisionObjects(active);
         manager_->setCollisionMarginData(contact_margin_data);
         manager_->setIsContactAllowedFn(fn);
@@ -151,9 +154,9 @@ void ContactMonitor::computeCollisionReportThread()
       contacts.clear();
       contacts_msg.contacts.clear();
 
-      monitor_->getEnvironment().setState(msg->name,
-                                          Eigen::Map<Eigen::VectorXd>(msg->position.data(), msg->position.size()));
-      tesseract_scene_graph::SceneState state = monitor_->getEnvironment().getState();
+      monitor_->environment().setState(msg->name,
+                                       Eigen::Map<Eigen::VectorXd>(msg->position.data(), msg->position.size()));
+      tesseract_scene_graph::SceneState state = monitor_->environment().getState();
 
       manager_->setCollisionObjectsTransform(state.link_transforms);
       manager_->contactTest(contacts, type_);
@@ -198,24 +201,33 @@ bool ContactMonitor::callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmen
 {
   std::scoped_lock lock(modify_mutex_);
 
-  monitor_->lockEnvironmentRead();
   int revision = static_cast<int>(request.revision);
-  if (request.append)
-    revision = monitor_->getEnvironment().getRevision();
+  {
+    auto lock_read = monitor_->environment().lockRead();
+    if (request.append)
+      revision = monitor_->environment().getRevision();
 
-  if (!monitor_->getEnvironment().isInitialized() || request.id != monitor_->getEnvironment().getName() ||
-      revision != monitor_->getEnvironment().getRevision())
-    return false;
+    if (!monitor_->environment().isInitialized() || request.id != monitor_->environment().getName() ||
+        revision != monitor_->environment().getRevision())
+      return false;
+  }
 
-  response.success = tesseract_rosutils::processMsg(monitor_->getEnvironment(), request.commands);
-  response.revision = static_cast<unsigned long>(monitor_->getEnvironment().getRevision());
+  response.success = tesseract_rosutils::processMsg(monitor_->environment(), request.commands);
+  response.revision = static_cast<unsigned long>(monitor_->environment().getRevision());
 
   // Create a new manager
-  std::vector<std::string> active = manager_->getActiveCollisionObjects();
-  tesseract_collision::CollisionMarginData contact_margin_data = manager_->getCollisionMarginData();
-  tesseract_collision::IsContactAllowedFn fn = manager_->getIsContactAllowedFn();
+  std::vector<std::string> active;
+  tesseract_collision::CollisionMarginData contact_margin_data;
+  tesseract_collision::IsContactAllowedFn fn;
 
-  manager_ = monitor_->getEnvironment().getDiscreteContactManager();
+  {
+    auto lock_read = monitor_->environment().lockRead();
+    active = manager_->getActiveCollisionObjects();
+    contact_margin_data = manager_->getCollisionMarginData();
+    fn = manager_->getIsContactAllowedFn();
+    manager_ = monitor_->environment().getDiscreteContactManager();
+  }
+
   manager_->setActiveCollisionObjects(active);
   manager_->setCollisionMarginData(contact_margin_data);
   manager_->setIsContactAllowedFn(fn);
@@ -230,15 +242,14 @@ bool ContactMonitor::callbackComputeContactResultVector(tesseract_msgs::ComputeC
 {
   tesseract_collision::ContactResultMap contact_results;
 
+  monitor_->environment().setState(
+      request.joint_states.name,
+      Eigen::Map<Eigen::VectorXd>(request.joint_states.position.data(), request.joint_states.position.size()));
+  tesseract_scene_graph::SceneState state = monitor_->environment().getState();
+
   // Limit the lock
   {
     std::scoped_lock lock(modify_mutex_);
-    monitor_->lockEnvironmentWrite();
-    monitor_->getEnvironment().setState(
-        request.joint_states.name,
-        Eigen::Map<Eigen::VectorXd>(request.joint_states.position.data(), request.joint_states.position.size()));
-    tesseract_scene_graph::SceneState state = monitor_->getEnvironment().getState();
-
     manager_->setCollisionObjectsTransform(state.link_transforms);
     manager_->contactTest(contact_results, type_);
   }
