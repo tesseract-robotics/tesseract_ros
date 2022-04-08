@@ -2,6 +2,11 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Tesseract examples libraries moved to tesseract_planning
+* Contributors: Levi Armstrong
+
 0.3.3 (2022-02-22)
 ------------------
 * Adding std_srvs to dependencies in CMakeLists and package

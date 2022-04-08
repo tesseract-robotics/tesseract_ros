@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to use monitor interface and clean up environment monitor
+* Contributors: Levi Armstrong
+
 0.3.3 (2022-02-22)
 ------------------
 
