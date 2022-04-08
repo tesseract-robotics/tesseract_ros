@@ -2,8 +2,8 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2022-04-08)
+------------------
 * Tesseract examples libraries moved to tesseract_planning
 * Contributors: Levi Armstrong
 
