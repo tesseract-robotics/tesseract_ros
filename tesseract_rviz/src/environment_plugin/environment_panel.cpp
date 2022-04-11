@@ -21,11 +21,9 @@
 
 namespace tesseract_rviz
 {
-
 struct EnvironmentPanelPrivate
 {
-  EnvironmentPanelPrivate()
-    : entity_manager(std::make_shared<tesseract_gui::EntityManager>())
+  EnvironmentPanelPrivate() : entity_manager(std::make_shared<tesseract_gui::EntityManager>())
   {
     entity_container = entity_manager->getEntityContainer(container_name);
   }
@@ -37,7 +35,7 @@ struct EnvironmentPanelPrivate
   QString env_topic;
   QString joint_state_topic;
 
-  std::string container_name{QUuid::createUuid().toString().toStdString()};
+  std::string container_name{ QUuid::createUuid().toString().toStdString() };
   tesseract_gui::EntityManager::Ptr entity_manager;
   tesseract_gui::EntityContainer::Ptr entity_container;
 
@@ -59,9 +57,8 @@ struct EnvironmentPanelPrivate
   std::unordered_map<std::string, bool> link_visual_visible_changes;
   std::vector<std::string> link_selection_changes;
 
-
   /** @brief Keeps track of how many EnvironmentPanels have been created for the default namespace */
-  static int environment_widget_counter; // NOLINT
+  static int environment_widget_counter;  // NOLINT
 
   /** @brief Keeps track of which EnvironmentWidget this is */
   int environment_panel_id;
@@ -74,27 +71,26 @@ struct EnvironmentPanelPrivate
 
 void EnvironmentPanelPrivate::clear()
 {
-  scene_manager->destroySceneNode(scene_node);
-  for (const auto& entity : entity_container->getVisuals())
-    scene_manager->destroyEntity(entity.second.unique_name);
+  //  scene_manager->destroySceneNode(scene_node);
+  //  for (const auto& entity : entity_container->getVisuals())
+  //    scene_manager->destroyEntity(entity.second.unique_name);
 
-  for (const auto& entity : entity_container->getSensors())
-    scene_manager->destroyEntity(entity.second.unique_name);
+  //  for (const auto& entity : entity_container->getSensors())
+  //    scene_manager->destroyEntity(entity.second.unique_name);
 
-  for (const auto& entity : entity_container->getUntracked())
-    scene_manager->destroyEntity(entity.unique_name);
+  //  for (const auto& entity : entity_container->getUntracked())
+  //    scene_manager->destroyEntity(entity.unique_name);
 
   entity_container->clear();
 }
 
 EnvironmentPanel::EnvironmentPanel(QWidget* parent)
-  : rviz::Panel(parent)
-  , data_(std::make_unique<EnvironmentPanelPrivate>())
+  : rviz::Panel(parent), data_(std::make_unique<EnvironmentPanelPrivate>())
 {
   setName("Tesseract Environment");
 
   QGridLayout* properties_layout = new QGridLayout();
-  QLabel* display_mode_label = new QLabel( "Display Mode:" );
+  QLabel* display_mode_label = new QLabel("Display Mode:");
   display_mode_label->setToolTip("Leverage URDF or connect to monitor namespace");
   data_->display_mode = new QComboBox();
   data_->display_mode->setEditable(false);
@@ -106,30 +102,30 @@ EnvironmentPanel::EnvironmentPanel(QWidget* parent)
 
   data_->env_topic_editor = new ROSTopicComboBox();
   data_->env_topic_editor->setMessageType<tesseract_msgs::EnvironmentState>();
-  properties_layout->addWidget(new QLabel( "Environment Topic:" ), 1, 0);
+  properties_layout->addWidget(new QLabel("Environment Topic:"), 1, 0);
   properties_layout->addWidget(data_->env_topic_editor, 1, 1);
 
   data_->joint_state_topic_editor = new ROSTopicComboBox();
   data_->joint_state_topic_editor->setMessageType<sensor_msgs::JointState>();
-  properties_layout->addWidget(new QLabel( "Joint State Topic:" ), 2, 0);
+  properties_layout->addWidget(new QLabel("Joint State Topic:"), 2, 0);
   properties_layout->addWidget(data_->joint_state_topic_editor, 2, 1);
 
   data_->env_widget = new tesseract_gui::EnvironmentWidget();
 
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->addLayout( properties_layout );
-  layout->addWidget( data_->env_widget );
-  setLayout( layout );
+  layout->addLayout(properties_layout);
+  layout->addWidget(data_->env_widget);
+  setLayout(layout);
 
   connect(data_->display_mode, SIGNAL(currentIndexChanged(int)), this, SLOT(onDisplayModeChanged(int)));
   connect(data_->env_topic_editor, SIGNAL(currentTextChanged(QString)), this, SLOT(onEnvironmentTopicChanged(QString)));
-  connect(data_->joint_state_topic_editor, SIGNAL(currentTextChanged(QString)), this, SLOT(onJointStateTopicChanged(QString)));
+  connect(data_->joint_state_topic_editor,
+          SIGNAL(currentTextChanged(QString)),
+          this,
+          SLOT(onJointStateTopicChanged(QString)));
 }
 
-EnvironmentPanel::~EnvironmentPanel()
-{
-  data_->clear();
-};
+EnvironmentPanel::~EnvironmentPanel() { data_->clear(); };
 
 void EnvironmentPanel::onInitialize()
 {
@@ -137,43 +133,33 @@ void EnvironmentPanel::onInitialize()
   data_->scene_node = data_->scene_manager->createSceneNode();
 }
 
-void EnvironmentPanel::load( const rviz::Config& config)
+void EnvironmentPanel::load(const rviz::Config& config)
 {
-  rviz::Panel::load( config );
-  if( config.mapGetString( "EnvTopic", &data_->env_topic ))
+  rviz::Panel::load(config);
+  if (config.mapGetString("EnvTopic", &data_->env_topic))
   {
     data_->env_topic_editor->setCurrentText(data_->env_topic);
-//    updateTopic();
+    //    updateTopic();
   }
-  if( config.mapGetString( "JointStateTopic", &data_->joint_state_topic ))
+  if (config.mapGetString("JointStateTopic", &data_->joint_state_topic))
   {
     data_->joint_state_topic_editor->setCurrentText(data_->joint_state_topic);
-//    updateTopic();
+    //    updateTopic();
   }
 }
 
-void EnvironmentPanel::save( rviz::Config config ) const
+void EnvironmentPanel::save(rviz::Config config) const
 {
-  config.mapSetValue( "EnvTopic", data_->env_topic );
-  config.mapSetValue( "JointStateTopic", data_->joint_state_topic );
-  rviz::Panel::save( config );
+  config.mapSetValue("EnvTopic", data_->env_topic);
+  config.mapSetValue("JointStateTopic", data_->joint_state_topic);
+  rviz::Panel::save(config);
 }
 
-void EnvironmentPanel::onDisplayModeChanged(int index)
-{
+void EnvironmentPanel::onDisplayModeChanged(int index) {}
 
-}
+void EnvironmentPanel::onEnvironmentTopicChanged(const QString& text) { tesseract_environment::Environment::Ptr env; }
 
-void EnvironmentPanel::onEnvironmentTopicChanged(const QString &text)
-{
-  tesseract_environment::Environment::Ptr env;
-
-}
-
-void EnvironmentPanel::onJointStateTopicChanged(const QString &text)
-{
-
-}
+void EnvironmentPanel::onJointStateTopicChanged(const QString& text) {}
 
 void EnvironmentPanel::onEnvironmentSet(const tesseract_environment::Environment& /*env*/)
 {
@@ -220,192 +206,186 @@ void EnvironmentPanel::onSelectedLinksChanged(const std::vector<std::string>& se
 
 void EnvironmentPanel::onRender()
 {
-//  if (data_->render_dirty)
-//  {
-//    if (data_->render_reset) // Remove all
-//    {
-//      if (!data_->entity_container.empty())
-//      {
-////        for (const auto& id : data_->entity_container.getVisuals())
-////          scene->DestroyNodeById(id.second);
+  //  if (data_->render_dirty)
+  //  {
+  //    if (data_->render_reset) // Remove all
+  //    {
+  //      if (!data_->entity_container.empty())
+  //      {
+  ////        for (const auto& id : data_->entity_container.getVisuals())
+  ////          scene->DestroyNodeById(id.second);
 
-////        for (const auto& id : data_->entity_container.getSensors())
-////          scene->DestroyNodeById(id.second);
+  ////        for (const auto& id : data_->entity_container.getSensors())
+  ////          scene->DestroyNodeById(id.second);
 
-////        data_->entity_container.clear();
-////        render_link_names_.clear();
-////        render_revision_ = 0;
-////        render_state_timestamp_ = environment().getCurrentStateTimestamp();
-//      }
-//      data_->render_reset = false;
-//    }
+  ////        data_->entity_container.clear();
+  ////        render_link_names_.clear();
+  ////        render_revision_ = 0;
+  ////        render_state_timestamp_ = environment().getCurrentStateTimestamp();
+  //      }
+  //      data_->render_reset = false;
+  //    }
 
-//    { // Check environment
-//      auto lock = data_->env_widget->environment().lockRead();
-//      auto revision = data_->env_widget->environment().getRevision();
-//      auto state_timestamp = data_->env_widget->environment().getCurrentStateTimestamp();
-//      if (data_->render_dirty || revision > data_->render_revision)
-//      {
-//        if (revision > data_->render_revision)
-//        {
-//          tesseract_environment::Commands commands = data_->env_widget->environment().getCommandHistory();
+  //    { // Check environment
+  //      auto lock = data_->env_widget->environment().lockRead();
+  //      auto revision = data_->env_widget->environment().getRevision();
+  //      auto state_timestamp = data_->env_widget->environment().getCurrentStateTimestamp();
+  //      if (data_->render_dirty || revision > data_->render_revision)
+  //      {
+  //        if (revision > data_->render_revision)
+  //        {
+  //          tesseract_environment::Commands commands = data_->env_widget->environment().getCommandHistory();
 
-//          bool links_removed {false};
-//          for (std::size_t i = data_->render_revision; i < commands.size(); ++i)
-//          {
-////            const tesseract_environment::Command::ConstPtr& command = commands.at(i);
-////            switch (command->getType())
-////            {
-////              case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
-////              {
-////                auto cmd = std::static_pointer_cast<const tesseract_environment::AddSceneGraphCommand>(command);
-////                auto link_names = loadSceneGraph(*scene, *entity_container_, *cmd->getSceneGraph(), cmd->getPrefix());
-////                render_link_names_.insert(render_link_names_.end(), link_names.begin(), link_names.end());
-////                break;
-////              }
-////              case tesseract_environment::CommandType::ADD_LINK:
-////              {
-////                auto cmd = std::static_pointer_cast<const tesseract_environment::AddLinkCommand>(command);
-////                ignition::rendering::VisualPtr root = scene->RootVisual();
-////                root->AddChild(loadLink(*scene, *entity_container_, *cmd->getLink()));
-////                render_link_names_.push_back(cmd->getLink()->getName());
-////                break;
-////              }
-////              case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
-////              {
-////                auto cmd = std::static_pointer_cast<const tesseract_environment::ChangeLinkVisibilityCommand>(command);
-////                auto lc = entity_container_->getVisual(cmd->getLinkName());
-////                auto visual_node = scene->VisualById(lc);
-////                if (visual_node != nullptr)
-////                  visual_node->SetVisible(cmd->getEnabled());
-////                break;
-////              }
-////              case tesseract_environment::CommandType::REMOVE_LINK:
-////              case tesseract_environment::CommandType::REMOVE_JOINT:
-////              {
-////                links_removed = true;
-////                break;
-////              }
-////              case tesseract_environment::CommandType::MOVE_LINK:
-////              case tesseract_environment::CommandType::MOVE_JOINT:
-////              case tesseract_environment::CommandType::REPLACE_JOINT:
-////              case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
-////              case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
-////              {
-////                render_state_dirty_ = true;
-////                break;
-////              }
-////              case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
-////              case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
-////              case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
-////              case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
-////              case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
-////              case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
-////              case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
-////              case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
-////              case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
-////              case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
-////              case tesseract_environment::CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
-////              case tesseract_environment::CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
-////              {
-////                break;
-////              }
-////              // LCOV_EXCL_START
-////              default:
-////              {
-////                CONSOLE_BRIDGE_logError("IgnitionEnvironmentWidget, Unhandled environment command");
-//////                success &= false;
-////              }
-////                // LCOV_EXCL_STOP
-////            }
-////          }
+  //          bool links_removed {false};
+  //          for (std::size_t i = data_->render_revision; i < commands.size(); ++i)
+  //          {
+  ////            const tesseract_environment::Command::ConstPtr& command = commands.at(i);
+  ////            switch (command->getType())
+  ////            {
+  ////              case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
+  ////              {
+  ////                auto cmd = std::static_pointer_cast<const tesseract_environment::AddSceneGraphCommand>(command);
+  ////                auto link_names = loadSceneGraph(*scene, *entity_container_, *cmd->getSceneGraph(),
+  ///cmd->getPrefix()); /                render_link_names_.insert(render_link_names_.end(), link_names.begin(),
+  ///link_names.end()); /                break; /              } /              case
+  ///tesseract_environment::CommandType::ADD_LINK: /              { /                auto cmd =
+  ///std::static_pointer_cast<const tesseract_environment::AddLinkCommand>(command); / ignition::rendering::VisualPtr
+  ///root = scene->RootVisual(); /                root->AddChild(loadLink(*scene, *entity_container_, *cmd->getLink()));
+  ////                render_link_names_.push_back(cmd->getLink()->getName());
+  ////                break;
+  ////              }
+  ////              case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
+  ////              {
+  ////                auto cmd = std::static_pointer_cast<const
+  ///tesseract_environment::ChangeLinkVisibilityCommand>(command); /                auto lc =
+  ///entity_container_->getVisual(cmd->getLinkName()); /                auto visual_node = scene->VisualById(lc); / if
+  ///(visual_node != nullptr) /                  visual_node->SetVisible(cmd->getEnabled()); /                break; / }
+  ////              case tesseract_environment::CommandType::REMOVE_LINK:
+  ////              case tesseract_environment::CommandType::REMOVE_JOINT:
+  ////              {
+  ////                links_removed = true;
+  ////                break;
+  ////              }
+  ////              case tesseract_environment::CommandType::MOVE_LINK:
+  ////              case tesseract_environment::CommandType::MOVE_JOINT:
+  ////              case tesseract_environment::CommandType::REPLACE_JOINT:
+  ////              case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
+  ////              case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
+  ////              {
+  ////                render_state_dirty_ = true;
+  ////                break;
+  ////              }
+  ////              case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
+  ////              case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
+  ////              case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
+  ////              case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+  ////              case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
+  ////              case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+  ////              case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+  ////              case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
+  ////              case tesseract_environment::CommandType::CHANGE_COLLISION_MARGINS:
+  ////              case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
+  ////              case tesseract_environment::CommandType::SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER:
+  ////              case tesseract_environment::CommandType::SET_ACTIVE_DISCRETE_CONTACT_MANAGER:
+  ////              {
+  ////                break;
+  ////              }
+  ////              // LCOV_EXCL_START
+  ////              default:
+  ////              {
+  ////                CONSOLE_BRIDGE_logError("IgnitionEnvironmentWidget, Unhandled environment command");
+  //////                success &= false;
+  ////              }
+  ////                // LCOV_EXCL_STOP
+  ////            }
+  ////          }
 
-////          if (links_removed)
-////          {
-////            std::vector<std::string> link_names = environment().getLinkNames();
-////            std::vector<std::string> diff;
+  ////          if (links_removed)
+  ////          {
+  ////            std::vector<std::string> link_names = environment().getLinkNames();
+  ////            std::vector<std::string> diff;
 
-////            std::sort(link_names.begin(), link_names.end());
-////            std::sort(render_link_names_.begin(), render_link_names_.end());
+  ////            std::sort(link_names.begin(), link_names.end());
+  ////            std::sort(render_link_names_.begin(), render_link_names_.end());
 
-////            std::set_difference(render_link_names_.begin(),
-////                                render_link_names_.end(),
-////                                link_names.begin(),
-////                                link_names.end(),
-////                                std::inserter(diff, diff.begin()));
+  ////            std::set_difference(render_link_names_.begin(),
+  ////                                render_link_names_.end(),
+  ////                                link_names.begin(),
+  ////                                link_names.end(),
+  ////                                std::inserter(diff, diff.begin()));
 
-////            for (const auto& removed_link : diff)
-////            {
-////              auto id = entity_container_->getVisual(removed_link);
-////              scene->DestroyNodeById(id);
-////            }
-////          }
-////          render_revision_ = revision;
-//        }
-//      }
+  ////            for (const auto& removed_link : diff)
+  ////            {
+  ////              auto id = entity_container_->getVisual(removed_link);
+  ////              scene->DestroyNodeById(id);
+  ////            }
+  ////          }
+  ////          render_revision_ = revision;
+  //        }
+  //      }
 
-////      if (data_->render_state_dirty || state_timestamp > data_->render_state_timestamp)
-////      {
-////        tesseract_scene_graph::SceneState state = data_->env_widget->environment().getState();
-////        for (const auto& pair : state.link_transforms)
-////        {
-////          auto id = data_->entity_container.getVisual(pair.first);
-//////          scene->VisualById(id)->SetWorldPose(ignition::math::eigen3::convert(pair.second));
-////        }
-////        render_state_timestamp_ = state_timestamp;
-////      }
-//      }
-//    }
+  ////      if (data_->render_state_dirty || state_timestamp > data_->render_state_timestamp)
+  ////      {
+  ////        tesseract_scene_graph::SceneState state = data_->env_widget->environment().getState();
+  ////        for (const auto& pair : state.link_transforms)
+  ////        {
+  ////          auto id = data_->entity_container.getVisual(pair.first);
+  //////          scene->VisualById(id)->SetWorldPose(ignition::math::eigen3::convert(pair.second));
+  ////        }
+  ////        render_state_timestamp_ = state_timestamp;
+  ////      }
+  //      }
+  //    }
 
-//    if (data_->render_dirty)
-//    {
-//      for (const auto& l : data_->link_visible_changes)
-//      {
-//        auto lc = data_->entity_container.getVisual(l.first);
-////        auto visual_node = scene->VisualById(lc);
-////        if (visual_node != nullptr)
-////          visual_node->SetVisible(l.second);
-//      }
+  //    if (data_->render_dirty)
+  //    {
+  //      for (const auto& l : data_->link_visible_changes)
+  //      {
+  //        auto lc = data_->entity_container.getVisual(l.first);
+  ////        auto visual_node = scene->VisualById(lc);
+  ////        if (visual_node != nullptr)
+  ////          visual_node->SetVisible(l.second);
+  //      }
 
-//      for (const auto& l : data_->link_visual_visible_changes)
-//      {
-//        std::string visual_key = l.first + "::Visuals";
-//        auto lc = data_->entity_container.getVisual(visual_key);
-////        auto visual_node = scene->VisualById(lc);
-////        if (visual_node != nullptr)
-////          visual_node->SetVisible(l.second);
-//      }
+  //      for (const auto& l : data_->link_visual_visible_changes)
+  //      {
+  //        std::string visual_key = l.first + "::Visuals";
+  //        auto lc = data_->entity_container.getVisual(visual_key);
+  ////        auto visual_node = scene->VisualById(lc);
+  ////        if (visual_node != nullptr)
+  ////          visual_node->SetVisible(l.second);
+  //      }
 
-//      for (const auto& l : data_->link_collision_visible_changes)
-//      {
-//        std::string visual_key = l.first + "::Collisions";
-//        auto lc = data_->entity_container.getVisual(visual_key);
-////        auto visual_node = scene->VisualById(lc);
-////        if (visual_node != nullptr)
-////          visual_node->SetVisible(l.second);
-//      }
+  //      for (const auto& l : data_->link_collision_visible_changes)
+  //      {
+  //        std::string visual_key = l.first + "::Collisions";
+  //        auto lc = data_->entity_container.getVisual(visual_key);
+  ////        auto visual_node = scene->VisualById(lc);
+  ////        if (visual_node != nullptr)
+  ////          visual_node->SetVisible(l.second);
+  //      }
 
-////      for (const auto& id : data_->highlighted_entities)
-////      {
-////        auto visual_node = scene->VisualById(id);
-////        if (visual_node != nullptr)
-////          visual_node->SetVisible(false);
-////      }
-////      highlighted_entities_.clear();
+  ////      for (const auto& id : data_->highlighted_entities)
+  ////      {
+  ////        auto visual_node = scene->VisualById(id);
+  ////        if (visual_node != nullptr)
+  ////          visual_node->SetVisible(false);
+  ////      }
+  ////      highlighted_entities_.clear();
 
-////      for (const auto& l : data_->link_selection_changes)
-////      {
-////        std::string visual_key = l + "::WireBox";
-////        auto lc = data_->entity_container.getVisual(visual_key);
-////        auto visual_node = scene->VisualById(lc);
-////        if (visual_node != nullptr)
-////        {
-////          visual_node->SetVisible(true);
-////          highlighted_entities_.push_back(lc);
-////        }
-////      }
-//    }
-//    data_->render_dirty = false;
-//  }
+  ////      for (const auto& l : data_->link_selection_changes)
+  ////      {
+  ////        std::string visual_key = l + "::WireBox";
+  ////        auto lc = data_->entity_container.getVisual(visual_key);
+  ////        auto visual_node = scene->VisualById(lc);
+  ////        if (visual_node != nullptr)
+  ////        {
+  ////          visual_node->SetVisible(true);
+  ////          highlighted_entities_.push_back(lc);
+  ////        }
+  ////      }
+  //    }
+  //    data_->render_dirty = false;
+  //  }
 }
-}
+}  // namespace tesseract_rviz

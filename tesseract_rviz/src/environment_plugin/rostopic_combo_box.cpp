@@ -34,11 +34,7 @@
 
 namespace tesseract_rviz
 {
-ROSTopicComboBox::ROSTopicComboBox(QWidget *parent)
-  : QComboBox(parent)
-{
-  setEditable(false);
-}
+ROSTopicComboBox::ROSTopicComboBox(QWidget* parent) : QComboBox(parent) { setEditable(false); }
 
 ROSTopicComboBox::~ROSTopicComboBox() = default;
 
@@ -72,4 +68,4 @@ void ROSTopicComboBox::fillTopicList()
   }
   QApplication::restoreOverrideCursor();
 }
-}
+}  // namespace tesseract_rviz

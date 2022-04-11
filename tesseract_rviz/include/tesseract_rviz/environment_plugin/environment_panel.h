@@ -21,13 +21,13 @@ public:
 
   void onInitialize() override;
 
-  void load( const rviz::Config& config ) override;
-  void save( rviz::Config config ) const override;
+  void load(const rviz::Config& config) override;
+  void save(rviz::Config config) const override;
 
 private Q_SLOTS:
   void onDisplayModeChanged(int index);
-  void onEnvironmentTopicChanged(const QString &text);
-  void onJointStateTopicChanged(const QString &text);
+  void onEnvironmentTopicChanged(const QString& text);
+  void onJointStateTopicChanged(const QString& text);
 
   void onEnvironmentSet(const tesseract_environment::Environment& env);
   void onEnvironmentChanged(const tesseract_environment::Environment& env);
@@ -42,6 +42,6 @@ protected:
   std::unique_ptr<EnvironmentPanelPrivate> data_;
 };
 
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_ENVIRONMENT_PANEL_H
+#endif  // TESSERACT_RVIZ_ENVIRONMENT_PANEL_H

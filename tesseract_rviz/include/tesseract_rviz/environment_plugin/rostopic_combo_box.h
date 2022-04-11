@@ -35,15 +35,14 @@
 
 namespace tesseract_rviz
 {
-
 class ROSTopicComboBox : public QComboBox
 {
   Q_OBJECT
 public:
-  explicit ROSTopicComboBox(QWidget *parent = nullptr);
+  explicit ROSTopicComboBox(QWidget* parent = nullptr);
   ~ROSTopicComboBox();
 
-  template<typename T>
+  template <typename T>
   void setMessageType()
   {
     message_type_ = ros::message_traits::datatype<T>();
@@ -57,5 +56,5 @@ public Q_SLOTS:
 protected:
   QString message_type_;
 };
-}
-#endif // TESSERACT_RVIZ_ROSTOPIC_COMBO_BOX_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_ROSTOPIC_COMBO_BOX_H

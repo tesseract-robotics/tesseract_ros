@@ -4,6 +4,7 @@
 #include <string>
 #include <OgreMaterial.h>
 
+#include <tesseract_widgets/common/entity_manager.h>
 #include <tesseract_widgets/common/entity_container.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/link.h>
@@ -18,11 +19,13 @@ class SceneNode;
 
 namespace tesseract_rviz
 {
-
 bool isMeshWithColor(const std::string& file_path);
 
+std::string getEnvNamespaceFromTopic(const std::string& topic);
+
 std::vector<std::string> loadSceneGraph(Ogre::SceneManager& scene,
-                                        tesseract_gui::EntityContainer& entity_container,
+                                        Ogre::SceneNode& parent_node,
+                                        tesseract_gui::EntityManager& entity_manager,
                                         const tesseract_scene_graph::SceneGraph& scene_graph,
                                         const std::string& prefix = "");
 
@@ -38,7 +41,7 @@ Ogre::SceneNode* loadLinkCollisions(Ogre::SceneManager& scene,
                                     tesseract_gui::EntityContainer& entity_container,
                                     const tesseract_scene_graph::Link& link);
 
-//Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
+// Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
 //                                 tesseract_gui::EntityContainer& entity_container,
 //                                 const tesseract_scene_graph::Link& link,
 //                                 const ignition::math::AxisAlignedBox& aabb);
@@ -47,16 +50,17 @@ Ogre::SceneNode* loadLinkAxis(Ogre::SceneManager& scene,
                               tesseract_gui::EntityContainer& entity_container,
                               const tesseract_scene_graph::Link& link);
 
-Ogre::SceneNode *loadLinkGeometry(Ogre::SceneManager& scene,
+Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
                                   tesseract_gui::EntityContainer& entity_container,
                                   const tesseract_geometry::Geometry& geometry,
                                   const Eigen::Vector3d& scale,
                                   const Eigen::Isometry3d& local_pose,
-                                  const tesseract_scene_graph::Material::ConstPtr& material,
+                                  const Ogre::MaterialPtr& material,
                                   bool is_visual);
 
-Ogre::MaterialPtr loadMaterial(Ogre::SceneManager& scene,
-                               const tesseract_scene_graph::Material::ConstPtr& material);
+Ogre::MaterialPtr loadLinkMaterial(Ogre::SceneManager& scene,
+                                   const tesseract_scene_graph::Link& link,
+                                   const std::string& material_name);
 
 Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
                                       tesseract_gui::EntityContainer& entity_container,
@@ -69,6 +73,6 @@ rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points
                                    tesseract_gui::EntityContainer& entity_container,
                                    float size,
                                    tesseract_geometry::Octree::SubType subtype);
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_CONVERSIONS_H
+#endif  // TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_CONVERSIONS_H

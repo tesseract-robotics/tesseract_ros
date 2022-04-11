@@ -6,7 +6,6 @@
 
 namespace tesseract_rviz
 {
-
 enum OctreeVoxelRenderMode
 {
   OCTOMAP_FREE_VOXELS = 1,
@@ -26,5 +25,5 @@ struct OctreeDataContainer
   float size;
   tesseract_geometry::Octree::SubType shape_type;
 };
-}
-#endif // TESSERACT_RVIZ_TYPES_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_TYPES_H

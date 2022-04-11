@@ -345,6 +345,7 @@ add_library(${PROJECT_NAME}_environment_plugin_core SHARED
   src/environment_plugin/environment_panel.cpp
   src/environment_plugin/environment_display.cpp
   src/environment_plugin/rostopic_combo_box.cpp
+  src/environment_plugin/conversions.cpp
   ${${PROJECT_NAME}_environment_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     tesseract::tesseract_widgets_common
