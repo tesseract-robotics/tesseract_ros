@@ -16,6 +16,7 @@
   <depend>tesseract_common</depend>
   <depend>tesseract_monitoring</depend>
   <depend>tesseract_motion_planners</depend>
+  <depend>tesseract_widgets</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
@@ -30,5 +31,6 @@
     <rviz plugin="${prefix}/tesseract_rviz_trajectory_plugin_description.xml"/>
     <rviz plugin="${prefix}/tesseract_rviz_planning_response_archive_plugin_description.xml"/>
     <rviz plugin="${prefix}/tesseract_rviz_manipulation_plugin_description.xml"/>
+    <rviz plugin="${prefix}/tesseract_rviz_environment_plugin_description.xml"/>
   </export>
 </package>
