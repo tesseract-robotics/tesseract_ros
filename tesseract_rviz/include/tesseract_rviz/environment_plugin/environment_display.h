@@ -31,6 +31,7 @@ private Q_SLOTS:
   void onSceneAlphaChanged();
   void onSceneVisualVisibleChanged();
   void onSceneCollisionVisibleChanged();
+  void onSceneWireBoxVisibleChanged();
   void onSceneLinkVisibleChanged();
 
 protected:

@@ -213,8 +213,14 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
 
   scene_node->addChild(loadLinkVisuals(scene, entity_container, link));
   scene_node->addChild(loadLinkCollisions(scene, entity_container, link));
-  scene_node->addChild(loadLinkAxis(scene, entity_container, link));
 
+  if (!link.visual.empty() || !link.collision.empty())
+  {
+    Ogre::AxisAlignedBox aabb = getAABB(*scene_node);
+    scene_node->addChild(loadLinkWireBox(scene, entity_container, link, aabb));
+  }
+
+  scene_node->addChild(loadLinkAxis(scene, entity_container, link));
   return scene_node;
 }
 
@@ -327,6 +333,94 @@ Ogre::SceneNode* loadLinkAxis(Ogre::SceneManager& scene,
   //  axis->SetVisible(true);
   scene_node->setVisible(false, true);
   return scene_node;
+}
+
+Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
+                                 tesseract_gui::EntityContainer& entity_container,
+                                 const tesseract_scene_graph::Link& link,
+                                 const Ogre::AxisAlignedBox& aabb)
+{
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(
+      "tesseract::highlight::material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  if (mat.isNull())
+  {
+    mat = Ogre::MaterialManager::getSingleton().create("tesseract::highlight::material",
+                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    mat->getTechnique(0)->setLightingEnabled(true);
+    mat->setAmbient(1.0, 1.0, 1.0);
+    mat->setDiffuse(1.0, 1.0, 1.0, 1.0);
+    mat->setSpecular(1.0, 1.0, 1.0, 1.0);
+    //    mat->setEmissive(1.0, 1.0, 1.0, 1.0);
+  }
+
+  std::string name = link.getName() + "::WireBox";
+  auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, name);
+  Ogre::SceneNode* wire_box_node = scene.createSceneNode(entity.unique_name);
+
+  auto untracked_entity = entity_container.addUntrackedEntity(tesseract_gui::EntityContainer::RESOURCE_NS);
+  Ogre::ManualObject* wire_box = scene.createManualObject(untracked_entity.unique_name);
+  wire_box->clear();
+  wire_box->setCastShadows(false);
+  wire_box->estimateVertexCount(12);
+  std::string mat_name = "RVIZ/Green";
+  wire_box->begin(mat_name, Ogre::RenderOperation::OT_LINE_LIST);
+
+  Ogre::Vector3 max = aabb.getMaximum();
+  Ogre::Vector3 min = aabb.getMinimum();
+
+  // line 0
+  wire_box->position(min.x, min.y, min.z);
+  wire_box->position(max.x, min.y, min.z);
+
+  // line 1
+  wire_box->position(min.x, min.y, min.z);
+  wire_box->position(min.x, min.y, max.z);
+
+  // line 2
+  wire_box->position(min.x, min.y, min.z);
+  wire_box->position(min.x, max.y, min.z);
+
+  // line 3
+  wire_box->position(min.x, max.y, min.z);
+  wire_box->position(min.x, max.y, max.z);
+
+  // line 4
+  wire_box->position(min.x, max.y, min.z);
+  wire_box->position(max.x, max.y, min.z);
+
+  // line 5
+  wire_box->position(max.x, min.y, min.z);
+  wire_box->position(max.x, min.y, max.z);
+
+  // line 6
+  wire_box->position(max.x, min.y, min.z);
+  wire_box->position(max.x, max.y, min.z);
+
+  // line 7
+  wire_box->position(min.x, max.y, max.z);
+  wire_box->position(max.x, max.y, max.z);
+
+  // line 8
+  wire_box->position(min.x, max.y, max.z);
+  wire_box->position(min.x, min.y, max.z);
+
+  // line 9
+  wire_box->position(max.x, max.y, min.z);
+  wire_box->position(max.x, max.y, max.z);
+
+  // line 10
+  wire_box->position(max.x, min.y, max.z);
+  wire_box->position(max.x, max.y, max.z);
+
+  // line 11
+  wire_box->position(min.x, min.y, max.z);
+  wire_box->position(max.x, min.y, max.z);
+
+  wire_box->end();
+
+  wire_box_node->attachObject(wire_box);
+  wire_box_node->setVisible(false);
+  return wire_box_node;
 }
 
 Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
@@ -802,4 +896,60 @@ void setOctomapColor(double z_pos, double min_z, double max_z, double color_fact
   }
 }
 
+void getAABBRecursive(Ogre::AxisAlignedBox& aabb, Ogre::SceneNode& scene_node, Ogre::Matrix4 parent_pose)
+{
+  scene_node._updateBounds();
+  scene_node._update(false, true);
+
+  Ogre::Matrix4 local_transform(scene_node.getOrientation());
+  local_transform.setTrans(scene_node.getPosition());
+
+  Ogre::Matrix4 transform = parent_pose * local_transform;
+
+  for (int i = 0; i < scene_node.numAttachedObjects(); i++)
+  {
+    Ogre::MovableObject* obj = scene_node.getAttachedObject(i);
+
+    if (obj->isVisible())
+    {
+      Ogre::AxisAlignedBox box = obj->getBoundingBox();
+
+      // Ogre does not return a valid bounding box for lights.
+      if (obj->getMovableType() == Ogre::LightFactory::FACTORY_TYPE_NAME)
+      {
+        box.setMinimum(Ogre::Vector3(-0.5, -0.5, -0.5));
+        box.setMaximum(Ogre::Vector3(0.5, 0.5, 0.5));
+      }
+
+      box.transform(transform);
+      aabb.merge(box);
+    }
+  }
+
+  auto num_children = scene_node.numChildren();
+  if (num_children == 0)
+    return;
+
+  for (unsigned short i = 0; i < num_children; ++i)
+  {
+    auto* child = dynamic_cast<Ogre::SceneNode*>(scene_node.getChild(i));
+    getAABBRecursive(aabb, *child, transform);
+  }
+}
+
+Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node)
+{
+  Ogre::AxisAlignedBox aabb;
+  getAABBRecursive(aabb, scene_node, Ogre::Matrix4::IDENTITY);
+
+  Ogre::Vector3 scale(1.15, 1.15, 1.15);
+  Ogre::Vector3 center = aabb.getCenter();
+  Ogre::Vector3 max = aabb.getMaximum();
+  Ogre::Vector3 min = aabb.getMinimum();
+
+  aabb.setMaximum(center + (scale * (max - center)));
+  aabb.setMinimum(center + (scale * (min - center)));
+
+  return aabb;
+}
 }  // namespace tesseract_rviz

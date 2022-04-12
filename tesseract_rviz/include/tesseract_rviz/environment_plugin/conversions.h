@@ -10,11 +10,13 @@
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_rviz/types.h>
+#include <Eigen/Core>
 
 namespace Ogre
 {
 class SceneManager;
 class SceneNode;
+class AxisAlignedBox;
 }  // namespace Ogre
 
 namespace tesseract_rviz
@@ -41,10 +43,10 @@ Ogre::SceneNode* loadLinkCollisions(Ogre::SceneManager& scene,
                                     tesseract_gui::EntityContainer& entity_container,
                                     const tesseract_scene_graph::Link& link);
 
-// Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
-//                                 tesseract_gui::EntityContainer& entity_container,
-//                                 const tesseract_scene_graph::Link& link,
-//                                 const ignition::math::AxisAlignedBox& aabb);
+Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
+                                 tesseract_gui::EntityContainer& entity_container,
+                                 const tesseract_scene_graph::Link& link,
+                                 const Ogre::AxisAlignedBox& aabb);
 
 Ogre::SceneNode* loadLinkAxis(Ogre::SceneManager& scene,
                               tesseract_gui::EntityContainer& entity_container,
@@ -73,6 +75,9 @@ rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points
                                    tesseract_gui::EntityContainer& entity_container,
                                    float size,
                                    tesseract_geometry::Octree::SubType subtype);
+
+Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node);
+
 }  // namespace tesseract_rviz
 
 #endif  // TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_CONVERSIONS_H

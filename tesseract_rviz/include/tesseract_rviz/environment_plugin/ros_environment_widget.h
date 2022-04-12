@@ -30,8 +30,8 @@ public:
 public Q_SLOTS:
   void onUpdate();
   void onLinkVisibleChanged(const std::string& link_name, bool visible);
-  void onLinkCollisionVisibleChanged(const std::string& link_name, bool visible);
   void onLinkVisualVisibleChanged(const std::string& link_name, bool visible);
+  void onLinkCollisionVisibleChanged(const std::string& link_name, bool visible);
   void onSelectedLinksChanged(const std::vector<std::string>& selected_links);
 
 private Q_SLOTS:

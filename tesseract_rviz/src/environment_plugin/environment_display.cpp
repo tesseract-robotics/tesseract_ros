@@ -33,6 +33,7 @@ struct EnvironmentDisplayPrivate
   rviz::BoolProperty* scene_visual_visible;
   rviz::BoolProperty* scene_collision_visible;
   rviz::BoolProperty* scene_links_visible;
+  rviz::BoolProperty* scene_wirebox_visible;
 
   /** @brief Keeps track of how many EnvironmentWidgets have been created for the default namespace */
   static int environment_display_counter;
@@ -109,6 +110,14 @@ EnvironmentDisplay::EnvironmentDisplay() : data_(std::make_unique<EnvironmentDis
                                                           this,
                                                           SLOT(onSceneCollisionVisibleChanged()),
                                                           this);
+
+  data_->scene_wirebox_visible = new rviz::BoolProperty("Show Wire Box",
+                                                        false,
+                                                        "Whether to display the wire box representation of the "
+                                                        "environment.",
+                                                        this,
+                                                        SLOT(onSceneWireBoxVisibleChanged()),
+                                                        this);
 
   data_->scene_links_visible = new rviz::BoolProperty(
       "Show All Links", true, "Toggle all links visibility on or off.", this, SLOT(onSceneLinkVisibleChanged()), this);
@@ -253,11 +262,27 @@ void EnvironmentDisplay::onSceneCollisionVisibleChanged()
     data_->widget->onLinkCollisionVisibleChanged(link_name, data_->scene_collision_visible->getBool());
 }
 
+void EnvironmentDisplay::onSceneWireBoxVisibleChanged()
+{
+  std::vector<std::string> link_names;
+  if (data_->scene_wirebox_visible->getBool())
+    link_names = data_->widget->environment().getLinkNames();
+
+  data_->widget->onSelectedLinksChanged(link_names);
+}
+
 void EnvironmentDisplay::onSceneLinkVisibleChanged()
 {
   std::vector<std::string> link_names = data_->widget->environment().getLinkNames();
   for (const auto& link_name : link_names)
     data_->widget->onLinkVisibleChanged(link_name, data_->scene_links_visible->getBool());
+
+  if (data_->scene_links_visible->getBool())
+  {
+    onSceneVisualVisibleChanged();
+    onSceneCollisionVisibleChanged();
+    onSceneWireBoxVisibleChanged();
+  }
 }
 
 }  // namespace tesseract_rviz
