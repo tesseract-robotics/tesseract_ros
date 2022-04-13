@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix handling of wait(0) in environment monitor interface
+* Contributors: Levi Armstrong
+
 0.4.0 (2022-04-08)
 ------------------
 * Update to use monitor interface and clean up environment monitor

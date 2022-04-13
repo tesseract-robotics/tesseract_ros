@@ -2,6 +2,9 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.0 (2022-04-08)
 ------------------
 * Update to use monitor interface and clean up environment monitor
