@@ -50,7 +50,12 @@ bool ROSEnvironmentMonitorInterface::wait(std::chrono::duration<double> duration
   }
 
   const ros::WallTime start_time = ros::WallTime::now();
-  const ros::WallDuration wall_timeout{ duration.count() };
+  ros::WallDuration wall_timeout;
+  if (std::chrono::duration_cast<std::chrono::seconds>(duration).count() == 0)
+    wall_timeout = ros::WallDuration(-1);
+  else
+    wall_timeout = ros::WallDuration(duration.count());
+
   for (const auto& ns : ns_)
   {
     bool results = waitForNamespace(ns, duration);
@@ -73,7 +78,12 @@ bool ROSEnvironmentMonitorInterface::waitForNamespace(const std::string& monitor
 {
   std::string service_name = R"(/)" + monitor_namespace + DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;
   const ros::WallTime start_time = ros::WallTime::now();
-  const ros::WallDuration wall_timeout{ duration.count() };
+  ros::WallDuration wall_timeout;
+  if (std::chrono::duration_cast<std::chrono::seconds>(duration).count() == 0)
+    wall_timeout = ros::WallDuration(-1);
+  else
+    wall_timeout = ros::WallDuration(duration.count());
+
   while (ros::ok())
   {
     bool results = ros::service::exists(service_name, false);
