@@ -341,16 +341,25 @@ qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
   include/tesseract_rviz/environment_plugin/ros_environment_widget.h
   include/tesseract_rviz/environment_plugin/rostopic_combo_box.h
   include/tesseract_rviz/environment_plugin/environment_display.h
+  include/tesseract_rviz/environment_plugin/environment_monitor_properties.h
+  include/tesseract_rviz/environment_plugin/environment_visual_properties.h
+  include/tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h
+  include/tesseract_rviz/environment_plugin/workbench_display.h
 )
 add_library(${PROJECT_NAME}_environment_plugin_core SHARED
   src/environment_plugin/ros_environment_widget.cpp
   src/environment_plugin/rostopic_combo_box.cpp
   src/environment_plugin/environment_display.cpp
+  src/environment_plugin/environment_monitor_properties.cpp
+  src/environment_plugin/environment_visual_properties.cpp
+  src/environment_plugin/joint_trajectory_monitor_properties.cpp
+  src/environment_plugin/workbench_display.cpp
   src/environment_plugin/conversions.cpp
   ${${PROJECT_NAME}_environment_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     tesseract::tesseract_widgets_common
     tesseract::tesseract_widgets_environment
+    tesseract::tesseract_widgets_workbench
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -367,7 +376,7 @@ target_include_directories(${PROJECT_NAME}_environment_plugin_core SYSTEM PUBLIC
     ${OGRE_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_environment_plugin SHARED src/environment_plugin/plugin_init.cpp)
+add_library(${PROJECT_NAME}_environment_plugin SHARED src/environment_plugin/environment_plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_environment_plugin PRIVATE
   ${PROJECT_NAME}_environment_plugin_core
   ${catkin_LIBRARIES}
@@ -378,6 +387,20 @@ target_include_directories(${PROJECT_NAME}_environment_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_environment_plugin SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_workbench_plugin SHARED src/environment_plugin/workbench_plugin_init.cpp)
+target_link_libraries(${PROJECT_NAME}_workbench_plugin PRIVATE
+  ${PROJECT_NAME}_environment_plugin_core
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_workbench_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_workbench_plugin PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_workbench_plugin PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_workbench_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
@@ -427,6 +450,7 @@ install(
     tesseract_rviz_planning_response_archive_plugin_description.xml
     tesseract_rviz_manipulation_plugin_description.xml
     tesseract_rviz_environment_plugin_description.xml
+    tesseract_rviz_workbench_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

@@ -28,7 +28,7 @@ public:
   ~ROSEnvironmentWidget() override;
 
 public Q_SLOTS:
-  void onUpdate();
+  void onRender() override;
   void onLinkVisibleChanged(const std::string& link_name, bool visible);
   void onLinkVisualVisibleChanged(const std::string& link_name, bool visible);
   void onLinkCollisionVisibleChanged(const std::string& link_name, bool visible);

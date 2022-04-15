@@ -22,18 +22,6 @@ public:
   void load(const rviz::Config& config) override;
   void save(rviz::Config config) const override;
 
-private Q_SLOTS:
-  void onDisplayModeChanged();
-  void onURDFDescriptionChanged();
-  void onEnvironmentTopicChanged();
-  void onJointStateTopicChanged();
-
-  void onSceneAlphaChanged();
-  void onSceneVisualVisibleChanged();
-  void onSceneCollisionVisibleChanged();
-  void onSceneWireBoxVisibleChanged();
-  void onSceneLinkVisibleChanged();
-
 protected:
   // overrides from Display
   void onInitialize() override;

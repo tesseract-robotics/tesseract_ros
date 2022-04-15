@@ -427,7 +427,7 @@ bool toMsg(tesseract_msgs::Environment& environment_msg,
  * @param tesseract_msg Input Tesseract msg
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
-tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg);
+tesseract_environment::Environment::UPtr fromMsg(const tesseract_msgs::Environment& environment_msg);
 
 /**
  * @brief Converts a TaskInfo object to a TaskInfo msg
@@ -451,6 +451,13 @@ tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_i
  */
 trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory,
                                        const tesseract_scene_graph::SceneState& initial_state);
+
+/**
+ * @brief Convert trajectory_msgs::JointTrajectory to Tesseract tesseract_common::JointTrajectory
+ * @param joint_trajectory The trajectory to convert
+ * @return A tesseract joint trajectory
+ */
+tesseract_common::JointTrajectory fromMsg(const trajectory_msgs::JointTrajectory& joint_trajectory_msg);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

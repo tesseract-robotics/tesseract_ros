@@ -157,7 +157,7 @@ void ROSEnvironmentWidget::onSelectedLinksChanged(const std::vector<std::string>
   data_->render_dirty = true;
 }
 
-void ROSEnvironmentWidget::onUpdate()
+void ROSEnvironmentWidget::onRender()
 {
   if (data_->render_dirty)
   {
