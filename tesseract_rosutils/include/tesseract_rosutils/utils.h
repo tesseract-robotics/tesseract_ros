@@ -222,14 +222,14 @@ void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-void toMsg(std::vector<tesseract_msgs::JointState>& traj_msg, const tesseract_common::JointTrajectory& traj);
+void toMsg(tesseract_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj);
 
 /**
  * @brief Generate a JointTrajectory from message
  * @param traj_msg The trajectory message to convert
  * @param traj The joint trajectory
  */
-tesseract_common::JointTrajectory fromMsg(const std::vector<tesseract_msgs::JointState>& traj_msg);
+tesseract_common::JointTrajectory fromMsg(const tesseract_msgs::JointTrajectory& traj_msg);
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
 

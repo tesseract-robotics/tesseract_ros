@@ -136,6 +136,7 @@ protected:
    * trajectory widget.
    */
   tesseract_environment::Commands trajectory_env_commands_;
+  std::unordered_map<std::string, double> trajectory_initial_state_;
   boost::mutex update_trajectory_message_;
 
   // Pointers from parent display taht we save

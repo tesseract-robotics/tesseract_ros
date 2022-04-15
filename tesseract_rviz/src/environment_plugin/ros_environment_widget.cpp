@@ -130,6 +130,7 @@ void ROSEnvironmentWidget::onEnvironmentChanged(const tesseract_environment::Env
 
 void ROSEnvironmentWidget::onEnvironmentCurrentStateChanged(const tesseract_environment::Environment& /*env*/)
 {
+  data_->render_dirty = true;
   data_->render_state_dirty = true;
 }
 

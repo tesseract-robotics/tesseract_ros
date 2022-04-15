@@ -188,139 +188,43 @@ void JointTrajectoryMonitorPropertiesPrivate::legacyJointTrajectoryCallback(
 void JointTrajectoryMonitorPropertiesPrivate::tesseractJointTrajectoryCallback(
     const tesseract_msgs::Trajectory::ConstPtr& msg)
 {
-  tesseract_common::JointTrajectorySet trajectory_set;
-  std::unordered_map<std::string, double> initial_state;
-  tesseract_environment::Environment::UPtr environment = tesseract_rosutils::fromMsg(msg->environment);
-  tesseract_environment::Commands commands = tesseract_rosutils::fromMsg(msg->commands);
+  try
+  {
+    tesseract_common::JointTrajectorySet trajectory_set;
 
-  if (environment != nullptr)
-  {
-    trajectory_set = tesseract_common::JointTrajectorySet(initial_state, std::move(environment));
-  }
-  else if (!commands.empty())
-  {
-    trajectory_set = tesseract_common::JointTrajectorySet(initial_state, commands);
-  }
-  else
-  {
-    trajectory_set = tesseract_common::JointTrajectorySet(initial_state);
-  }
+    // Get environment initial state
+    std::unordered_map<std::string, double> initial_state;
+    for (const auto& pair_msg : msg->initial_state)
+      initial_state[pair_msg.first] = pair_msg.second;
 
-  tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(msg->joint_trajectory);
-  trajectory_set.appendJointTrajectory(joint_trajectory);
-  widget->addJointTrajectorySet(trajectory_set);
+    // Get environment information
+    tesseract_environment::Environment::UPtr environment = tesseract_rosutils::fromMsg(msg->environment);
+    tesseract_environment::Commands commands = tesseract_rosutils::fromMsg(msg->commands);
+
+    if (environment != nullptr)
+    {
+      trajectory_set = tesseract_common::JointTrajectorySet(initial_state, std::move(environment));
+    }
+    else if (!commands.empty())
+    {
+      trajectory_set = tesseract_common::JointTrajectorySet(initial_state, commands);
+    }
+    else
+    {
+      trajectory_set = tesseract_common::JointTrajectorySet(initial_state);
+    }
+
+    for (const auto& joint_trajectory_msg : msg->joint_trajectories)
+    {
+      tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(joint_trajectory_msg);
+      trajectory_set.appendJointTrajectory(joint_trajectory, joint_trajectory_msg.description);
+      widget->addJointTrajectorySet(trajectory_set);
+    }
+  }
+  catch (...)
+  {
+    parent->setStatus(rviz::StatusProperty::Error, "Tesseract", "Failed to process trajectory message!");
+  }
 }
-
-// void JointTrajectoryProperties::onDisplayModeChanged()
-//{
-//  if (data_->display_mode_property->getOptionInt() == 0)
-//  {
-//    data_->environment_topic_property->setHidden(true);
-//    data_->urdf_description_string_property->setHidden(false);
-//    onURDFDescriptionChanged();
-//  }
-//  else if (data_->display_mode_property->getOptionInt() == 1)
-//  {
-//    data_->urdf_description_string_property->setHidden(true);
-//    data_->environment_topic_property->setHidden(false);
-//    onEnvironmentTopicChanged();
-//  }
-//  onJointStateTopicChanged();
-//}
-
-// void EnvironmentMonitorProperties::onURDFDescriptionChanged()
-//{
-//  if (data_->widget == nullptr)
-//    return;
-
-//  auto it = data_->configs.find(data_->urdf_description_string_property->getStdString());
-//  if (it != data_->configs.end())
-//  {
-//    if (data_->monitor != nullptr)
-//      data_->monitor->shutdown();
-
-//    data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(it->second->getEnvironment(),
-//    data_->monitor_namespace); if (data_->monitor != nullptr)
-//    {
-//      data_->widget->setConfiguration(it->second);
-//      onJointStateTopicChanged();
-//    }
-//  }
-//  else
-//  {
-//    std::string urdf_xml_string, srdf_xml_string;
-//    data_->nh.getParam(data_->urdf_description_string_property->getStdString(), urdf_xml_string);
-//    data_->nh.getParam(data_->urdf_description_string_property->getStdString() + "_semantic", srdf_xml_string);
-
-//    auto env = std::make_shared<tesseract_environment::Environment>();
-//    auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
-//    if (env->init(urdf_xml_string, srdf_xml_string, locator))
-//    {
-//      if (data_->monitor != nullptr)
-//        data_->monitor->shutdown();
-
-//      data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(env, data_->monitor_namespace);
-//      if (data_->monitor != nullptr)
-//      {
-//        auto config = std::make_shared<tesseract_gui::EnvironmentWidgetConfig>();
-//        config->setEnvironment(env);
-//        data_->widget->setConfiguration(config);
-//        onJointStateTopicChanged();
-//        data_->configs[data_->urdf_description_string_property->getStdString()] = config;
-//      }
-//    }
-//    else
-//    {
-//      data_->parent->setStatus(rviz::StatusProperty::Error, "Tesseract", "URDF file failed to parse");
-//    }
-//  }
-//}
-
-// void EnvironmentMonitorProperties::onEnvironmentTopicChanged()
-//{
-//  if (data_->widget == nullptr)
-//    return;
-
-//  if (data_->monitor != nullptr)
-//    data_->monitor->shutdown();
-
-//  auto it = data_->configs.find(data_->environment_topic_property->getStdString());
-//  if (it != data_->configs.end())
-//  {
-//    data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(it->second->getEnvironment(),
-//    data_->monitor_namespace); if (data_->monitor != nullptr)
-//    {
-//      data_->widget->setConfiguration(it->second);
-//      onJointStateTopicChanged();
-//    }
-//  }
-//  else
-//  {
-//    auto env = std::make_shared<tesseract_environment::Environment>();
-//    data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(env, data_->monitor_namespace);
-
-//    if (data_->monitor != nullptr)
-//    {
-//      auto config = std::make_shared<tesseract_gui::EnvironmentWidgetConfig>();
-//      config->setEnvironment(env);
-//      data_->widget->setConfiguration(config);
-
-//      std::string ns = getEnvNamespaceFromTopic(data_->environment_topic_property->getStdString());
-//      if (!ns.empty())
-//        data_->monitor->startMonitoringEnvironment(ns);
-//      else
-//        data_->parent->setStatus(rviz::StatusProperty::Error, "Tesseract", "Invalid environment monitor topic!");
-
-//      onJointStateTopicChanged();
-//      data_->configs[data_->environment_topic_property->getStdString()] = config;
-//    }
-//  }
-//}
-
-// void EnvironmentMonitorProperties::onJointStateTopicChanged()
-//{
-//  if (data_->monitor != nullptr)
-//    data_->monitor->startStateMonitor(data_->joint_state_topic_property->getStdString());
-//}
 
 }  // namespace tesseract_rviz

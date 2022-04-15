@@ -8,7 +8,8 @@
 namespace tesseract_common
 {
 class JointTrajectorySet;
-}
+class JointState;
+}  // namespace tesseract_common
 
 namespace tesseract_rviz
 {
@@ -31,6 +32,8 @@ private Q_SLOTS:
   void onConfigureJointTrajectorySet(const QString& uuid,
                                      const tesseract_common::JointTrajectorySet& joint_trajectory_set);
   void onJointTrajectorySetRemoved(const QString& uuid);
+
+  void onJointTrajectorySetState(const tesseract_common::JointState& state);
 
 protected:
   // overrides from Display

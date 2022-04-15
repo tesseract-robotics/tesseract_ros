@@ -105,7 +105,9 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   tesseract_common::JointTrajectory traj =
       tesseract_planning::toJointTrajectory(results.as<tesseract_planning::CompositeInstruction>());
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();
-  tesseract_rosutils::toMsg(traj_msg->joint_trajectory, traj);
+  tesseract_msgs::JointTrajectory joint_traj_msg;
+  tesseract_rosutils::toMsg(joint_traj_msg, traj);
+  traj_msg->joint_trajectories.push_back(joint_traj_msg);
 
   // Manually call the callback
   visualize_trajectory_widget_->setDisplayTrajectory(traj_msg);

@@ -83,6 +83,10 @@ void WorkbenchDisplay::onInitialize()
           SIGNAL(jointTrajectorySetRemoved(QString)),
           this,
           SLOT(onJointTrajectorySetRemoved(QString)));
+  connect(&data_->widget->getJointTrajectoryWidget(),
+          SIGNAL(showState(tesseract_common::JointState)),
+          this,
+          SLOT(onJointTrajectorySetState(tesseract_common::JointState)));
 }
 
 void WorkbenchDisplay::reset() { Display::reset(); }
@@ -120,13 +124,18 @@ void WorkbenchDisplay::onConfigureJointTrajectorySet(const QString& uuid,
     if (joint_trajectory_set.getEnvironment() != nullptr)
     {
       environment_config->setEnvironment(joint_trajectory_set.getEnvironment()->clone());
-      tesseract_common::JointState joint_state = joint_trajectory_set.getInitialState();
-      std::unordered_map<std::string, double> initial_state;
-      for (std::size_t i = 0; i < joint_state.joint_names.size(); ++i)
-        initial_state[joint_state.joint_names[i]] = joint_state.position[static_cast<Eigen::Index>(i)];
-      environment_config->environment().setState(initial_state);
-      data_->environment_configs[uuid.toStdString()] = environment_config;
     }
+    else
+    {
+      tesseract_environment::Environment::Ptr env = data_->environment_widget->environment().clone();
+      if (!joint_trajectory_set.getEnvironmentCommands().empty())
+        env->applyCommands(joint_trajectory_set.getEnvironmentCommands());
+
+      environment_config->setEnvironment(env);
+    }
+    tesseract_common::JointState joint_state = joint_trajectory_set.getInitialState();
+    environment_config->environment().setState(joint_state.joint_names, joint_state.position);
+    data_->environment_configs[uuid.toStdString()] = environment_config;
   }
   else
   {
@@ -134,6 +143,11 @@ void WorkbenchDisplay::onConfigureJointTrajectorySet(const QString& uuid,
   }
 
   data_->environment_widget->setConfiguration(environment_config);
+}
+
+void WorkbenchDisplay::onJointTrajectorySetState(const tesseract_common::JointState& state)
+{
+  data_->environment_widget->environment().setState(state.joint_names, state.position);
 }
 
 void WorkbenchDisplay::onJointTrajectorySetRemoved(const QString& uuid)

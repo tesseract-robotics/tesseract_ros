@@ -1,6 +1,9 @@
 # Header
 std_msgs/Header header
 
+# A description of the trajectory
+string description
+
 # (Optional) Override the existing Tesseract Environment
 Environment environment
 
