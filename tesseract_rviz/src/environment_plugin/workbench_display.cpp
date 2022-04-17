@@ -1,7 +1,6 @@
 #include <tesseract_rviz/environment_plugin/workbench_display.h>
 #include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/environment_visual_properties.h>
 #include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
 
 #include <tesseract_widgets/workbench/workbench_widget.h>
@@ -28,7 +27,6 @@ struct WorkbenchDisplayPrivate
   std::unordered_map<std::string, tesseract_gui::EnvironmentWidgetConfig::Ptr> environment_configs;
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties;
-  std::unique_ptr<EnvironmentVisualProperties> visual_properties;
   std::unique_ptr<JointTrajectoryMonitorProperties> joint_trajectory_properties;
 
   /** @brief Keeps track of how many WorkbenchDisplay's have been created for the default namespace */
@@ -53,7 +51,6 @@ WorkbenchDisplay::WorkbenchDisplay() : data_(std::make_unique<WorkbenchDisplayPr
 
   data_->monitor_properties =
       std::make_unique<EnvironmentMonitorProperties>(this, data_->workbench_display_ns, monitor_property);
-  data_->visual_properties = std::make_unique<EnvironmentVisualProperties>(this, visual_property);
   data_->joint_trajectory_properties =
       std::make_unique<JointTrajectoryMonitorProperties>(this, joint_trajectory_property);
 }
@@ -72,7 +69,6 @@ void WorkbenchDisplay::onInitialize()
   setAssociatedWidget(data_->widget);
 
   data_->monitor_properties->onInitialize(data_->environment_widget);
-  data_->visual_properties->onInitialize(data_->environment_widget);
   data_->joint_trajectory_properties->onInitialize(&data_->widget->getJointTrajectoryWidget());
 
   connect(&data_->widget->getJointTrajectoryWidget(),
@@ -102,13 +98,11 @@ void WorkbenchDisplay::load(const rviz::Config& config)
 {
   rviz::Display::load(config);
   data_->monitor_properties->load(config);
-  data_->visual_properties->load(config);
 }
 
 void WorkbenchDisplay::save(rviz::Config config) const
 {
   data_->monitor_properties->save(config);
-  data_->visual_properties->save(config);
   rviz::Display::save(config);
 }
 
@@ -127,22 +121,35 @@ void WorkbenchDisplay::onConfigureJointTrajectorySet(const QString& uuid,
     }
     else
     {
-      tesseract_environment::Environment::Ptr env = data_->environment_widget->environment().clone();
-      if (!joint_trajectory_set.getEnvironmentCommands().empty())
-        env->applyCommands(joint_trajectory_set.getEnvironmentCommands());
+      // We do not want to use the current because it could be an environment from another trajectory
+      // instead get the one base on the settings in the monitor_properties.
+      tesseract_gui::EnvironmentWidgetConfig::Ptr config = data_->monitor_properties->getConfig();
+      if (config != nullptr)
+      {
+        tesseract_environment::Environment::Ptr env = data_->environment_widget->environment().clone();
+        if (!joint_trajectory_set.getEnvironmentCommands().empty())
+          env->applyCommands(joint_trajectory_set.getEnvironmentCommands());
 
-      environment_config->setEnvironment(env);
+        environment_config->setEnvironment(env);
+      }
     }
-    tesseract_common::JointState joint_state = joint_trajectory_set.getInitialState();
-    environment_config->environment().setState(joint_state.joint_names, joint_state.position);
-    data_->environment_configs[uuid.toStdString()] = environment_config;
+
+    if (environment_config->isValid())
+    {
+      tesseract_common::JointState joint_state = joint_trajectory_set.getInitialState();
+      environment_config->environment().setState(joint_state.joint_names, joint_state.position);
+      data_->environment_configs[uuid.toStdString()] = environment_config;
+    }
   }
   else
   {
     environment_config = it->second;
   }
 
-  data_->environment_widget->setConfiguration(environment_config);
+  if (environment_config->isValid())
+    data_->environment_widget->setConfiguration(environment_config);
+  else
+    setStatus(rviz::StatusProperty::Error, "Tesseract", "Failed to configure environment for selected trajectory!");
 }
 
 void WorkbenchDisplay::onJointTrajectorySetState(const tesseract_common::JointState& state)

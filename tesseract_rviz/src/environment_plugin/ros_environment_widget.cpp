@@ -2,6 +2,7 @@
 #include <tesseract_rviz/environment_plugin/conversions.h>
 #include <tesseract_rviz/conversions.h>
 
+#include <tesseract_widgets/environment/environment_widget_config.h>
 #include <tesseract_widgets/common/entity_container.h>
 #include <tesseract_widgets/common/entity_manager.h>
 
@@ -30,10 +31,8 @@ struct ROSEnvironmentWidgetPrivate
   /** @brief The current list of links being rendered */
   std::vector<std::string> render_link_names;
 
-  std::unordered_map<std::string, bool> link_visible_changes;
-  std::unordered_map<std::string, bool> link_collision_visible_changes;
-  std::unordered_map<std::string, bool> link_visual_visible_changes;
-  std::vector<std::string> link_selection_changes;
+  /** @brief The links with changed visibility properties */
+  std::set<std::string> link_visibility_properties_changed;
 };
 
 ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node)
@@ -54,19 +53,11 @@ ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Og
           SIGNAL(environmentCurrentStateChanged(tesseract_environment::Environment)),
           this,
           SLOT(onEnvironmentCurrentStateChanged(tesseract_environment::Environment)));
-  connect(this, SIGNAL(linkVisibleChanged(std::string, bool)), this, SLOT(onLinkVisibleChanged(std::string, bool)));
+
   connect(this,
-          SIGNAL(linkVisualVisibleChanged(std::string, bool)),
+          SIGNAL(linkVisibilityChanged(std::vector<std::string>)),
           this,
-          SLOT(onLinkVisualVisibleChanged(std::string, bool)));
-  connect(this,
-          SIGNAL(linkCollisionVisibleChanged(std::string, bool)),
-          this,
-          SLOT(onLinkCollisionVisibleChanged(std::string, bool)));
-  connect(this,
-          SIGNAL(selectedLinksChanged(std::vector<std::string>)),
-          this,
-          SLOT(onSelectedLinksChanged(std::vector<std::string>)));
+          SLOT(onLinkVisibilityChanged(std::vector<std::string>)));
 }
 
 ROSEnvironmentWidget::~ROSEnvironmentWidget() = default;
@@ -134,27 +125,9 @@ void ROSEnvironmentWidget::onEnvironmentCurrentStateChanged(const tesseract_envi
   data_->render_state_dirty = true;
 }
 
-void ROSEnvironmentWidget::onLinkVisibleChanged(const std::string& link_name, bool visible)
+void ROSEnvironmentWidget::onLinkVisibilityChanged(const std::vector<std::string>& links)
 {
-  data_->link_visible_changes[link_name] = visible;
-  data_->render_dirty = true;
-}
-
-void ROSEnvironmentWidget::onLinkCollisionVisibleChanged(const std::string& link_name, bool visible)
-{
-  data_->link_collision_visible_changes[link_name] = visible;
-  data_->render_dirty = true;
-}
-
-void ROSEnvironmentWidget::onLinkVisualVisibleChanged(const std::string& link_name, bool visible)
-{
-  data_->link_visual_visible_changes[link_name] = visible;
-  data_->render_dirty = true;
-}
-
-void ROSEnvironmentWidget::onSelectedLinksChanged(const std::vector<std::string>& selected_links)
-{
-  data_->link_selection_changes = selected_links;
+  data_->link_visibility_properties_changed.insert(links.begin(), links.end());
   data_->render_dirty = true;
 }
 
@@ -317,86 +290,65 @@ void ROSEnvironmentWidget::onRender()
 
     if (data_->render_dirty)
     {
-      for (const auto& l : data_->link_visible_changes)
-      {
-        if (data_->entity_manager->hasEntityContainer(l.first))
-        {
-          auto entity_container = data_->entity_manager->getEntityContainer(l.first);
-          if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l.first))
-          {
-            auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l.first);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
-            sn->setVisible(l.second, true);
-          }
-        }
-      }
-      data_->link_visible_changes.clear();
-
-      for (const auto& l : data_->link_visual_visible_changes)
-      {
-        if (data_->entity_manager->hasEntityContainer(l.first))
-        {
-          auto entity_container = data_->entity_manager->getEntityContainer(l.first);
-          std::string visual_key = l.first + "::Visuals";
-          if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
-          {
-            auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
-            sn->setVisible(l.second, true);
-          }
-        }
-      }
-      data_->link_visual_visible_changes.clear();
-
-      for (const auto& l : data_->link_collision_visible_changes)
-      {
-        if (data_->entity_manager->hasEntityContainer(l.first))
-        {
-          auto entity_container = data_->entity_manager->getEntityContainer(l.first);
-          std::string visual_key = l.first + "::Collisions";
-          if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
-          {
-            auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
-            sn->setVisible(l.second, true);
-          }
-        }
-      }
-      data_->link_collision_visible_changes.clear();
-
-      std::vector<std::string> link_names;
-      if (environment().isInitialized())
-        link_names = environment().getLinkNames();
-
-      for (const auto& link_name : link_names)
-      {
-        if (data_->entity_manager->hasEntityContainer(link_name))
-        {
-          auto entity_container = data_->entity_manager->getEntityContainer(link_name);
-          std::string visual_key = link_name + "::WireBox";
-          if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
-          {
-            auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
-            sn->setVisible(false, true);
-          }
-        }
-      }
-
-      for (const auto& l : data_->link_selection_changes)
+      auto link_visibility_properties = getLinkVisibilityProperties();
+      for (const auto& l : data_->link_visibility_properties_changed)
       {
         if (data_->entity_manager->hasEntityContainer(l))
         {
+          auto link_visibility_property = link_visibility_properties.at(l);
           auto entity_container = data_->entity_manager->getEntityContainer(l);
-          std::string visual_key = l + "::WireBox";
-          if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
-          {
-            auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
-            sn->setVisible(true, true);
+
+          {  // Link Property
+            if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l))
+            {
+              auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l);
+              Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+              sn->setVisible(link_visibility_property.link, true);
+            }
+          }
+
+          {  // Link Visual Property
+            std::string visual_key = l + "::Visuals";
+            if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+            {
+              auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+              Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+              sn->setVisible(link_visibility_property.link && link_visibility_property.visual, true);
+            }
+          }
+
+          {  // Link Collision Property
+            std::string visual_key = l + "::Collisions";
+            if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+            {
+              auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+              Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+              sn->setVisible(link_visibility_property.link && link_visibility_property.collision, true);
+            }
+          }
+
+          {  // Link WireBox Property
+            std::string visual_key = l + "::WireBox";
+            if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+            {
+              auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+              Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+              sn->setVisible(link_visibility_property.link && link_visibility_property.wirebox, true);
+            }
+          }
+
+          {  // Link Axis Property
+            std::string visual_key = l + "::Axis";
+            if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+            {
+              auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+              Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+              sn->setVisible(link_visibility_property.link && link_visibility_property.axis, true);
+            }
           }
         }
       }
+      data_->link_visibility_properties_changed.clear();
     }
     data_->render_dirty = false;
   }

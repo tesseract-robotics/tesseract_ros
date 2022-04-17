@@ -11,6 +11,11 @@ class Config;
 class Property;
 }  // namespace rviz
 
+namespace tesseract_gui
+{
+class EnvironmentWidgetConfig;
+}
+
 namespace tesseract_rviz
 {
 class ROSEnvironmentWidget;
@@ -26,6 +31,12 @@ public:
   ~EnvironmentMonitorProperties() override;
 
   void onInitialize(ROSEnvironmentWidget* widget);
+
+  /**
+   * @brief Return the config based on the settings of the object
+   * @return The environment config
+   */
+  std::shared_ptr<tesseract_gui::EnvironmentWidgetConfig> getConfig() const;
 
   void load(const rviz::Config& config);
   void save(rviz::Config config) const;

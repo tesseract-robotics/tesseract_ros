@@ -214,10 +214,13 @@ void JointTrajectoryMonitorPropertiesPrivate::tesseractJointTrajectoryCallback(
       trajectory_set = tesseract_common::JointTrajectorySet(initial_state);
     }
 
+    if (!msg->ns.empty())
+      trajectory_set.setNamespace(msg->ns);
+
     for (const auto& joint_trajectory_msg : msg->joint_trajectories)
     {
       tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(joint_trajectory_msg);
-      trajectory_set.appendJointTrajectory(joint_trajectory, joint_trajectory_msg.description);
+      trajectory_set.appendJointTrajectory(joint_trajectory);
       widget->addJointTrajectorySet(trajectory_set);
     }
   }

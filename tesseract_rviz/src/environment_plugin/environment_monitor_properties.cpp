@@ -91,11 +91,29 @@ void EnvironmentMonitorProperties::onInitialize(ROSEnvironmentWidget* widget)
   onDisplayModeChanged();
 }
 
+std::shared_ptr<tesseract_gui::EnvironmentWidgetConfig> EnvironmentMonitorProperties::getConfig() const
+{
+  if (data_->display_mode_property->getOptionInt() == 0)
+  {
+    auto it = data_->configs.find(data_->urdf_description_string_property->getStdString());
+    if (it != data_->configs.end())
+      return it->second;
+  }
+  else if (data_->display_mode_property->getOptionInt() == 1)
+  {
+    auto it = data_->configs.find(data_->environment_topic_property->getStdString());
+    if (it != data_->configs.end())
+      return it->second;
+  }
+
+  return nullptr;
+}
+
 void EnvironmentMonitorProperties::load(const rviz::Config& config)
 {
-  int mode{ 0 };
-  if (config.mapGetInt("tesseract::EnvMonitorMode", &mode))
-    data_->display_mode_property->setValue(mode);
+  QString mode;
+  if (config.mapGetString("tesseract::EnvMonitorMode", &mode))
+    data_->display_mode_property->setString(mode);
 
   QString urdf_description;
   if (config.mapGetString("tesseract::EnvMonitorURDFDescription", &urdf_description))
@@ -111,7 +129,7 @@ void EnvironmentMonitorProperties::load(const rviz::Config& config)
 
 void EnvironmentMonitorProperties::save(rviz::Config config) const
 {
-  config.mapSetValue("tesseract::EnvMonitorMode", data_->display_mode_property->getOptionInt());
+  config.mapSetValue("tesseract::EnvMonitorMode", data_->display_mode_property->getString());
   config.mapSetValue("tesseract::EnvMonitorURDFDescription", data_->urdf_description_string_property->getString());
   config.mapSetValue("tesseract::EnvMonitorTopic", data_->environment_topic_property->getString());
   config.mapSetValue("tesseract::EnvMonitorJointStateTopic", data_->joint_state_topic_property->getString());

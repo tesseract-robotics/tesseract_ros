@@ -29,10 +29,7 @@ public:
 
 public Q_SLOTS:
   void onRender() override;
-  void onLinkVisibleChanged(const std::string& link_name, bool visible);
-  void onLinkVisualVisibleChanged(const std::string& link_name, bool visible);
-  void onLinkCollisionVisibleChanged(const std::string& link_name, bool visible);
-  void onSelectedLinksChanged(const std::vector<std::string>& selected_links);
+  void onLinkVisibilityChanged(const std::vector<std::string>& links);
 
 private Q_SLOTS:
   void onEnvironmentSet(const tesseract_environment::Environment& env);

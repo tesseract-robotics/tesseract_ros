@@ -1,7 +1,6 @@
 #include <tesseract_rviz/environment_plugin/environment_display.h>
 #include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/environment_visual_properties.h>
 
 #include <rviz/panel_dock_widget.h>
 
@@ -19,7 +18,6 @@ struct EnvironmentDisplayPrivate
   ROSEnvironmentWidget* widget;
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties;
-  std::unique_ptr<EnvironmentVisualProperties> visual_properties;
 
   /** @brief Keeps track of how many EnvironmentDisplay's have been created for the default namespace */
   static int environment_display_counter;
@@ -36,12 +34,9 @@ EnvironmentDisplay::EnvironmentDisplay() : data_(std::make_unique<EnvironmentDis
 {
   auto monitor_property =
       new rviz::Property("Environment Properties", "", "Tesseract environment properties", this, nullptr, this);
-  auto visual_property =
-      new rviz::Property("Scene Properties", "", "Tesseract environment visualization properties", this, nullptr, this);
 
   data_->monitor_properties =
       std::make_unique<EnvironmentMonitorProperties>(this, data_->environment_display_ns, monitor_property);
-  data_->visual_properties = std::make_unique<EnvironmentVisualProperties>(this, visual_property);
 }
 
 EnvironmentDisplay::~EnvironmentDisplay()
@@ -57,7 +52,6 @@ void EnvironmentDisplay::onInitialize()
   setAssociatedWidget(data_->widget);
 
   data_->monitor_properties->onInitialize(data_->widget);
-  data_->visual_properties->onInitialize(data_->widget);
 }
 
 void EnvironmentDisplay::reset() { Display::reset(); }
@@ -73,13 +67,11 @@ void EnvironmentDisplay::load(const rviz::Config& config)
 {
   rviz::Display::load(config);
   data_->monitor_properties->load(config);
-  data_->visual_properties->load(config);
 }
 
 void EnvironmentDisplay::save(rviz::Config config) const
 {
   data_->monitor_properties->save(config);
-  data_->visual_properties->save(config);
   rviz::Display::save(config);
 }
 

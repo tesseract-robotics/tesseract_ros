@@ -342,7 +342,6 @@ qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
   include/tesseract_rviz/environment_plugin/rostopic_combo_box.h
   include/tesseract_rviz/environment_plugin/environment_display.h
   include/tesseract_rviz/environment_plugin/environment_monitor_properties.h
-  include/tesseract_rviz/environment_plugin/environment_visual_properties.h
   include/tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h
   include/tesseract_rviz/environment_plugin/workbench_display.h
 )
@@ -351,7 +350,6 @@ add_library(${PROJECT_NAME}_environment_plugin_core SHARED
   src/environment_plugin/rostopic_combo_box.cpp
   src/environment_plugin/environment_display.cpp
   src/environment_plugin/environment_monitor_properties.cpp
-  src/environment_plugin/environment_visual_properties.cpp
   src/environment_plugin/joint_trajectory_monitor_properties.cpp
   src/environment_plugin/workbench_display.cpp
   src/environment_plugin/conversions.cpp

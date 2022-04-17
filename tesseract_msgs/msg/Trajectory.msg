@@ -1,6 +1,10 @@
 # Header
 std_msgs/Header header
 
+# The namespace the trajectory is associated with
+# This is mostly used by visualization tools
+string ns
+
 # A description of the trajectory
 string description
 
