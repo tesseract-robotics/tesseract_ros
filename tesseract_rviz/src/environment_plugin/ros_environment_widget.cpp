@@ -42,9 +42,9 @@ ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Og
   data_->scene_node = scene_node;
 
   connect(this,
-          SIGNAL(environmentSet(tesseract_environment::Environment)),
+          SIGNAL(environmentSet(std::shared_ptr<tesseract_environment::Environment>)),
           this,
-          SLOT(onEnvironmentSet(tesseract_environment::Environment)));
+          SLOT(onEnvironmentSet(std::shared_ptr<tesseract_environment::Environment>)));
   connect(this,
           SIGNAL(environmentChanged(tesseract_environment::Environment)),
           this,
@@ -61,6 +61,11 @@ ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Og
 }
 
 ROSEnvironmentWidget::~ROSEnvironmentWidget() = default;
+
+tesseract_gui::EnvironmentWidget* ROSEnvironmentWidget::clone() const
+{
+  return new ROSEnvironmentWidget(data_->scene_manager, data_->scene_node);
+}
 
 void ROSEnvironmentWidget::clear()
 {
@@ -105,7 +110,7 @@ void ROSEnvironmentWidget::clearContainer(const tesseract_gui::EntityContainer& 
   }
 }
 
-void ROSEnvironmentWidget::onEnvironmentSet(const tesseract_environment::Environment& /*env*/)
+void ROSEnvironmentWidget::onEnvironmentSet(const std::shared_ptr<tesseract_environment::Environment>& /*env*/)
 {
   data_->render_revision = 0;
   data_->render_dirty = true;
@@ -133,6 +138,9 @@ void ROSEnvironmentWidget::onLinkVisibilityChanged(const std::vector<std::string
 
 void ROSEnvironmentWidget::onRender()
 {
+  if (getEnvironment() == nullptr)
+    return;
+
   if (data_->render_dirty)
   {
     if (data_->render_reset)  // Remove all

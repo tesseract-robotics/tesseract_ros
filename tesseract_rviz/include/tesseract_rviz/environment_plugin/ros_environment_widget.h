@@ -27,12 +27,14 @@ public:
   ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node);
   ~ROSEnvironmentWidget() override;
 
+  tesseract_gui::EnvironmentWidget* clone() const override;
+
 public Q_SLOTS:
   void onRender() override;
   void onLinkVisibilityChanged(const std::vector<std::string>& links);
 
 private Q_SLOTS:
-  void onEnvironmentSet(const tesseract_environment::Environment& env);
+  void onEnvironmentSet(const std::shared_ptr<tesseract_environment::Environment>& env);
   void onEnvironmentChanged(const tesseract_environment::Environment& env);
   void onEnvironmentCurrentStateChanged(const tesseract_environment::Environment& env);
 

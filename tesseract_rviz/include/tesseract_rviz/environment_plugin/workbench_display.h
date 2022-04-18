@@ -2,14 +2,6 @@
 #define TESSERACT_RVIZ_WORKBENCH_DISPLAY_H
 
 #include <rviz/display.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_widgets/common/entity_container.h>
-
-namespace tesseract_common
-{
-class JointTrajectorySet;
-class JointState;
-}  // namespace tesseract_common
 
 namespace tesseract_rviz
 {
@@ -27,13 +19,6 @@ public:
 
   void load(const rviz::Config& config) override;
   void save(rviz::Config config) const override;
-
-private Q_SLOTS:
-  void onConfigureJointTrajectorySet(const QString& uuid,
-                                     const tesseract_common::JointTrajectorySet& joint_trajectory_set);
-  void onJointTrajectorySetRemoved(const QString& uuid);
-
-  void onJointTrajectorySetState(const tesseract_common::JointState& state);
 
 protected:
   // overrides from Display
