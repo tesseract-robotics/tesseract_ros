@@ -25,6 +25,8 @@ public:
 protected:
   // overrides from Display
   void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
 
   std::unique_ptr<EnvironmentDisplayPrivate> data_;
 };

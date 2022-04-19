@@ -23,6 +23,7 @@ struct WorkbenchDisplayPrivate
 
   tesseract_gui::WorkbenchWidget* widget{ nullptr };
   ROSEnvironmentWidget* environment_widget{ nullptr };
+  tesseract_gui::JointTrajectoryWidget* joint_trajectory_widget{ nullptr };
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties{ nullptr };
   std::unique_ptr<JointTrajectoryMonitorProperties> joint_trajectory_properties{ nullptr };
@@ -61,12 +62,22 @@ void WorkbenchDisplay::onInitialize()
 {
   Display::onInitialize();
   data_->environment_widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);  // NOLINT
-  data_->widget = new tesseract_gui::WorkbenchWidget(data_->environment_widget);                      // NOLINT
+  data_->joint_trajectory_widget = new tesseract_gui::JointTrajectoryWidget();                        // NOLINT
+  data_->widget =
+      new tesseract_gui::WorkbenchWidget(data_->environment_widget, data_->joint_trajectory_widget);  // NOLINT
   setAssociatedWidget(data_->widget);
 
   data_->monitor_properties->onInitialize(data_->environment_widget);
-  data_->joint_trajectory_properties->onInitialize(&data_->widget->getJointTrajectoryWidget());
+  data_->joint_trajectory_properties->onInitialize(data_->joint_trajectory_widget);
 }
+
+void WorkbenchDisplay::onEnable()
+{
+  Display::onEnable();
+  data_->widget->onEnable();
+}
+
+void WorkbenchDisplay::onDisable() { Display::onDisable(); }
 
 void WorkbenchDisplay::reset() { Display::reset(); }
 

@@ -75,4 +75,12 @@ void EnvironmentDisplay::save(rviz::Config config) const
   rviz::Display::save(config);
 }
 
+void EnvironmentDisplay::onEnable()
+{
+  Display::onEnable();
+  data_->widget->onEnable();
+}
+
+void EnvironmentDisplay::onDisable() { Display::onDisable(); }
+
 }  // namespace tesseract_rviz
