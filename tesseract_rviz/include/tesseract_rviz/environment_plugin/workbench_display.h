@@ -20,6 +20,9 @@ public:
   void load(const rviz::Config& config) override;
   void save(rviz::Config config) const override;
 
+public Q_SLOTS:
+  void onEnableChanged() override;
+
 protected:
   // overrides from Display
   void onInitialize() override;

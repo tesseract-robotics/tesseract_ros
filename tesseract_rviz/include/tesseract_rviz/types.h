@@ -20,7 +20,7 @@ enum OctreeVoxelColorMode
 
 struct OctreeDataContainer
 {
-  rviz::PointCloud* point_cloud;
+  std::shared_ptr<rviz::PointCloud> point_cloud;
   std::vector<rviz::PointCloud::Point> points;
   float size;
   tesseract_geometry::Octree::SubType shape_type;

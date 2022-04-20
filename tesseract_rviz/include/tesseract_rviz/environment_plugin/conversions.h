@@ -71,10 +71,10 @@ Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
 
 void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 
-rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
-                                   tesseract_gui::EntityContainer& entity_container,
-                                   float size,
-                                   tesseract_geometry::Octree::SubType subtype);
+std::shared_ptr<rviz::PointCloud> createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
+                                                   tesseract_gui::EntityContainer& entity_container,
+                                                   float size,
+                                                   tesseract_geometry::Octree::SubType subtype);
 
 Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node);
 

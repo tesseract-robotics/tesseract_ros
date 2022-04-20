@@ -144,13 +144,13 @@ Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
   return ogre_entity;
 }
 
-rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
-                                   tesseract_gui::EntityContainer& entity_container,
-                                   float size,
-                                   tesseract_geometry::Octree::SubType subtype)
+std::shared_ptr<rviz::PointCloud> createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
+                                                   tesseract_gui::EntityContainer& entity_container,
+                                                   float size,
+                                                   tesseract_geometry::Octree::SubType subtype)
 {
   auto entity = entity_container.addUntrackedEntity(tesseract_gui::EntityContainer::RESOURCE_NS);
-  auto* cloud = new rviz::PointCloud();
+  auto cloud = std::make_shared<rviz::PointCloud>();
   cloud->clear();
   cloud->setName(entity.unique_name);
 
@@ -283,54 +283,12 @@ Ogre::SceneNode* loadLinkAxis(Ogre::SceneManager& scene,
   auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, name);
 
   Ogre::SceneNode* scene_node = scene.createSceneNode(entity.unique_name);
-  auto axis_red = std::make_shared<tesseract_scene_graph::Material>("tesseract_gui_axis_red_material");
-  axis_red->color = Eigen::Vector4d(1, 0, 0, 1);
-  auto axis_green = std::make_shared<tesseract_scene_graph::Material>("tesseract_gui_axis_green_material");
-  axis_green->color = Eigen::Vector4d(0, 1, 0, 1);
-  auto axis_blue = std::make_shared<tesseract_scene_graph::Material>("tesseract_gui_axis_blue_material");
-  axis_blue->color = Eigen::Vector4d(0, 0, 1, 1);
 
-  //  {
-  //    auto gv_entity = entity_container.addUntracked();
-  //    Ogre::SceneNode* cylinder = scene.createSceneNode(gv_entity.unique_name);
-  //    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-  //    pose.translation() = Eigen::Vector3d(0,0,0.5);
-  //    cylinder->SetLocalPose(ignition::math::eigen3::convert(pose));
-  //    cylinder->AddGeometry(scene.CreateCylinder());
-  //    cylinder->Scale(0.1, 0.1, 1.0);
-  //    cylinder->SetMaterial(axis_blue);
-  //    axis->AddChild(cylinder);
-  //  }
+  /** @todo Does this need to be manually deleted */
+  auto axis = std::make_shared<rviz::Axes>(&scene, scene_node);
+  axis->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
+  entity_container.addUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, axis);
 
-  //  {
-  //    auto gv_id = static_cast<unsigned>(entity_container.createEntityID());
-  //    ignition::rendering::VisualPtr cylinder = scene.CreateVisual(gv_id);
-  //    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-  //    pose.rotate(Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY()));
-  //    pose.translation() = Eigen::Vector3d(0.5,0,0);
-  //    cylinder->SetLocalPose(ignition::math::eigen3::convert(pose));
-  //    cylinder->AddGeometry(scene.CreateCylinder());
-  //    cylinder->Scale(0.1, 0.1, 1.0);
-  //    cylinder->SetMaterial(axis_red);
-  //    axis->AddChild(cylinder);
-  //  }
-
-  //  {
-  //    auto gv_id = static_cast<unsigned>(entity_container.createEntityID());
-  //    ignition::rendering::VisualPtr cylinder = scene.CreateVisual(gv_id);
-  //    Eigen::Isometry3d pose = Eigen::Isometry3d::Identity();
-  //    pose.rotate(Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitX()));
-  //    pose.translation() = Eigen::Vector3d(0,0.5,0);
-  //    cylinder->SetLocalPose(ignition::math::eigen3::convert(pose));
-  //    cylinder->AddGeometry(scene.CreateCylinder());
-  //    cylinder->Scale(0.1, 0.1, 1.0);
-  //    cylinder->SetMaterial(axis_green);
-  //    axis->AddChild(cylinder);
-  //  }
-
-  //  axis->SetInheritScale(false);
-  //  axis->Scale(0.1, 0.1, 0.1);
-  //  axis->SetVisible(true);
   scene_node->setVisible(false, true);
   return scene_node;
 }
@@ -579,7 +537,6 @@ Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
       std::size_t octree_depth;
       auto entity = entity_container.addUntrackedEntity(tesseract_gui::EntityContainer::RESOURCE_NS);
       Ogre::SceneNode* offset_node = scene.createSceneNode(entity.unique_name);
-      //      std::vector<OctreeDataContainer>* octree_objects;
 
       const auto& octomap = static_cast<const tesseract_geometry::Octree&>(geometry);
       const std::shared_ptr<const octomap::OcTree>& octree = octomap.getOctree();
@@ -694,8 +651,8 @@ Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
         data.point_cloud = createPointCloud(std::move(pointBuf[i]), entity_container, data.size, octomap.getSubType());
         data.shape_type = octomap.getSubType();
 
-        offset_node->attachObject(data.point_cloud);
-        //        octree_objects->push_back(data);
+        offset_node->attachObject(data.point_cloud.get());
+        entity_container.addUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, data.point_cloud);
       }
 
       offset_node->setScale(ogre_scale);

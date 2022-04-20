@@ -1,8 +1,14 @@
 #include <tesseract_rviz/environment_plugin/environment_display.h>
 #include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
+#include <tesseract_widgets/common/theme_utils.h>
+#include <tesseract_widgets/common/icon_utils.h>
+
+#include <OgreSceneNode.h>
 
 #include <rviz/panel_dock_widget.h>
+
+#include <QApplication>
 
 namespace tesseract_rviz
 {
@@ -15,15 +21,15 @@ struct EnvironmentDisplayPrivate
     environment_display_ns = "env_display_" + std::to_string(environment_display_id);
   }
 
-  ROSEnvironmentWidget* widget;
+  ROSEnvironmentWidget* widget{ nullptr };
 
-  std::unique_ptr<EnvironmentMonitorProperties> monitor_properties;
+  std::unique_ptr<EnvironmentMonitorProperties> monitor_properties{ nullptr };
 
   /** @brief Keeps track of how many EnvironmentDisplay's have been created for the default namespace */
   static int environment_display_counter;
 
   /** @brief Keeps track of which EnvironmentDisplay this is */
-  int environment_display_id;
+  int environment_display_id{ -1 };
 
   std::string environment_display_ns;
 };
@@ -48,8 +54,15 @@ EnvironmentDisplay::~EnvironmentDisplay()
 void EnvironmentDisplay::onInitialize()
 {
   Display::onInitialize();
+  setIcon(tesseract_gui::icons::getTesseractIcon());
   data_->widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);
   setAssociatedWidget(data_->widget);
+
+  getAssociatedWidgetPanel()->setStyleSheet(tesseract_gui::themes::getDarkTheme());
+  getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
+
+  disconnect(
+      getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
   data_->monitor_properties->onInitialize(data_->widget);
 }
@@ -82,5 +95,51 @@ void EnvironmentDisplay::onEnable()
 }
 
 void EnvironmentDisplay::onDisable() { Display::onDisable(); }
+
+void EnvironmentDisplay::onEnableChanged()
+{
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  queueRender();
+  /* We get here, by two different routes:
+   * - First, we might have disabled the display.
+   *   In this case we want to close/hide the associated widget.
+   *   But there is an exception: tabbed DockWidgets shouldn't be hidden, because then we would loose the
+   * tab.
+   * - Second, the corresponding widget changed visibility and we got here via
+   * associatedPanelVisibilityChange().
+   *   In this case, it's usually counterproductive to show/hide the widget here.
+   *   Typical cases are: main window was minimized/unminimized, tab was switched.
+   */
+  if (isEnabled())
+  {
+    scene_node_->setVisible(true);
+
+    if (getAssociatedWidgetPanel() != nullptr)
+    {
+      getAssociatedWidgetPanel()->show();
+      getAssociatedWidgetPanel()->setEnabled(true);
+    }
+    else if (getAssociatedWidget() != nullptr)
+    {
+      getAssociatedWidget()->show();
+      getAssociatedWidgetPanel()->setEnabled(true);
+    }
+
+    if (isEnabled())  // status might have changed, e.g. if show() failed
+      onEnable();
+  }
+  else
+  {
+    onDisable();
+
+    if (getAssociatedWidgetPanel() != nullptr)
+      getAssociatedWidgetPanel()->setDisabled(true);
+    else if (getAssociatedWidget())
+      getAssociatedWidget()->setDisabled(true);
+
+    scene_node_->setVisible(false);
+  }
+  QApplication::restoreOverrideCursor();
+}
 
 }  // namespace tesseract_rviz
