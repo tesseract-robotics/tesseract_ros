@@ -183,7 +183,8 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   timer.stop();
 
   result.response.successful = plan_future.interface->isSuccessful();
-  result.response.results = Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.results));
+  result.response.results =
+      Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.problem->results));
   plan_future.clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
