@@ -41,6 +41,8 @@ ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Og
   data_->scene_manager = scene_manager;
   data_->scene_node = scene_node;
 
+  addOgreResourceLocation();
+
   connect(this,
           SIGNAL(environmentSet(std::shared_ptr<tesseract_environment::Environment>)),
           this,

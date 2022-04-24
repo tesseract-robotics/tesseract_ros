@@ -18,6 +18,7 @@
 #include <octomap/octomap.h>
 #include <octomap_msgs/Octomap.h>
 #include <ros/console.h>
+#include <ros/package.h>
 #include <boost/algorithm/string.hpp>
 
 #include <rviz/load_resource.h>
@@ -46,6 +47,13 @@ bool isMeshWithColor(const std::string& file_path)
   }
 
   return false;
+}
+
+void addOgreResourceLocation()
+{
+  std::string tesseract_rviz_path = ros::package::getPath("tesseract_rviz");
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+      tesseract_rviz_path + "/ogre_media/models", "FileSystem", "tesseract_rviz");
 }
 
 std::string getEnvNamespaceFromTopic(const std::string& topic)

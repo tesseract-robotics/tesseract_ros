@@ -23,6 +23,9 @@ namespace tesseract_rviz
 {
 bool isMeshWithColor(const std::string& file_path);
 
+/** @brief Add tesseract resources to ogre */
+void addOgreResourceLocation();
+
 std::string getEnvNamespaceFromTopic(const std::string& topic);
 
 std::vector<std::string> loadSceneGraph(Ogre::SceneManager& scene,
