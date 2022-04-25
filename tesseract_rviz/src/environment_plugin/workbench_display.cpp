@@ -76,7 +76,6 @@ void WorkbenchDisplay::onInitialize()
 
   setAssociatedWidget(data_->widget);
 
-  getAssociatedWidgetPanel()->setStyleSheet(tesseract_gui::themes::getDarkTheme());
   getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
 
   disconnect(

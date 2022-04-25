@@ -33,5 +33,6 @@
     <rviz plugin="${prefix}/tesseract_rviz_manipulation_plugin_description.xml"/>
     <rviz plugin="${prefix}/tesseract_rviz_environment_plugin_description.xml"/>
     <rviz plugin="${prefix}/tesseract_rviz_workbench_plugin_description.xml"/>
+    <rviz plugin="${prefix}/tesseract_rviz_set_theme_plugin_description.xml"/>
   </export>
 </package>

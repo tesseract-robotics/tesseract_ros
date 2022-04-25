@@ -58,7 +58,6 @@ void EnvironmentDisplay::onInitialize()
   data_->widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);
   setAssociatedWidget(data_->widget);
 
-  getAssociatedWidgetPanel()->setStyleSheet(tesseract_gui::themes::getDarkTheme());
   getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
 
   disconnect(
