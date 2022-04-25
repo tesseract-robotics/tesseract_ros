@@ -62,6 +62,7 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
+    ${PROJECT_NAME}_environment_plugin_core
   CATKIN_DEPENDS
     roscpp
     message_generation
