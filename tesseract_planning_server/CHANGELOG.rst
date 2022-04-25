@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.2 (2022-04-25)
+------------------
 * Update to changes in ProcessPlanningFuture (`#150 <https://github.com/tesseract-robotics/tesseract_ros/issues/150>`_)
 * Contributors: Levi Armstrong
 
