@@ -50,13 +50,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_plan_profile.h>
 
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_command_language/core/serialization.h>
-
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
+#include <tesseract_common/serialization.h>
 #include <tesseract_common/timer.h>
 
-using tesseract_planning::Serialization;
+using tesseract_common::Serialization;
 using tesseract_rosutils::processMsg;
 
 namespace tesseract_planning_server

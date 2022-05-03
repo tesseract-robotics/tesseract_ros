@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/system/error_code.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include <tesseract_command_language/core/serialization.h>
+#include <tesseract_common/serialization.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -64,11 +64,11 @@ public:
     Instruction seed{ NullInstruction() };
     Instruction results{ NullInstruction() };
     if (!request_archive.instructions.empty())
-      instructions = Serialization::fromArchiveStringXML<Instruction>(request_archive.instructions);
+      instructions = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(request_archive.instructions);
     if (!request_archive.seed.empty())
-      seed = Serialization::fromArchiveStringXML<Instruction>(request_archive.seed);
+      seed = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(request_archive.seed);
     if (!archive.results.empty())
-      results = Serialization::fromArchiveStringXML<Instruction>(archive.results);
+      results = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(archive.results);
 
     // Print debugging info
     ROS_INFO_STREAM("Request Name: " << request_archive.name);

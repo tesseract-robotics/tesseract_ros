@@ -136,6 +136,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
+  tesseract::tesseract_common
   tesseract::tesseract_environment
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_visualization
