@@ -203,7 +203,7 @@ void JointTrajectoryMonitorPropertiesPrivate::tesseractJointTrajectoryCallback(
 
     if (environment != nullptr)
     {
-      trajectory_set = tesseract_common::JointTrajectorySet(initial_state, std::move(environment));
+      trajectory_set = tesseract_common::JointTrajectorySet(std::move(environment));
     }
     else if (!commands.empty())
     {

@@ -11,7 +11,6 @@ namespace tesseract_rviz
 {
 struct SetThemeToolImpl
 {
-  QString theme{ "default" };
   rviz::EnumProperty* theme_property;
 };
 
