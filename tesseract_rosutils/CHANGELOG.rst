@@ -2,6 +2,13 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update changes with serialization (`#151 <https://github.com/tesseract-robotics/tesseract_ros/issues/151>`_)
+  * Update changes with serialization
+  * Update rosinstall files
+* Contributors: Levi Armstrong
+
 0.4.2 (2022-04-25)
 ------------------
 
