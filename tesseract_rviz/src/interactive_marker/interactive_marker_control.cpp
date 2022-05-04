@@ -217,6 +217,8 @@ void InteractiveMarkerControl::updateSize()
     marker->setScale(Ogre::Vector3(scale, scale, scale));
 }
 
+Ogre::SceneManager* InteractiveMarkerControl::getMarkerSceneManager() { return context_->getSceneManager(); }
+
 Ogre::SceneNode* InteractiveMarkerControl::getMarkerSceneNode() { return markers_node_; }
 
 void InteractiveMarkerControl::addMarker(const MarkerBase::Ptr& marker)

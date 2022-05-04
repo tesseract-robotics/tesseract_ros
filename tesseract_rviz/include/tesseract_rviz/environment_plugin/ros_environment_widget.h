@@ -32,6 +32,7 @@ public:
 public Q_SLOTS:
   void onRender() override;
   void onLinkVisibilityChanged(const std::vector<std::string>& links);
+  void onShowContactResults(const tesseract_collision::ContactResultVector& contact_results);
 
 private Q_SLOTS:
   void onEnvironmentSet(const std::shared_ptr<tesseract_environment::Environment>& env);

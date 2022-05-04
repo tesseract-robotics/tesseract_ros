@@ -56,7 +56,7 @@ public:
 
   TriangleListMarker(const std::string& ns,
                      const int id,
-                     rviz::DisplayContext* context,
+                     Ogre::SceneManager* scene_manager,
                      Ogre::SceneNode* parent_node,
                      const Ogre::ColourValue color,
                      const std::vector<Ogre::Vector3>& points,
@@ -70,6 +70,8 @@ public:
   void setColor(Ogre::ColourValue color) override;
 
   std::set<Ogre::MaterialPtr> getMaterials() override;
+
+  void createMarkerSelectionHandler(rviz::DisplayContext* context) override;
 
 protected:
   bool has_vertex_colors_;

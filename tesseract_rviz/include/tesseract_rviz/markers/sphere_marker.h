@@ -47,7 +47,7 @@ public:
 
   SphereMarker(const std::string& ns,
                const int id,
-               rviz::DisplayContext* context,
+               Ogre::SceneManager* scene_manager,
                Ogre::SceneNode* parent_node,
                float radius = 1);
   ~SphereMarker() override;
@@ -61,6 +61,8 @@ public:
   void setColor(Ogre::ColourValue color) override;
 
   std::set<Ogre::MaterialPtr> getMaterials() override;
+
+  void createMarkerSelectionHandler(rviz::DisplayContext* context) override;
 
 protected:
   rviz::Shape* shape_;

@@ -2,6 +2,9 @@
 #include <tesseract_rviz/environment_plugin/conversions.h>
 #include <tesseract_rviz/conversions.h>
 
+#include <tesseract_rviz/markers/marker_base.h>
+#include <tesseract_rviz/markers/arrow_marker.h>
+
 #include <tesseract_widgets/environment/environment_widget_config.h>
 #include <tesseract_widgets/common/entity_container.h>
 #include <tesseract_widgets/common/entity_manager.h>
@@ -33,6 +36,11 @@ struct ROSEnvironmentWidgetPrivate
 
   /** @brief The links with changed visibility properties */
   std::set<std::string> link_visibility_properties_changed;
+
+  /** @brief The contact results to show */
+  bool render_contact_results_dirty{ false };
+  std::vector<std::unique_ptr<MarkerBase>> contact_results_markers;
+  tesseract_collision::ContactResultVector contact_results_changed;
 };
 
 ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node)
@@ -60,6 +68,11 @@ ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Og
           SIGNAL(linkVisibilityChanged(std::vector<std::string>)),
           this,
           SLOT(onLinkVisibilityChanged(std::vector<std::string>)));
+
+  connect(this,
+          SIGNAL(showContactResults(tesseract_collision::ContactResultVector)),
+          this,
+          SLOT(onShowContactResults(tesseract_collision::ContactResultVector)));
 }
 
 ROSEnvironmentWidget::~ROSEnvironmentWidget() = default;
@@ -78,6 +91,7 @@ void ROSEnvironmentWidget::clear()
     container.second->clear();
     data_->entity_manager->removeEntityContainer(container.first);
   }
+  data_->contact_results_markers.clear();
 }
 
 void ROSEnvironmentWidget::clearContainer(const tesseract_gui::EntityContainer& container)
@@ -135,6 +149,13 @@ void ROSEnvironmentWidget::onEnvironmentCurrentStateChanged(const tesseract_envi
 void ROSEnvironmentWidget::onLinkVisibilityChanged(const std::vector<std::string>& links)
 {
   data_->link_visibility_properties_changed.insert(links.begin(), links.end());
+  data_->render_dirty = true;
+}
+
+void ROSEnvironmentWidget::onShowContactResults(const tesseract_collision::ContactResultVector& contact_results)
+{
+  data_->contact_results_changed = contact_results;
+  data_->render_contact_results_dirty = true;
   data_->render_dirty = true;
 }
 
@@ -298,8 +319,7 @@ void ROSEnvironmentWidget::onRender()
       }
     }
 
-    if (data_->render_dirty)
-    {
+    {  // Update Link Visibility
       auto link_visibility_properties = getLinkVisibilityProperties();
       for (const auto& l : data_->link_visibility_properties_changed)
       {
@@ -359,6 +379,45 @@ void ROSEnvironmentWidget::onRender()
         }
       }
       data_->link_visibility_properties_changed.clear();
+    }
+
+    if (data_->render_contact_results_dirty)
+    {
+      // Update contact results
+      auto entity_container = data_->entity_manager->getEntityContainer("ContactResults");
+      if (!entity_container->empty())
+      {
+        clearContainer(*entity_container);
+        entity_container->clear();
+      }
+
+      auto entity = entity_container->addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, "ContactResults");
+      auto* scene_node = data_->scene_manager->createSceneNode(entity.unique_name);
+      data_->scene_node->addChild(scene_node);
+
+      data_->contact_results_markers.clear();
+      int cnt = 0;
+      for (const auto& cr : data_->contact_results_changed)
+      {
+        Ogre::Vector3 p1(cr.nearest_points[0].x(), cr.nearest_points[0].y(), cr.nearest_points[0].z());
+        Ogre::Vector3 p2(cr.nearest_points[1].x(), cr.nearest_points[1].y(), cr.nearest_points[1].z());
+        Ogre::Vector3 direction = p2 - p1;
+        direction.normalise();
+
+        float head_length = 0.015;
+        float shaft_diameter = 0.01;
+        float head_diameter = 0.015;
+        float shaft_length = cr.distance - head_length;
+        std::array<float, 4> proportions = { shaft_length, shaft_diameter, head_length, head_diameter };
+
+        auto arrow = std::make_unique<ArrowMarker>(
+            "ContactResults", cnt++, p1, direction, proportions, data_->scene_manager, scene_node);
+        arrow->setColor(Ogre::ColourValue(1, 0, 0));
+
+        data_->contact_results_markers.push_back(std::move(arrow));
+      }
+      data_->contact_results_changed.clear();
+      data_->render_contact_results_dirty = false;
     }
     data_->render_dirty = false;
   }

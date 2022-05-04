@@ -45,63 +45,70 @@ namespace tesseract_rviz
 {
 ArrowMarker::ArrowMarker(const std::string& ns,
                          const int id,
-                         rviz::DisplayContext* context,
+                         Ogre::SceneManager* scene_manager,
                          Ogre::SceneNode* parent_node)
-  : MarkerBase(ns, id, context, parent_node), arrow_(nullptr), location_(Ogre::Vector3(0, 0, 0))
+  : MarkerBase(ns, id, scene_manager, parent_node), arrow_(nullptr), location_(Ogre::Vector3(0, 0, 0))
 {
-  child_scene_node_ = scene_node_->createChildSceneNode();
-
-  arrow_ = new rviz::Arrow(context_->getSceneManager(), child_scene_node_);
-  setDefaultProportions();
-  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
-  handler_->addTrackedObjects(arrow_->getSceneNode());
-
-  Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(Ogre::Vector3(1, 0, 0));
-  arrow_->setOrientation(orient);
+  ctor(Ogre::Vector3(0, 0, 0), Ogre::Vector3(1, 0, 0), getDefaultProportions());
 }
 
 ArrowMarker::ArrowMarker(const std::string& ns,
                          const int id,
                          Ogre::Vector3 point1,
                          Ogre::Vector3 point2,
-                         rviz::DisplayContext* context,
+                         Ogre::SceneManager* scene_manager,
                          Ogre::SceneNode* parent_node)
-  : MarkerBase(ns, id, context, parent_node), arrow_(nullptr)
+  : MarkerBase(ns, id, scene_manager, parent_node), arrow_(nullptr)
 {
-  child_scene_node_ = scene_node_->createChildSceneNode();
-  location_ = point1;
-
-  arrow_ = new rviz::Arrow(context_->getSceneManager(), child_scene_node_);
-  setDefaultProportions();
-  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
-  handler_->addTrackedObjects(arrow_->getSceneNode());
-
   Ogre::Vector3 direction = point2 - point1;
   float distance = direction.length();
+  direction.normalise();
 
   float head_length = distance * 0.23f;
   float shaft_diameter = distance * 0.35f;
   float head_diameter = distance * 0.55f;
   float shaft_length = distance - head_length;
+  std::array<float, 4> proportions = { shaft_length, shaft_diameter, head_length, head_diameter };
 
-  arrow_->set(shaft_length, shaft_diameter, head_length, head_diameter);
+  ctor(point1, direction, proportions);
+}
+
+ArrowMarker::ArrowMarker(const std::string& ns,
+                         const int id,
+                         Ogre::Vector3 location,
+                         Ogre::Vector3 direction,
+                         std::array<float, 4> proportions,
+                         Ogre::SceneManager* scene_manager,
+                         Ogre::SceneNode* parent_node)
+  : MarkerBase(ns, id, scene_manager, parent_node), arrow_(nullptr)
+{
+  ctor(location, direction, proportions);
+}
+
+void ArrowMarker::ctor(Ogre::Vector3 location, Ogre::Vector3 direction, std::array<float, 4> proportions)
+{
+  child_scene_node_ = scene_node_->createChildSceneNode();
+  location_ = location;
+  arrow_ = new rviz::Arrow(scene_manager_, child_scene_node_);
+
+  arrow_->set(proportions[0], proportions[1], proportions[2], proportions[3]);
 
   direction.normalise();
 
   // for some reason the arrow goes into the y direction by default
   Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(direction);
 
-  arrow_->setPosition(point1);
+  arrow_->setPosition(location_);
   arrow_->setOrientation(orient);
 }
 
 ArrowMarker::~ArrowMarker()
 {
   delete arrow_;
-  context_->getSceneManager()->destroySceneNode(child_scene_node_);
+  scene_manager_->destroySceneNode(child_scene_node_);
 }
 
-void ArrowMarker::setDefaultProportions() { arrow_->set(0.77f, 1.0f, 0.23f, 2.0f); }
+std::array<float, 4> ArrowMarker::getDefaultProportions() { return { 0.77f, 1.0f, 0.23f, 2.0f }; }
 
 void ArrowMarker::setScale(Ogre::Vector3 scale)
 {
@@ -119,6 +126,12 @@ std::set<Ogre::MaterialPtr> ArrowMarker::getMaterials()
   extractMaterials(arrow_->getHead()->getEntity(), materials);
   extractMaterials(arrow_->getShaft()->getEntity(), materials);
   return materials;
+}
+
+void ArrowMarker::createMarkerSelectionHandler(rviz::DisplayContext* context)
+{
+  handler_.reset(new MarkerSelectionHandler(this, getID(), context));
+  handler_->addTrackedObjects(arrow_->getSceneNode());
 }
 
 }  // namespace tesseract_rviz

@@ -43,12 +43,12 @@
 
 namespace tesseract_rviz
 {
-MarkerBase::MarkerBase(std::string ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node)
-  : ns_(std::move(ns)), id_(id), context_(context), scene_node_(parent_node->createChildSceneNode())
+MarkerBase::MarkerBase(std::string ns, const int id, Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
+  : ns_(std::move(ns)), id_(id), scene_manager_(scene_manager), scene_node_(parent_node->createChildSceneNode())
 {
 }
 
-MarkerBase::~MarkerBase() { context_->getSceneManager()->destroySceneNode(scene_node_); }
+MarkerBase::~MarkerBase() { scene_manager_->destroySceneNode(scene_node_); }
 
 void MarkerBase::setInteractiveObject(rviz::InteractiveObjectWPtr object)
 {

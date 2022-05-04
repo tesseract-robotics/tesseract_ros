@@ -94,6 +94,38 @@ include_directories(
   SYSTEM ${OGRE_INCLUDE_DIRS}
 )
 
+add_library(${PROJECT_NAME}_markers SHARED
+  src/markers/marker_base.cpp
+  src/markers/marker_selection_handler.cpp
+  src/markers/utils.cpp
+  src/markers/arrow_marker.cpp
+  src/markers/sphere_marker.cpp
+  src/markers/cube_marker.cpp
+  src/markers/cylinder_marker.cpp
+  src/markers/triangle_list_marker.cpp
+  src/markers/text_view_facing_marker.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_markers PUBLIC
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${QT_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+target_compile_options(${PROJECT_NAME}_markers PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_markers PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_markers PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_markers SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_markers PUBLIC $ENV{ROS_DISTRO}_BUILD)
+
 # Rviz Render Tools
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/trajectory_panel.h
@@ -110,6 +142,7 @@ qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/property/button_property.h
   )
 
+
 add_library(${PROJECT_NAME}_render_tools SHARED
   src/render_tools/visualization_widget.cpp
   src/render_tools/visualize_trajectory_widget.cpp
@@ -123,15 +156,6 @@ add_library(${PROJECT_NAME}_render_tools SHARED
   src/interactive_marker/integer_action.cpp
   src/interactive_marker/interactive_marker.cpp
   src/interactive_marker/interactive_marker_control.cpp
-  src/markers/marker_base.cpp
-  src/markers/marker_selection_handler.cpp
-  src/markers/utils.cpp
-  src/markers/arrow_marker.cpp
-  src/markers/sphere_marker.cpp
-  src/markers/cube_marker.cpp
-  src/markers/cylinder_marker.cpp
-  src/markers/triangle_list_marker.cpp
-  src/markers/text_view_facing_marker.cpp
   src/property/button_property.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
@@ -141,6 +165,7 @@ target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract::tesseract_environment
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_visualization
+  ${PROJECT_NAME}_markers
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -361,6 +386,7 @@ target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     tesseract::tesseract_widgets_common
     tesseract::tesseract_widgets_environment
     tesseract::tesseract_widgets_workbench
+    ${PROJECT_NAME}_markers
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -434,7 +460,9 @@ target_include_directories(${PROJECT_NAME}_workbench_plugin SYSTEM PRIVATE
 
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_render_tools
+install(TARGETS
+    ${PROJECT_NAME}_markers
+    ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
     ${PROJECT_NAME}_state_plugin
     ${PROJECT_NAME}_trajectory_plugin_core
