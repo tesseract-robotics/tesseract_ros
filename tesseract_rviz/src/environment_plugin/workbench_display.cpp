@@ -1,5 +1,6 @@
 #include <tesseract_rviz/environment_plugin/workbench_display.h>
 #include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
+#include <tesseract_rviz/environment_plugin/ros_manipulation_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
 #include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
 
@@ -30,6 +31,7 @@ struct WorkbenchDisplayPrivate
   tesseract_gui::WorkbenchWidget* widget{ nullptr };
   ROSEnvironmentWidget* environment_widget{ nullptr };
   tesseract_gui::JointTrajectoryWidget* joint_trajectory_widget{ nullptr };
+  ROSManipulationWidget* manipulation_widget{ nullptr };
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties{ nullptr };
   std::unique_ptr<JointTrajectoryMonitorProperties> joint_trajectory_properties{ nullptr };
@@ -71,8 +73,9 @@ void WorkbenchDisplay::onInitialize()
   setIcon(tesseract_gui::icons::getTesseractIcon());
   data_->environment_widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);  // NOLINT
   data_->joint_trajectory_widget = new tesseract_gui::JointTrajectoryWidget();                        // NOLINT
-  data_->widget =
-      new tesseract_gui::WorkbenchWidget(data_->environment_widget, data_->joint_trajectory_widget);  // NOLINT
+  data_->manipulation_widget = new ROSManipulationWidget(scene_manager_, scene_node_);                // NOLINT
+  data_->widget = new tesseract_gui::WorkbenchWidget(
+      data_->environment_widget, data_->joint_trajectory_widget, data_->manipulation_widget);  // NOLINT
 
   setAssociatedWidget(data_->widget);
 

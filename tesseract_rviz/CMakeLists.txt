@@ -365,6 +365,7 @@ find_package(tesseract_widgets REQUIRED)
 # Environment Panel
 qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
   include/tesseract_rviz/environment_plugin/ros_environment_widget.h
+  include/tesseract_rviz/environment_plugin/ros_manipulation_widget.h
   include/tesseract_rviz/environment_plugin/rostopic_combo_box.h
   include/tesseract_rviz/environment_plugin/environment_display.h
   include/tesseract_rviz/environment_plugin/environment_monitor_properties.h
@@ -374,6 +375,7 @@ qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
 )
 add_library(${PROJECT_NAME}_environment_plugin_core SHARED
   src/environment_plugin/ros_environment_widget.cpp
+  src/environment_plugin/ros_manipulation_widget.cpp
   src/environment_plugin/rostopic_combo_box.cpp
   src/environment_plugin/environment_display.cpp
   src/environment_plugin/environment_monitor_properties.cpp
@@ -385,6 +387,7 @@ add_library(${PROJECT_NAME}_environment_plugin_core SHARED
 target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     tesseract::tesseract_widgets_common
     tesseract::tesseract_widgets_environment
+    tesseract::tesseract_widgets_manipulation
     tesseract::tesseract_widgets_workbench
     ${PROJECT_NAME}_markers
     ${catkin_LIBRARIES}

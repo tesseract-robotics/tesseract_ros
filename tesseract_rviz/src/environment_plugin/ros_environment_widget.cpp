@@ -315,6 +315,7 @@ void ROSEnvironmentWidget::onRender()
             sn->setOrientation(orientation);
           }
         }
+        data_->render_state_dirty = false;
         data_->render_state_timestamp = state_timestamp;
       }
     }

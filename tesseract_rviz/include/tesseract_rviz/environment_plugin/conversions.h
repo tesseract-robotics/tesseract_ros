@@ -36,15 +36,19 @@ std::vector<std::string> loadSceneGraph(Ogre::SceneManager& scene,
 
 Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
                           tesseract_gui::EntityContainer& entity_container,
-                          const tesseract_scene_graph::Link& link);
+                          const tesseract_scene_graph::Link& link,
+                          tesseract_scene_graph::Material::ConstPtr visual_material_override = nullptr,
+                          tesseract_scene_graph::Material::ConstPtr collision_material_override = nullptr);
 
 Ogre::SceneNode* loadLinkVisuals(Ogre::SceneManager& scene,
                                  tesseract_gui::EntityContainer& entity_container,
-                                 const tesseract_scene_graph::Link& link);
+                                 const tesseract_scene_graph::Link& link,
+                                 tesseract_scene_graph::Material::ConstPtr material_override = nullptr);
 
 Ogre::SceneNode* loadLinkCollisions(Ogre::SceneManager& scene,
                                     tesseract_gui::EntityContainer& entity_container,
-                                    const tesseract_scene_graph::Link& link);
+                                    const tesseract_scene_graph::Link& link,
+                                    tesseract_scene_graph::Material::ConstPtr material_override = nullptr);
 
 Ogre::SceneNode* loadLinkWireBox(Ogre::SceneManager& scene,
                                  tesseract_gui::EntityContainer& entity_container,
@@ -66,6 +70,8 @@ Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
 Ogre::MaterialPtr loadLinkMaterial(Ogre::SceneManager& scene,
                                    const tesseract_scene_graph::Link& link,
                                    const std::string& material_name);
+
+Ogre::MaterialPtr loadMaterial(const tesseract_scene_graph::Material::ConstPtr& material);
 
 Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
                                       tesseract_gui::EntityContainer& entity_container,

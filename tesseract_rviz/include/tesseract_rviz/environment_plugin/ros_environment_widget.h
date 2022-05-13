@@ -39,7 +39,7 @@ private Q_SLOTS:
   void onEnvironmentChanged(const tesseract_environment::Environment& env);
   void onEnvironmentCurrentStateChanged(const tesseract_environment::Environment& env);
 
-protected:
+private:
   std::unique_ptr<ROSEnvironmentWidgetPrivate> data_;
 
   void clear();

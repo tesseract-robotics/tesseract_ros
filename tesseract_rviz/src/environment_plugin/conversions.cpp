@@ -214,13 +214,15 @@ std::vector<std::string> loadSceneGraph(Ogre::SceneManager& scene,
 
 Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
                           tesseract_gui::EntityContainer& entity_container,
-                          const tesseract_scene_graph::Link& link)
+                          const tesseract_scene_graph::Link& link,
+                          tesseract_scene_graph::Material::ConstPtr visual_material_override,
+                          tesseract_scene_graph::Material::ConstPtr collision_material_override)
 {
   auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, link.getName());
   Ogre::SceneNode* scene_node = scene.createSceneNode(entity.unique_name);
 
-  scene_node->addChild(loadLinkVisuals(scene, entity_container, link));
-  scene_node->addChild(loadLinkCollisions(scene, entity_container, link));
+  scene_node->addChild(loadLinkVisuals(scene, entity_container, link, visual_material_override));
+  scene_node->addChild(loadLinkCollisions(scene, entity_container, link, collision_material_override));
 
   if (!link.visual.empty() || !link.collision.empty())
   {
@@ -234,7 +236,8 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
 
 Ogre::SceneNode* loadLinkVisuals(Ogre::SceneManager& scene,
                                  tesseract_gui::EntityContainer& entity_container,
-                                 const tesseract_scene_graph::Link& link)
+                                 const tesseract_scene_graph::Link& link,
+                                 tesseract_scene_graph::Material::ConstPtr material_override)
 {
   std::string name = link.getName() + "::Visuals";
   auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, name);
@@ -247,7 +250,12 @@ Ogre::SceneNode* loadLinkVisuals(Ogre::SceneManager& scene,
     tesseract_scene_graph::Visual::Ptr visual = *vi;
     if (visual && visual->geometry)
     {
-      Ogre::MaterialPtr material = loadLinkMaterial(scene, link, visual->material->getName());
+      Ogre::MaterialPtr material;
+      if (material_override == nullptr)
+        material = loadLinkMaterial(scene, link, visual->material->getName());
+      else
+        material = loadMaterial(material_override);
+
       Ogre::SceneNode* geom_scene_node = loadLinkGeometry(
           scene, entity_container, *visual->geometry, Eigen::Vector3d::Ones(), visual->origin, material, true);
       scene_node->addChild(geom_scene_node);
@@ -259,7 +267,8 @@ Ogre::SceneNode* loadLinkVisuals(Ogre::SceneManager& scene,
 
 Ogre::SceneNode* loadLinkCollisions(Ogre::SceneManager& scene,
                                     tesseract_gui::EntityContainer& entity_container,
-                                    const tesseract_scene_graph::Link& link)
+                                    const tesseract_scene_graph::Link& link,
+                                    tesseract_scene_graph::Material::ConstPtr material_override)
 {
   std::string name = link.getName() + "::Collisions";
   auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, name);
@@ -272,7 +281,12 @@ Ogre::SceneNode* loadLinkCollisions(Ogre::SceneManager& scene,
     tesseract_scene_graph::Collision::Ptr collision = *vi;
     if (collision && collision->geometry)
     {
-      Ogre::MaterialPtr material = loadLinkMaterial(scene, link, "");
+      Ogre::MaterialPtr material;
+      if (material_override == nullptr)
+        material = loadLinkMaterial(scene, link, "");
+      else
+        material = loadMaterial(material_override);
+
       Ogre::SceneNode* geom_scene_node = loadLinkGeometry(
           scene, entity_container, *collision->geometry, Eigen::Vector3d::Ones(), collision->origin, material, false);
       scene_node->addChild(geom_scene_node);
@@ -799,6 +813,35 @@ Ogre::MaterialPtr loadLinkMaterial(Ogre::SceneManager& scene,
   Ogre::ColourValue color = mat->getTechnique(0)->getPass(0)->getDiffuse();
   //  color.a = alpha_ * material_alpha_ * link_alpha;
   color.a = visual->material->color(3);
+  mat->setDiffuse(color);
+
+  if (color.a < 0.9998)
+  {
+    mat->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    mat->setDepthWriteEnabled(false);
+  }
+  else
+  {
+    mat->setSceneBlending(Ogre::SBT_REPLACE);
+    mat->setDepthWriteEnabled(true);
+  }
+
+  return mat;
+}
+
+Ogre::MaterialPtr loadMaterial(const tesseract_scene_graph::Material::ConstPtr& material)
+{
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(
+      material_name_generator.generate(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  mat->getTechnique(0)->setLightingEnabled(true);
+
+  const Eigen::Vector4f& col = material->color.cast<float>();
+  mat->getTechnique(0)->setAmbient(col(0) * 0.5f, col(1) * 0.5f, col(2) * 0.5f);
+  mat->getTechnique(0)->setDiffuse(col(0), col(1), col(2), col(3));
+
+  // Set alpha parameter
+  Ogre::ColourValue color = mat->getTechnique(0)->getPass(0)->getDiffuse();
+  color.a = material->color(3);
   mat->setDiffuse(color);
 
   if (color.a < 0.9998)
