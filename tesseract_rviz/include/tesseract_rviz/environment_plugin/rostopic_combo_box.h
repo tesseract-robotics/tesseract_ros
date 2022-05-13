@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,53 +26,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
-#define TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
+#ifndef TESSERACT_RVIZ_ROSTOPIC_COMBO_BOX_H
+#define TESSERACT_RVIZ_ROSTOPIC_COMBO_BOX_H
 
-#include <tesseract_rviz/markers/marker_base.h>
-
-namespace Ogre
-{
-class SceneNode;
-}
-
-namespace rviz
-{
-class MovableText;
-}
+#include <QComboBox>
+#include <QString>
+#include <ros/builtin_message_traits.h>
 
 namespace tesseract_rviz
 {
-class TextViewFacingMarker : public MarkerBase
+class ROSTopicComboBox : public QComboBox
 {
+  Q_OBJECT
 public:
-  using Ptr = boost::shared_ptr<TextViewFacingMarker>;
-  using ConstPtr = boost::shared_ptr<const TextViewFacingMarker>;
+  explicit ROSTopicComboBox(QWidget* parent = nullptr);
+  ~ROSTopicComboBox();
 
-  TextViewFacingMarker(const std::string& ns,
-                       const int id,
-                       const std::string& caption,
-                       Ogre::SceneManager* scene_manager,
-                       Ogre::SceneNode* parent_node);
+  template <typename T>
+  void setMessageType()
+  {
+    message_type_ = ros::message_traits::datatype<T>();
+  }
 
-  ~TextViewFacingMarker() override;
+  void showPopup() override;
 
-  void setText(const std::string& text);
-
-  void setOrientation(const Ogre::Quaternion& /*orientation*/) override {}
-
-  void setScale(Ogre::Vector3 scale) override;
-  Ogre::Vector3 getScale() const override;
-
-  void setColor(Ogre::ColourValue color) override;
-
-  std::set<Ogre::MaterialPtr> getMaterials() override;
-
-  void createMarkerSelectionHandler(rviz::DisplayContext* context) override;
+public Q_SLOTS:
+  void fillTopicList();
 
 protected:
-  rviz::MovableText* text_;
+  QString message_type_;
 };
-
 }  // namespace tesseract_rviz
-#endif  // TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
+#endif  // TESSERACT_RVIZ_ROSTOPIC_COMBO_BOX_H

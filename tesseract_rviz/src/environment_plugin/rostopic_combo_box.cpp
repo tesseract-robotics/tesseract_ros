@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Willow Garage, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,53 +26,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
-#define TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
 
-#include <tesseract_rviz/markers/marker_base.h>
+#include <tesseract_rviz/environment_plugin/rostopic_combo_box.h>
+#include <ros/master.h>
 
-namespace Ogre
-{
-class SceneNode;
-}
-
-namespace rviz
-{
-class MovableText;
-}
+#include <QApplication>
 
 namespace tesseract_rviz
 {
-class TextViewFacingMarker : public MarkerBase
+ROSTopicComboBox::ROSTopicComboBox(QWidget* parent) : QComboBox(parent) { setEditable(false); }
+
+ROSTopicComboBox::~ROSTopicComboBox() = default;
+
+void ROSTopicComboBox::showPopup()
 {
-public:
-  using Ptr = boost::shared_ptr<TextViewFacingMarker>;
-  using ConstPtr = boost::shared_ptr<const TextViewFacingMarker>;
+  fillTopicList();
+  QComboBox::showPopup();
+}
 
-  TextViewFacingMarker(const std::string& ns,
-                       const int id,
-                       const std::string& caption,
-                       Ogre::SceneManager* scene_manager,
-                       Ogre::SceneNode* parent_node);
+void ROSTopicComboBox::fillTopicList()
+{
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  clear();
 
-  ~TextViewFacingMarker() override;
+  std::string std_message_type = message_type_.toStdString();
 
-  void setText(const std::string& text);
+  ros::master::V_TopicInfo topics;
+  ros::master::getTopics(topics);
 
-  void setOrientation(const Ogre::Quaternion& /*orientation*/) override {}
+  // Loop through all published topics
+  ros::master::V_TopicInfo::iterator it;
+  for (it = topics.begin(); it != topics.end(); ++it)
+  {
+    const ros::master::TopicInfo& topic = *it;
 
-  void setScale(Ogre::Vector3 scale) override;
-  Ogre::Vector3 getScale() const override;
-
-  void setColor(Ogre::ColourValue color) override;
-
-  std::set<Ogre::MaterialPtr> getMaterials() override;
-
-  void createMarkerSelectionHandler(rviz::DisplayContext* context) override;
-
-protected:
-  rviz::MovableText* text_;
-};
-
+    // Only add topics whose type matches.
+    if (topic.datatype == std_message_type)
+    {
+      addItem(QString::fromStdString(topic.name));
+    }
+  }
+  QApplication::restoreOverrideCursor();
+}
 }  // namespace tesseract_rviz
-#endif  // TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H

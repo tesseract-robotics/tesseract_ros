@@ -310,6 +310,9 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
 
 void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state)
 {
+  if (!env_->isInitialized())
+    return;
+
   if (joint_state->name.size() != joint_state->position.size())
   {
     ROS_ERROR_THROTTLE(1,
@@ -322,6 +325,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
 
   {
     std::scoped_lock slock(state_update_lock_);
+    auto lock = env_->lockRead();
     // read the received values, and update their time stamps
     current_state_time_ = joint_state->header.stamp;
     if (last_environment_revision_ != env_->getRevision())

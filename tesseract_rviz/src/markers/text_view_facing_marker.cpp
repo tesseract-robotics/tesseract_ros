@@ -44,18 +44,15 @@ namespace tesseract_rviz
 TextViewFacingMarker::TextViewFacingMarker(const std::string& ns,
                                            const int id,
                                            const std::string& caption,
-                                           rviz::DisplayContext* context,
+                                           Ogre::SceneManager* scene_manager,
                                            Ogre::SceneNode* parent_node)
 
-  : MarkerBase(ns, id, context, parent_node), text_(nullptr)
+  : MarkerBase(ns, id, scene_manager, parent_node), text_(nullptr)
 {
   text_ = new rviz::MovableText(caption);
   text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_CENTER);
   text_->setCharacterHeight(0.15f);
   scene_node_->attachObject(text_);
-
-  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
-  handler_->addTrackedObject(text_);
 }
 
 TextViewFacingMarker::~TextViewFacingMarker() { delete text_; }
@@ -84,6 +81,12 @@ std::set<Ogre::MaterialPtr> TextViewFacingMarker::getMaterials()
     materials.insert(text_->getMaterial());
   }
   return materials;
+}
+
+void TextViewFacingMarker::createMarkerSelectionHandler(rviz::DisplayContext* context)
+{
+  handler_.reset(new MarkerSelectionHandler(this, getID(), context));
+  handler_->addTrackedObject(text_);
 }
 
 }  // namespace tesseract_rviz

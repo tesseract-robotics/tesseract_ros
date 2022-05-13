@@ -83,7 +83,7 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
 
   // Convert to objects
   tesseract_msgs::PlanningRequestArchive request_archive = msg->planning_request;
-  auto env = fromMsg(request_archive.environment);
+  tesseract_environment::Environment::Ptr env = fromMsg(request_archive.environment);
   tesseract_environment::Commands commands = fromMsg(request_archive.commands);
   env->applyCommands(commands);
   Instruction results = CompositeInstruction();
@@ -105,7 +105,9 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   tesseract_common::JointTrajectory traj =
       tesseract_planning::toJointTrajectory(results.as<tesseract_planning::CompositeInstruction>());
   auto traj_msg = boost::make_shared<tesseract_msgs::Trajectory>();
-  tesseract_rosutils::toMsg(traj_msg->joint_trajectory, traj);
+  tesseract_msgs::JointTrajectory joint_traj_msg;
+  tesseract_rosutils::toMsg(joint_traj_msg, traj);
+  traj_msg->joint_trajectories.push_back(joint_traj_msg);
 
   // Manually call the callback
   visualize_trajectory_widget_->setDisplayTrajectory(traj_msg);

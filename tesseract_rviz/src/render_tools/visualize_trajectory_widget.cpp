@@ -316,6 +316,7 @@ void VisualizeTrajectoryWidget::onUpdate(float /*wall_dt*/)
         trajectory_state_solver_ = env_cloned->getStateSolver();
       }
 
+      trajectory_state_solver_->setState(trajectory_initial_state_);
       slider_count_ = static_cast<int>(std::ceil(trajectory_player_.trajectoryDuration() / SLIDER_RESOLUTION)) + 1;
 
       if (display_mode_property_->getOptionInt() == 2)
@@ -444,6 +445,10 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
   if (!msg->commands.empty())
     trajectory_env_commands_ = tesseract_rosutils::fromMsg(msg->commands);
 
+  trajectory_initial_state_.clear();
+  for (const auto& pair_msg : msg->initial_state)
+    trajectory_initial_state_[pair_msg.first] = pair_msg.second;
+
   if (!msg->instructions.empty())
   {
     using namespace tesseract_planning;
@@ -454,10 +459,15 @@ void VisualizeTrajectoryWidget::setDisplayTrajectory(const tesseract_msgs::Traje
     if (interrupt_display_property_->getBool())
       interruptCurrentDisplay();
   }
-  else if (!msg->joint_trajectory.empty())
+  else if (!msg->joint_trajectories.empty())
   {
     boost::mutex::scoped_lock lock(update_trajectory_message_);
-    trajectory_to_display_ = tesseract_rosutils::fromMsg(msg->joint_trajectory);
+    trajectory_to_display_.clear();
+    for (const auto& joint_trajectory_msg : msg->joint_trajectories)
+    {
+      tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(joint_trajectory_msg);
+      trajectory_to_display_.insert(trajectory_to_display_.end(), joint_trajectory.begin(), joint_trajectory.end());
+    }
     if (interrupt_display_property_->getBool())
       interruptCurrentDisplay();
   }

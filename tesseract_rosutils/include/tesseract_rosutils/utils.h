@@ -222,14 +222,14 @@ void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-void toMsg(std::vector<tesseract_msgs::JointState>& traj_msg, const tesseract_common::JointTrajectory& traj);
+void toMsg(tesseract_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj);
 
 /**
  * @brief Generate a JointTrajectory from message
  * @param traj_msg The trajectory message to convert
  * @param traj The joint trajectory
  */
-tesseract_common::JointTrajectory fromMsg(const std::vector<tesseract_msgs::JointState>& traj_msg);
+tesseract_common::JointTrajectory fromMsg(const tesseract_msgs::JointTrajectory& traj_msg);
 
 bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
 
@@ -427,7 +427,7 @@ bool toMsg(tesseract_msgs::Environment& environment_msg,
  * @param tesseract_msg Input Tesseract msg
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
-tesseract_environment::Environment::Ptr fromMsg(const tesseract_msgs::Environment& environment_msg);
+tesseract_environment::Environment::UPtr fromMsg(const tesseract_msgs::Environment& environment_msg);
 
 /**
  * @brief Converts a TaskInfo object to a TaskInfo msg
@@ -451,6 +451,13 @@ tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_i
  */
 trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& joint_trajectory,
                                        const tesseract_scene_graph::SceneState& initial_state);
+
+/**
+ * @brief Convert trajectory_msgs::JointTrajectory to Tesseract tesseract_common::JointTrajectory
+ * @param joint_trajectory The trajectory to convert
+ * @return A tesseract joint trajectory
+ */
+tesseract_common::JointTrajectory fromMsg(const trajectory_msgs::JointTrajectory& joint_trajectory_msg);
 
 template <typename MessageType>
 inline bool toFile(const std::string& filepath, const MessageType& msg)

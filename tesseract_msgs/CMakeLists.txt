@@ -64,6 +64,7 @@ add_message_files(
     JointMimic.msg
     JointSafety.msg
     JointState.msg
+    JointTrajectory.msg
     KinematicsInformation.msg
     KinematicsPluginInfo.msg
     Link.msg

@@ -39,16 +39,13 @@ namespace tesseract_rviz
 {
 SphereMarker::SphereMarker(const std::string& ns,
                            const int id,
-                           rviz::DisplayContext* context,
+                           Ogre::SceneManager* scene_manager,
                            Ogre::SceneNode* parent_node,
                            float radius)
-  : MarkerBase(ns, id, context, parent_node), shape_(nullptr), scale_(Ogre::Vector3(1, 1, 1)), radius_(radius)
+  : MarkerBase(ns, id, scene_manager, parent_node), shape_(nullptr), scale_(Ogre::Vector3(1, 1, 1)), radius_(radius)
 {
-  shape_ = new rviz::Shape(rviz::Shape::Sphere, context_->getSceneManager(), scene_node_);
+  shape_ = new rviz::Shape(rviz::Shape::Sphere, scene_manager_, scene_node_);
   setScale(scale_);
-
-  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns_, id_), context_));
-  handler_->addTrackedObjects(shape_->getRootNode());
 }
 
 SphereMarker::~SphereMarker() { delete shape_; }
@@ -76,6 +73,12 @@ std::set<Ogre::MaterialPtr> SphereMarker::getMaterials()
   std::set<Ogre::MaterialPtr> materials;
   extractMaterials(shape_->getEntity(), materials);
   return materials;
+}
+
+void SphereMarker::createMarkerSelectionHandler(rviz::DisplayContext* context)
+{
+  handler_.reset(new MarkerSelectionHandler(this, getID(), context));
+  handler_->addTrackedObjects(shape_->getRootNode());
 }
 
 }  // namespace tesseract_rviz

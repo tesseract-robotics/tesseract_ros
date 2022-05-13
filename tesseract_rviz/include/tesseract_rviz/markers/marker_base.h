@@ -61,7 +61,7 @@ public:
   using Ptr = boost::shared_ptr<MarkerBase>;
   using ConstPtr = boost::shared_ptr<const MarkerBase>;
 
-  MarkerBase(std::string ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node);
+  MarkerBase(std::string ns, const int id, Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node);
   virtual ~MarkerBase();
 
   MarkerID getID() { return MarkerID(ns_, id_); }
@@ -88,6 +88,8 @@ public:
 
   virtual std::set<Ogre::MaterialPtr> getMaterials() { return std::set<Ogre::MaterialPtr>(); }
 
+  virtual void createMarkerSelectionHandler(rviz::DisplayContext* context) = 0;
+
 protected:
   void extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialPtr>& materials);
 
@@ -95,7 +97,7 @@ protected:
 
   int id_;
 
-  rviz::DisplayContext* context_;
+  Ogre::SceneManager* scene_manager_;
 
   Ogre::SceneNode* scene_node_;
 

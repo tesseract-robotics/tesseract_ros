@@ -114,6 +114,12 @@ public:
   virtual ~InteractiveMarkerControl();
 
   /**
+   * @brief Get marker scene manager for control to create markers for.
+   * @return Marker Scene Manager
+   */
+  Ogre::SceneManager* getMarkerSceneManager();
+
+  /**
    * @brief Get marker scene node for control to create markers for.
    * @return Marker Scene Node
    */

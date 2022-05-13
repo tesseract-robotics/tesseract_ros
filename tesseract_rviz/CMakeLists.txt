@@ -62,6 +62,7 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
+    ${PROJECT_NAME}_environment_plugin_core
   CATKIN_DEPENDS
     roscpp
     message_generation
@@ -93,6 +94,38 @@ include_directories(
   SYSTEM ${OGRE_INCLUDE_DIRS}
 )
 
+add_library(${PROJECT_NAME}_markers SHARED
+  src/markers/marker_base.cpp
+  src/markers/marker_selection_handler.cpp
+  src/markers/utils.cpp
+  src/markers/arrow_marker.cpp
+  src/markers/sphere_marker.cpp
+  src/markers/cube_marker.cpp
+  src/markers/cylinder_marker.cpp
+  src/markers/triangle_list_marker.cpp
+  src/markers/text_view_facing_marker.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_markers PUBLIC
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${QT_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+target_compile_options(${PROJECT_NAME}_markers PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_markers PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_markers PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_markers SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_markers PUBLIC $ENV{ROS_DISTRO}_BUILD)
+
 # Rviz Render Tools
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/trajectory_panel.h
@@ -109,6 +142,7 @@ qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/property/button_property.h
   )
 
+
 add_library(${PROJECT_NAME}_render_tools SHARED
   src/render_tools/visualization_widget.cpp
   src/render_tools/visualize_trajectory_widget.cpp
@@ -122,15 +156,6 @@ add_library(${PROJECT_NAME}_render_tools SHARED
   src/interactive_marker/integer_action.cpp
   src/interactive_marker/interactive_marker.cpp
   src/interactive_marker/interactive_marker_control.cpp
-  src/markers/marker_base.cpp
-  src/markers/marker_selection_handler.cpp
-  src/markers/utils.cpp
-  src/markers/arrow_marker.cpp
-  src/markers/sphere_marker.cpp
-  src/markers/cube_marker.cpp
-  src/markers/cylinder_marker.cpp
-  src/markers/triangle_list_marker.cpp
-  src/markers/text_view_facing_marker.cpp
   src/property/button_property.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
@@ -140,6 +165,7 @@ target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract::tesseract_environment
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_visualization
+  ${PROJECT_NAME}_markers
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -330,6 +356,84 @@ target_include_directories(${PROJECT_NAME}_test PRIVATE
 target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
+
+#######################################
+## New Panels using tesseract_widget ##
+#######################################
+find_package(tesseract_widgets REQUIRED)
+
+# Environment Panel
+qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
+  include/tesseract_rviz/environment_plugin/ros_environment_widget.h
+  include/tesseract_rviz/environment_plugin/ros_manipulation_widget.h
+  include/tesseract_rviz/environment_plugin/rostopic_combo_box.h
+  include/tesseract_rviz/environment_plugin/environment_display.h
+  include/tesseract_rviz/environment_plugin/environment_monitor_properties.h
+  include/tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h
+  include/tesseract_rviz/environment_plugin/workbench_display.h
+  include/tesseract_rviz/environment_plugin/set_theme_tool.h
+)
+add_library(${PROJECT_NAME}_environment_plugin_core SHARED
+  src/environment_plugin/ros_environment_widget.cpp
+  src/environment_plugin/ros_manipulation_widget.cpp
+  src/environment_plugin/rostopic_combo_box.cpp
+  src/environment_plugin/environment_display.cpp
+  src/environment_plugin/environment_monitor_properties.cpp
+  src/environment_plugin/joint_trajectory_monitor_properties.cpp
+  src/environment_plugin/workbench_display.cpp
+  src/environment_plugin/conversions.cpp
+  src/environment_plugin/set_theme_tool.cpp
+  ${${PROJECT_NAME}_environment_plugin_core_cpp_MOCS})
+target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
+    tesseract::tesseract_widgets_common
+    tesseract::tesseract_widgets_environment
+    tesseract::tesseract_widgets_manipulation
+    tesseract::tesseract_widgets_workbench
+    ${PROJECT_NAME}_markers
+    ${catkin_LIBRARIES}
+    ${OGRE_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_environment_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_environment_plugin_core PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_environment_plugin_core PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_environment_plugin_core SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_environment_plugin SHARED src/environment_plugin/environment_plugin_init.cpp)
+target_link_libraries(${PROJECT_NAME}_environment_plugin PRIVATE
+  ${PROJECT_NAME}_environment_plugin_core
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_environment_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_environment_plugin PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_environment_plugin PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_environment_plugin SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_workbench_plugin SHARED src/environment_plugin/workbench_plugin_init.cpp)
+target_link_libraries(${PROJECT_NAME}_workbench_plugin PRIVATE
+  ${PROJECT_NAME}_environment_plugin_core
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_workbench_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_workbench_plugin PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_workbench_plugin PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_workbench_plugin SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
+
 # Files generated by MOC, RCC, and UIC may produce clang-tidy warnings.
 # We generate a dummy .clang-tidy file in the binary directory that disables
 # all clang-tidy checks except one that will never match.  This one check is
@@ -345,7 +449,9 @@ target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
 
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_render_tools
+install(TARGETS
+    ${PROJECT_NAME}_markers
+    ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
     ${PROJECT_NAME}_state_plugin
     ${PROJECT_NAME}_trajectory_plugin_core
@@ -354,6 +460,9 @@ install(TARGETS ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_planning_response_archive_plugin
     ${PROJECT_NAME}_manipulation_plugin_core
     ${PROJECT_NAME}_manipulation_plugin
+    ${PROJECT_NAME}_environment_plugin_core
+    ${PROJECT_NAME}_environment_plugin
+    ${PROJECT_NAME}_workbench_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -367,10 +476,14 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Mark plugin XML files for installation
-install(FILES tesseract_rviz_state_plugin_description.xml
+install(
+  FILES
+    tesseract_rviz_state_plugin_description.xml
     tesseract_rviz_trajectory_plugin_description.xml
     tesseract_rviz_planning_response_archive_plugin_description.xml
     tesseract_rviz_manipulation_plugin_description.xml
+    tesseract_rviz_environment_plugin_description.xml
+    tesseract_rviz_workbench_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
