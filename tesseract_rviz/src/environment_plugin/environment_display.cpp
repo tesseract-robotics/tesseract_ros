@@ -1,7 +1,8 @@
 #include <tesseract_rviz/environment_plugin/environment_display.h>
 #include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_widgets/common/theme_utils.h>
+#include <tesseract_rviz/environment_plugin/set_theme_tool.h>
+
 #include <tesseract_widgets/common/icon_utils.h>
 
 #include <OgreSceneNode.h>
@@ -20,6 +21,8 @@ struct EnvironmentDisplayPrivate
     environment_display_id = environment_display_counter;
     environment_display_ns = "env_display_" + std::to_string(environment_display_id);
   }
+
+  std::shared_ptr<SetThemeTool> theme_tool;
 
   ROSEnvironmentWidget* widget{ nullptr };
 
@@ -64,6 +67,10 @@ void EnvironmentDisplay::onInitialize()
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
   data_->monitor_properties->onInitialize(data_->widget);
+
+  data_->theme_tool = SetThemeTool::instance();
+  if (!data_->theme_tool->isInitialized())
+    data_->theme_tool->initialized(context_);
 }
 
 void EnvironmentDisplay::reset() { Display::reset(); }

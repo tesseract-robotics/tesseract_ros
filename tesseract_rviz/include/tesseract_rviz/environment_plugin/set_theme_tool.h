@@ -1,33 +1,43 @@
-#ifndef TESSERACT_RVIZ_SET_THEME_TOOL_H
-#define TESSERACT_RVIZ_SET_THEME_TOOL_H
+#ifndef TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_SET_THEME_TOOL_H
+#define TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_SET_THEME_TOOL_H
 
-#include <rviz/tool.h>
+#include <memory>
+#include <QObject>
+
+class QAction;
+
+namespace rviz
+{
+class DisplayContext;
+}
 
 namespace tesseract_rviz
 {
-struct SetThemeToolImpl;
-
-class SetThemeTool : public rviz::Tool
+struct SetThemeToolPrivate;
+class SetThemeTool : public QObject
 {
   Q_OBJECT
 public:
   SetThemeTool();
-  ~SetThemeTool() override;
+  ~SetThemeTool();
+  SetThemeTool(const SetThemeTool&) = delete;
+  SetThemeTool& operator=(const SetThemeTool&) = delete;
+  SetThemeTool(SetThemeTool&&) = delete;
+  SetThemeTool& operator=(SetThemeTool&&) = delete;
 
-  void onInitialize() override;
+  bool isInitialized() const;
+  void initialized(rviz::DisplayContext* context);
 
-  void activate() override;
-  void deactivate() override;
-
-  void load(const rviz::Config& config) override;
-  void save(rviz::Config config) const override;
+  static std::shared_ptr<SetThemeTool> instance();
 
 private Q_SLOTS:
-  void onThemeChanged();
+  void onThemeDefaultSelected();
+  void onThemeDarkSelected();
+  void onThemeLightSelected();
 
-protected:
-  std::unique_ptr<SetThemeToolImpl> data_;
+private:
+  std::unique_ptr<SetThemeToolPrivate> data_;
 };
 }  // namespace tesseract_rviz
 
-#endif  // TESSERACT_RVIZ_SET_THEME_TOOL_H
+#endif  // TESSERACT_RVIZ_ENVIRONMENT_PLUGIN_SET_THEME_TOOL_H

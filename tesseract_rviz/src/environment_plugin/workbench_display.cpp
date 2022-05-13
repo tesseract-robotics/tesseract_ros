@@ -3,6 +3,7 @@
 #include <tesseract_rviz/environment_plugin/ros_manipulation_widget.h>
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
 #include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
+#include <tesseract_rviz/environment_plugin/set_theme_tool.h>
 
 #include <tesseract_widgets/workbench/workbench_widget.h>
 #include <tesseract_widgets/environment/environment_widget_config.h>
@@ -12,6 +13,8 @@
 #include <tesseract_widgets/common/icon_utils.h>
 
 #include <rviz/panel_dock_widget.h>
+#include <rviz/display_context.h>
+#include <rviz/window_manager_interface.h>
 
 #include <OgreSceneNode.h>
 
@@ -27,6 +30,8 @@ struct WorkbenchDisplayPrivate
     workbench_display_id = workbench_display_counter;
     workbench_display_ns = "workbench_display_" + std::to_string(workbench_display_id);
   }
+
+  std::shared_ptr<SetThemeTool> theme_tool;
 
   tesseract_gui::WorkbenchWidget* widget{ nullptr };
   ROSEnvironmentWidget* environment_widget{ nullptr };
@@ -86,6 +91,10 @@ void WorkbenchDisplay::onInitialize()
 
   data_->monitor_properties->onInitialize(data_->environment_widget);
   data_->joint_trajectory_properties->onInitialize(data_->joint_trajectory_widget);
+
+  data_->theme_tool = SetThemeTool::instance();
+  if (!data_->theme_tool->isInitialized())
+    data_->theme_tool->initialized(context_);
 }
 
 void WorkbenchDisplay::onEnable()

@@ -1,7 +1,0 @@
-<library path="libtesseract_rviz_set_theme_plugin">
-  <class name="tesseract_rviz/SetThemeTool" type="tesseract_rviz::SetThemeTool" base_class_type="rviz::Tool">
-    <description>
-      A tool for setting the rviz theme to Dark, Light or Default
-    </description>
-  </class>
-</library>

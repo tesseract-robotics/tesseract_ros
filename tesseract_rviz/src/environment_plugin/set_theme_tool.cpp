@@ -1,78 +1,111 @@
 #include <tesseract_rviz/environment_plugin/set_theme_tool.h>
-#include <tesseract_widgets/common/theme_utils.h>
+
 #include <tesseract_widgets/common/icon_utils.h>
+#include <tesseract_widgets/common/theme_utils.h>
 
-#include <rviz/properties/enum_property.h>
+#include <rviz/display_context.h>
+#include <rviz/window_manager_interface.h>
 
-#include <QString>
 #include <QApplication>
+#include <QMainWindow>
+#include <QToolBar>
+#include <QMenu>
+#include <QToolButton>
+#include <QSettings>
 
 namespace tesseract_rviz
 {
-struct SetThemeToolImpl
+struct SetThemeToolPrivate
 {
-  rviz::EnumProperty* theme_property;
+  int theme_index{ 0 };
+
+  QToolBar* toolbar;
+  QMenu* menu;
+  QToolButton* tool_button;
+
+  QAction* default_theme{ nullptr };
+  QAction* dark_theme{ nullptr };
+  QAction* light_theme{ nullptr };
 };
 
-SetThemeTool::SetThemeTool() : data_(std::make_unique<SetThemeToolImpl>())
+SetThemeTool::SetThemeTool() : data_(std::make_unique<SetThemeToolPrivate>()) {}
+
+SetThemeTool::~SetThemeTool()
 {
-  data_->theme_property = new rviz::EnumProperty("Theme",
-                                                 "default",
-                                                 "Set the rviz application theme (Dark, Light or Default)",
-                                                 nullptr,
-                                                 SLOT(onThemeChanged()),
-                                                 this);
-
-  data_->theme_property->addOptionStd("Default", 0);
-  data_->theme_property->addOptionStd("Light", 1);
-  data_->theme_property->addOptionStd("Dark", 2);
-
-  getPropertyContainer()->addChild(data_->theme_property);
-}
-SetThemeTool::~SetThemeTool() = default;
-
-void SetThemeTool::onInitialize()
-{
-  setIcon(tesseract_gui::icons::getTesseractIcon());
-  onThemeChanged();
+  QSettings ms;
+  ms.beginGroup("SetThemeTool");
+  ms.setValue("theme", data_->theme_index);
+  ms.endGroup();
 }
 
-void SetThemeTool::activate() {}
+bool SetThemeTool::isInitialized() const { return (data_->toolbar != nullptr); }
 
-void SetThemeTool::deactivate() {}
-
-void SetThemeTool::load(const rviz::Config& config)
+void SetThemeTool::initialized(rviz::DisplayContext* context)
 {
-  rviz::Tool::load(config);
-
-  QString theme;
-  if (config.mapGetString("tesseract::SetThemeTool", &theme))
-    data_->theme_property->setString(theme);
-}
-
-void SetThemeTool::save(rviz::Config config) const
-{
-  config.mapSetValue("tesseract::SetThemeTool", data_->theme_property->getString());
-  rviz::Tool::save(config);
-}
-
-void SetThemeTool::onThemeChanged()
-{
-  if (data_->theme_property->getOptionInt() == 0)
+  if (!isInitialized())
   {
-    qApp->setStyleSheet("");
-    setName("Theme (Default)");
+    auto* main_window = dynamic_cast<QMainWindow*>(context->getWindowManager());
+    data_->toolbar = main_window->findChild<QToolBar*>("Tools");
+    if (data_->toolbar != nullptr)
+    {
+      data_->toolbar->addSeparator();
+
+      data_->menu = new QMenu(data_->toolbar);  // NOLINT
+      data_->default_theme = data_->menu->addAction("Default", this, SLOT(onThemeDefaultSelected()));
+      data_->dark_theme = data_->menu->addAction("Dark", this, SLOT(onThemeDarkSelected()));
+      data_->light_theme = data_->menu->addAction("Light", this, SLOT(onThemeLightSelected()));
+
+      data_->tool_button = new QToolButton();  // NOLINT
+      data_->tool_button->setMenu(data_->menu);
+      data_->tool_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+      data_->tool_button->setPopupMode(QToolButton::InstantPopup);
+      data_->tool_button->setToolTip("Set the application theme.");
+      data_->tool_button->setIcon(tesseract_gui::icons::getTesseractIcon());
+      data_->toolbar->addWidget(data_->tool_button);
+
+      QSettings ms;
+      ms.beginGroup("SetThemeTool");
+      data_->theme_index = ms.value("theme", 0).toInt();
+      ms.endGroup();
+
+      if (data_->theme_index == 0)
+        onThemeDefaultSelected();
+      else if (data_->theme_index == 1)
+        onThemeDarkSelected();
+      else if (data_->theme_index == 2)
+        onThemeLightSelected();
+    }
   }
-  else if (data_->theme_property->getOptionInt() == 1)
-  {
-    qApp->setStyleSheet(tesseract_gui::themes::getLightTheme());
-    setName("Theme (Light)");
-  }
-  else if (data_->theme_property->getOptionInt() == 2)
-  {
-    qApp->setStyleSheet(tesseract_gui::themes::getDarkTheme());
-    setName("Theme (Dark)");
-  }
+}
+
+std::shared_ptr<SetThemeTool> SetThemeTool::instance()
+{
+  static std::shared_ptr<SetThemeTool> singleton = nullptr;
+  if (singleton == nullptr)
+    singleton = std::make_shared<SetThemeTool>();
+
+  return singleton;
+}
+
+void SetThemeTool::onThemeDefaultSelected()
+{
+  qApp->setStyleSheet("");
+  data_->tool_button->setText("Theme (Default)");
+  data_->theme_index = 0;
+}
+
+void SetThemeTool::onThemeDarkSelected()
+{
+  qApp->setStyleSheet(tesseract_gui::themes::getDarkTheme());
+  data_->tool_button->setText("Theme (Dark)");
+  data_->theme_index = 1;
+}
+
+void SetThemeTool::onThemeLightSelected()
+{
+  qApp->setStyleSheet(tesseract_gui::themes::getLightTheme());
+  data_->tool_button->setText("Theme (Light)");
+  data_->theme_index = 2;
 }
 
 }  // namespace tesseract_rviz
