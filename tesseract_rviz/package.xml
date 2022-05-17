@@ -16,7 +16,7 @@
   <depend>tesseract_common</depend>
   <depend>tesseract_monitoring</depend>
   <depend>tesseract_motion_planners</depend>
-  <depend>tesseract_widgets</depend>
+  <depend>tesseract_qt</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

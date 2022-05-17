@@ -3,7 +3,7 @@
 
 #include <rviz/display.h>
 #include <tesseract_environment/environment.h>
-#include <tesseract_widgets/common/entity_container.h>
+#include <tesseract_qt/common/entity_container.h>
 
 namespace tesseract_rviz
 {

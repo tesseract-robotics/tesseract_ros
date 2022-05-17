@@ -5,9 +5,9 @@
 #include <tesseract_rviz/markers/marker_base.h>
 #include <tesseract_rviz/markers/arrow_marker.h>
 
-#include <tesseract_widgets/environment/environment_widget_config.h>
-#include <tesseract_widgets/common/entity_container.h>
-#include <tesseract_widgets/common/entity_manager.h>
+#include <tesseract_qt/environment/environment_widget_config.h>
+#include <tesseract_qt/common/entity_container.h>
+#include <tesseract_qt/common/entity_manager.h>
 
 namespace tesseract_rviz
 {

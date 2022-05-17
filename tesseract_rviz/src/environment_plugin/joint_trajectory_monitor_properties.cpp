@@ -1,8 +1,8 @@
 #include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
 #include <tesseract_rviz/environment_plugin/conversions.h>
 
-#include <tesseract_widgets/joint_trajectory/joint_trajectory_widget.h>
-#include <tesseract_widgets/common/joint_trajectory_set.h>
+#include <tesseract_qt/joint_trajectory/joint_trajectory_widget.h>
+#include <tesseract_qt/common/joint_trajectory_set.h>
 
 #include <trajectory_msgs/JointTrajectory.h>
 #include <tesseract_msgs/Trajectory.h>

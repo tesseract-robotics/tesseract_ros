@@ -5,12 +5,12 @@
 #include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
 #include <tesseract_rviz/environment_plugin/set_theme_tool.h>
 
-#include <tesseract_widgets/workbench/workbench_widget.h>
-#include <tesseract_widgets/environment/environment_widget_config.h>
-#include <tesseract_widgets/joint_trajectory/joint_trajectory_widget.h>
-#include <tesseract_widgets/common/joint_trajectory_set.h>
-#include <tesseract_widgets/common/theme_utils.h>
-#include <tesseract_widgets/common/icon_utils.h>
+#include <tesseract_qt/workbench/workbench_widget.h>
+#include <tesseract_qt/environment/environment_widget_config.h>
+#include <tesseract_qt/joint_trajectory/joint_trajectory_widget.h>
+#include <tesseract_qt/common/joint_trajectory_set.h>
+#include <tesseract_qt/common/theme_utils.h>
+#include <tesseract_qt/common/icon_utils.h>
 
 #include <rviz/panel_dock_widget.h>
 #include <rviz/display_context.h>

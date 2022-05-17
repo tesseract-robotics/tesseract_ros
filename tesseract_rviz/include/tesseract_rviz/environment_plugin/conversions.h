@@ -4,8 +4,8 @@
 #include <string>
 #include <OgreMaterial.h>
 
-#include <tesseract_widgets/common/entity_manager.h>
-#include <tesseract_widgets/common/entity_container.h>
+#include <tesseract_qt/common/entity_manager.h>
+#include <tesseract_qt/common/entity_container.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>

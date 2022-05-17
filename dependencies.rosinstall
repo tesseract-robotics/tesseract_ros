@@ -15,9 +15,9 @@
     uri: https://github.com/tesseract-robotics/tesseract_planning.git
     version: 0.10.1
 - git:
-    local-name: tesseract_gui
-    uri: https://github.com/tesseract-robotics/tesseract_gui.git
-    version: 0.1.2
+    local-name: tesseract_qt
+    uri: https://github.com/tesseract-robotics/tesseract_qt.git
+    version: 0.1.0
 - git:
     local-name: descartes_light
     uri: https://github.com/swri-robotics/descartes_light.git
