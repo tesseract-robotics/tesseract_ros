@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.0 (2022-05-17)
+------------------
 * Update to use tesseract_qt (`#154 <https://github.com/tesseract-robotics/tesseract_ros/issues/154>`_)
 * Contributors: Levi Armstrong
 
