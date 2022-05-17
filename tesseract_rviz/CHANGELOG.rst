@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to use tesseract_qt (`#154 <https://github.com/tesseract-robotics/tesseract_ros/issues/154>`_)
+* Contributors: Levi Armstrong
+
 0.4.4 (2022-05-13)
 ------------------
 * Add new RViz plugins using Tesseract widgets (`#152 <https://github.com/tesseract-robotics/tesseract_ros/issues/152>`_)
