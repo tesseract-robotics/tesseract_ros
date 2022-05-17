@@ -360,7 +360,7 @@ target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
 #######################################
 ## New Panels using tesseract_widget ##
 #######################################
-find_package(tesseract_widgets REQUIRED)
+find_package(tesseract_qt REQUIRED)
 
 # Environment Panel
 qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
@@ -385,10 +385,10 @@ add_library(${PROJECT_NAME}_environment_plugin_core SHARED
   src/environment_plugin/set_theme_tool.cpp
   ${${PROJECT_NAME}_environment_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
-    tesseract::tesseract_widgets_common
-    tesseract::tesseract_widgets_environment
-    tesseract::tesseract_widgets_manipulation
-    tesseract::tesseract_widgets_workbench
+    tesseract::tesseract_qt_common
+    tesseract::tesseract_qt_environment
+    tesseract::tesseract_qt_manipulation
+    tesseract::tesseract_qt_workbench
     ${PROJECT_NAME}_markers
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}

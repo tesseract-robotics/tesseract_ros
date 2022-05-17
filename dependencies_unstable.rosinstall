@@ -15,8 +15,8 @@
     uri: https://github.com/ros-industrial-consortium/tesseract_planning.git
     version: master
 - git:
-    local-name: tesseract_gui
-    uri: https://github.com/tesseract-robotics/tesseract_gui.git
+    local-name: tesseract_qt
+    uri: https://github.com/tesseract-robotics/tesseract_qt.git
     version: main
 - git:
     local-name: descartes_light

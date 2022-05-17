@@ -3,7 +3,7 @@
 #include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
 #include <tesseract_rviz/environment_plugin/set_theme_tool.h>
 
-#include <tesseract_widgets/common/icon_utils.h>
+#include <tesseract_qt/common/icon_utils.h>
 
 #include <OgreSceneNode.h>
 

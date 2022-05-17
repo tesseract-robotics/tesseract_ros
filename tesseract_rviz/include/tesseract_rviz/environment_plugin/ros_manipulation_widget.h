@@ -1,6 +1,6 @@
 #ifndef TESSERACT_RVIZ_ROS_MANIPULATION_WIDGET_H
 #define TESSERACT_RVIZ_ROS_MANIPULATION_WIDGET_H
-#include <tesseract_widgets/manipulation/manipulation_widget.h>
+#include <tesseract_qt/manipulation/manipulation_widget.h>
 
 namespace Ogre
 {

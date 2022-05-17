@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <tesseract_widgets/environment/environment_widget.h>
+#include <tesseract_qt/environment/environment_widget.h>
 
 namespace Ogre
 {

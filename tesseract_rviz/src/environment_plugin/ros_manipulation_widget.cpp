@@ -3,8 +3,8 @@
 #include <tesseract_rviz/environment_plugin/conversions.h>
 #include <tesseract_rviz/conversions.h>
 
-#include <tesseract_widgets/common/entity_manager.h>
-#include <tesseract_widgets/common/link_visibility_properties.h>
+#include <tesseract_qt/common/entity_manager.h>
+#include <tesseract_qt/common/link_visibility_properties.h>
 
 #include <tesseract_environment/environment.h>
 

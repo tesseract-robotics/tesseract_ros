@@ -1,7 +1,7 @@
 #include <tesseract_rviz/environment_plugin/set_theme_tool.h>
 
-#include <tesseract_widgets/common/icon_utils.h>
-#include <tesseract_widgets/common/theme_utils.h>
+#include <tesseract_qt/common/icon_utils.h>
+#include <tesseract_qt/common/theme_utils.h>
 
 #include <rviz/display_context.h>
 #include <rviz/window_manager_interface.h>
