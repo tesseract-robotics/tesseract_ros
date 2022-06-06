@@ -2,13 +2,18 @@
 #include <tesseract_rviz/environment_plugin/conversions.h>
 #include <tesseract_rviz/environment_plugin/conversions.h>
 #include <tesseract_rviz/conversions.h>
+#include <tesseract_rviz/markers/utils.h>
+#include <tesseract_rviz/interactive_marker/interactive_marker.h>
 
 #include <tesseract_qt/common/entity_manager.h>
 #include <tesseract_qt/common/link_visibility_properties.h>
 
 #include <tesseract_environment/environment.h>
 
+#include <rviz/display_context.h>
+
 #include <set>
+#include <QApplication>
 
 namespace tesseract_rviz
 {
@@ -18,7 +23,7 @@ struct ROSManipulationWidgetPrivate
     : entity_managers(
           { std::make_shared<tesseract_gui::EntityManager>(), std::make_shared<tesseract_gui::EntityManager>() }){};
 
-  Ogre::SceneManager* scene_manager;
+  rviz::DisplayContext* context;
   Ogre::SceneNode* scene_node;
 
   std::array<tesseract_gui::EntityManager::Ptr, 2> entity_managers;
@@ -33,20 +38,35 @@ struct ROSManipulationWidgetPrivate
   bool render_reset;
 
   /** @brief Update visualization current state from environment message */
-  std::array<bool, 2> render_states_dirty;
-  std::array<tesseract_scene_graph::SceneState, 2> render_states;
-  std::array<tesseract_scene_graph::Material::ConstPtr, 2> render_states_visual_material;
-  std::array<tesseract_scene_graph::Material::ConstPtr, 2> render_states_collision_material;
+  std::vector<bool> render_states_dirty;
+  std::vector<tesseract_scene_graph::SceneState> render_states;
+  std::vector<tesseract_scene_graph::Material::ConstPtr> render_states_visual_material;
+  std::vector<tesseract_scene_graph::Material::ConstPtr> render_states_collision_material;
 
   /** @brief The links with changed visibility properties */
   std::set<std::string> link_visibility_properties_changed;
+
+  bool render_mode_dirty;
+  bool render_mode_reset;
+  Ogre::SceneNode* root_interactive_node;
+  InteractiveMarker::Ptr interactive_marker;
+  std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers;
+  std::map<std::string, std::string> joint_interactive_marker_link_names;
+  double interactive_marker_scale{ 0.5 };
+  double joint_interactive_marker_scale{ 0.5 };
 };
 
-ROSManipulationWidget::ROSManipulationWidget(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node)
+ROSManipulationWidget::ROSManipulationWidget(rviz::DisplayContext* context, Ogre::SceneNode* scene_node)
   : data_(std::make_unique<ROSManipulationWidgetPrivate>())
 {
-  data_->scene_manager = scene_manager;
+  data_->context = context;
   data_->scene_node = scene_node;
+  data_->root_interactive_node = scene_node->createChildSceneNode();
+
+  data_->render_states_dirty.resize(getStateCount());
+  data_->render_states.resize(getStateCount());
+  data_->render_states_visual_material.resize(getStateCount());
+  data_->render_states_collision_material.resize(getStateCount());
 
   addOgreResourceLocation();
 
@@ -60,9 +80,9 @@ ROSManipulationWidget::ROSManipulationWidget(Ogre::SceneManager* scene_manager, 
   blue->color = Eigen::Vector4d(0, 0, 1, 0.75);
 
   data_->render_states_visual_material[0] = red;
-  data_->render_states_visual_material[1] = green;
+  //  data_->render_states_visual_material[1] = green;
   data_->render_states_collision_material[0] = blue;
-  data_->render_states_collision_material[1] = blue;
+  //  data_->render_states_collision_material[1] = blue;
 
   connect(this,
           SIGNAL(environmentSet(std::shared_ptr<const tesseract_environment::Environment>)),
@@ -80,9 +100,15 @@ ROSManipulationWidget::ROSManipulationWidget(Ogre::SceneManager* scene_manager, 
           SIGNAL(linkVisibilityChanged(std::vector<std::string>)),
           this,
           SLOT(onLinkVisibilityChanged(std::vector<std::string>)));
+
+  connect(this, SIGNAL(modeChanged(int)), this, SLOT(onModeChanged(int)));
 }
 
-ROSManipulationWidget::~ROSManipulationWidget() = default;
+ROSManipulationWidget::~ROSManipulationWidget()
+{
+  if (data_->root_interactive_node)
+    data_->context->getSceneManager()->destroySceneNode(data_->root_interactive_node->getName());
+};
 
 void ROSManipulationWidget::clear()
 {
@@ -107,7 +133,7 @@ void ROSManipulationWidget::clearContainer(const tesseract_gui::EntityContainer&
     if (ns.first == container.RESOURCE_NS)
     {
       for (const auto& entity : ns.second)
-        data_->scene_manager->destroyEntity(entity.unique_name);
+        data_->context->getSceneManager()->destroyEntity(entity.unique_name);
     }
   }
 
@@ -117,7 +143,7 @@ void ROSManipulationWidget::clearContainer(const tesseract_gui::EntityContainer&
     if (ns.first != container.RESOURCE_NS)
     {
       for (const auto& entity : ns.second)
-        data_->scene_manager->destroySceneNode(entity.unique_name);
+        data_->context->getSceneManager()->destroySceneNode(entity.unique_name);
     }
   }
 
@@ -126,7 +152,7 @@ void ROSManipulationWidget::clearContainer(const tesseract_gui::EntityContainer&
     if (ns.first != container.RESOURCE_NS)
     {
       for (const auto& entity : ns.second)
-        data_->scene_manager->destroySceneNode(entity.second.unique_name);
+        data_->context->getSceneManager()->destroySceneNode(entity.second.unique_name);
     }
   }
 }
@@ -136,8 +162,14 @@ void ROSManipulationWidget::onEnvironmentSet(const std::shared_ptr<const tessera
   data_->render_group.clear();
   data_->render_dirty = true;
   data_->render_reset = true;
-  data_->render_states_dirty = { true, true };
-  data_->render_states = { tesseract_scene_graph::SceneState(), tesseract_scene_graph::SceneState() };
+  for (std::size_t i = 0; i < data_->render_states_dirty.size(); ++i)
+    data_->render_states_dirty[i] = true;
+
+  for (std::size_t i = 0; i < data_->render_states.size(); ++i)
+    data_->render_states[i] = tesseract_scene_graph::SceneState();
+
+  data_->render_mode_dirty = true;
+  data_->render_mode_reset = true;
 }
 
 void ROSManipulationWidget::onLinkVisibilityChanged(const std::vector<std::string>& links)
@@ -151,8 +183,15 @@ void ROSManipulationWidget::onGroupNameChanged(const QString& group_name)
   data_->render_group = group_name;
   data_->render_dirty = true;
   data_->render_reset = true;
-  data_->render_states_dirty = { true, true };
-  data_->render_states = { tesseract_scene_graph::SceneState(), tesseract_scene_graph::SceneState() };
+
+  for (std::size_t i = 0; i < data_->render_states_dirty.size(); ++i)
+    data_->render_states_dirty[i] = true;
+
+  for (std::size_t i = 0; i < data_->render_states.size(); ++i)
+    data_->render_states[i] = tesseract_scene_graph::SceneState();
+
+  data_->render_mode_dirty = true;
+  data_->render_mode_reset = true;
 }
 
 void ROSManipulationWidget::onManipulationStateChanged(const tesseract_scene_graph::SceneState& state, int state_index)
@@ -162,9 +201,277 @@ void ROSManipulationWidget::onManipulationStateChanged(const tesseract_scene_gra
   data_->render_states[state_index] = state;
 }
 
-void ROSManipulationWidget::onRender()
+void ROSManipulationWidget::onModeChanged(int mode)
 {
-  if (getEnvironment() == nullptr)
+  data_->render_dirty = true;
+  data_->render_mode_dirty = true;
+}
+
+void ROSManipulationWidget::onTCPNameChanged(const QString& tcp_name) {}
+
+void ROSManipulationWidget::addInteractiveMarker()
+{
+  auto lock = environment().lockRead();
+  tesseract_scene_graph::SceneState state = getActiveState();
+  tesseract_kinematics::KinematicGroup kin_group = kinematicGroup();
+  std::string tcp_name = getTCPName().toStdString();
+  int state_index = getActiveStateIndex();
+  int mode = getMode();
+  std::vector<std::string> joint_names = kin_group.getJointNames();
+
+  // Add 6 DOF interactive marker at the end of the manipulator
+  data_->interactive_marker = boost::make_shared<InteractiveMarker>(
+      "6DOF", "Move Robot", data_->root_interactive_node, data_->context, data_->interactive_marker_scale);
+  make6Dof(*data_->interactive_marker);
+
+  Eigen::Isometry3d pose = state.link_transforms.at(tcp_name);  // * tcp_offset_;
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  toOgre(position, orientation, pose);
+  data_->interactive_marker->setPose(position, orientation, "");
+
+  data_->interactive_marker->setShowAxes(false);
+  data_->interactive_marker->setShowVisualAids(false);
+  data_->interactive_marker->setShowDescription(false);
+  data_->interactive_marker->setVisible(mode == 1);
+
+  connect(data_->interactive_marker.get(),
+          SIGNAL(userFeedback(std::string, const Eigen::Isometry3d&, const Eigen::Vector3d&, bool)),
+          this,
+          SLOT(markerFeedback(std::string, const Eigen::Isometry3d&, const Eigen::Vector3d&, bool)));
+
+  // Add joint specific interactive marker
+  data_->joint_interactive_markers.clear();
+  data_->joint_interactive_marker_link_names.clear();
+  for (const auto& joint_name : joint_names)
+  {
+    std::string name = joint_name + "_interactive_marker";
+    std::string disc = "Move joint: " + joint_name;
+    InteractiveMarker::Ptr interactive_marker = boost::make_shared<InteractiveMarker>(
+        name, disc, data_->root_interactive_node, data_->context, data_->joint_interactive_marker_scale);
+    const auto& joint = environment().getJoint(joint_name);
+
+    switch (joint->type)
+    {
+      case tesseract_scene_graph::JointType::PRISMATIC:
+      {
+        Eigen::Vector3d disc_axis(1, 0, 0);
+        Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
+
+        InteractiveMarkerControl::Ptr control =
+            interactive_marker->createInteractiveControl("move_" + joint_name,
+                                                         "Move prismatic joint: " + joint_name,
+                                                         InteractiveMode::MOVE_AXIS,
+                                                         OrientationMode::INHERIT,
+                                                         true,
+                                                         Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+        makeArrow(*control, 0.5);
+        makeArrow(*control, -0.5);
+        data_->joint_interactive_markers[joint_name] = interactive_marker;
+        break;
+      }
+      case tesseract_scene_graph::JointType::REVOLUTE:
+      {
+        Eigen::Vector3d disc_axis(1, 0, 0);
+        Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
+        InteractiveMarkerControl::Ptr control =
+            interactive_marker->createInteractiveControl("rotate_x",
+                                                         "Rotate around X Axis",
+                                                         InteractiveMode::ROTATE_AXIS,
+                                                         OrientationMode::INHERIT,
+                                                         true,
+                                                         Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+        makeDisc(*control, 0.3f);
+        data_->joint_interactive_markers[joint_name] = interactive_marker;
+        break;
+      }
+      case tesseract_scene_graph::JointType::CONTINUOUS:
+      {
+        Eigen::Vector3d disc_axis(1, 0, 0);
+        Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
+        InteractiveMarkerControl::Ptr control =
+            interactive_marker->createInteractiveControl("rotate_x",
+                                                         "Rotate around X Axis",
+                                                         InteractiveMode::ROTATE_AXIS,
+                                                         OrientationMode::INHERIT,
+                                                         true,
+                                                         Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+        makeDisc(*control, 0.3f);
+        data_->joint_interactive_markers[joint_name] = interactive_marker;
+        break;
+      }
+      default:
+        assert(false);
+    }
+
+    data_->joint_interactive_marker_link_names[joint_name] = joint->child_link_name;
+    Eigen::Isometry3d pose = state.link_transforms.at(joint->child_link_name);
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    toOgre(position, orientation, pose);
+    interactive_marker->setPose(position, orientation, "");
+    interactive_marker->setShowAxes(false);
+    interactive_marker->setShowVisualAids(false);
+    interactive_marker->setShowDescription(false);
+    interactive_marker->setVisible(mode == 0);
+
+    auto fn = std::bind(&tesseract_rviz::ROSManipulationWidget::jointMarkerFeedback,
+                        this,
+                        joint_name,
+                        std::placeholders::_1,
+                        std::placeholders::_2,
+                        std::placeholders::_3,
+                        std::placeholders::_4);
+
+    connect(interactive_marker.get(), &tesseract_rviz::InteractiveMarker::userFeedback, this, fn);
+  }
+}
+
+void ROSManipulationWidget::markerFeedback(const std::string& reference_frame,
+                                           const Eigen::Isometry3d& transform,
+                                           const Eigen::Vector3d& /*mouse_point*/,
+                                           bool /*mouse_point_valid*/)
+{
+  const tesseract_kinematics::KinematicGroup& kin_group = kinematicGroup();
+  const tesseract_scene_graph::SceneState& state = getActiveState();
+
+  //  /** @todo Update where working frame and tcp_offset come from */
+  //  std::string workin_frame = environment().getRootLinkName();
+  //  std::string tcp_name = getTCPName().toStdString();
+  //  Eigen::Isometry3d tcp_offset {Eigen::Isometry3d::Identity()};
+  //  Eigen::Isometry3d tf_world = state.link_transforms.at(reference_frame) * transform;
+  //  Eigen::Isometry3d tf_working_frame = state.link_transforms.at(workin_frame).inverse() * tf_world;
+  //  tesseract_kinematics::KinGroupIKInput ik_input(tf_working_frame * tcp_offset.inverse(), workin_frame, tcp_name);
+  //  tesseract_kinematics::IKSolutions solutions = kin_group.calcInvKin({ ik_input }, inv_seed_);
+  //  if (!solutions.empty())
+  //  {
+  //    // get the closest solution to the seed
+  //    double dist = std::numeric_limits<double>::max();
+  //    Eigen::VectorXd temp_seed = inv_seed_;
+  //    for (const auto& solution : solutions)
+  //    {
+  //      double d = (solution - inv_seed_).norm();
+  //      if (d < dist)
+  //      {
+  //        temp_seed = solution;
+  //        dist = d;
+  //      }
+  //    }
+
+  //    if (!tesseract_common::satisfiesPositionLimits(temp_seed, kin_group.getLimits().joint_limits))
+  //      return;
+
+  ////    inv_seed_ = temp_seed;
+  //    int i = 0;
+  //    std::unordered_map<std::string, double> state;
+  //    for (const auto& j : kin_group.getJointNames())
+  //    {
+  //      state[j] = temp_seed[i++];
+  ////      joints_[j] = inv_seed_[i];
+  ////      bool oldState = joint_values_property_->childAt(i)->blockSignals(true);
+  ////      joint_values_property_->childAt(i)->setValue(inv_seed_[i]);
+  ////      joint_values_property_->childAt(i)->blockSignals(oldState);
+
+  ////      ++i;
+  //    }
+
+  //    on
+
+  //    env_state_ = env_->getState(joints_);
+  //    updateJointConfig();
+  //    updateEnvironmentVisualization();
+  //    updateCartesianMarkerVisualization();
+  //    udpateJointMarkerVisualization();
+  //    publishJointStates();
+  //  }
+  //  else
+  //  {
+  //    updateCartesianMarkerVisualization();
+  //  }
+}
+
+void ROSManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
+                                                const std::string& /*reference_frame*/,
+                                                const Eigen::Isometry3d& transform,
+                                                const Eigen::Vector3d& /*mouse_point*/,
+                                                bool /*mouse_point_valid*/)
+{
+  const tesseract_kinematics::KinematicGroup& kin_group = kinematicGroup();
+  tesseract_scene_graph::SceneState scene_state = getActiveState();
+  int current_state_index = getActiveStateIndex();
+
+  tesseract_scene_graph::Joint::ConstPtr joint = environment().getJoint(joint_name);
+  double current_joint_value = scene_state.joints.at(joint_name);
+  Eigen::Isometry3d child_pose =
+      scene_state.link_transforms.at(data_->joint_interactive_marker_link_names.at(joint_name));
+  Eigen::Isometry3d delta_pose = child_pose.inverse() * transform;
+
+  Eigen::Vector3d delta_axis;
+  double delta_joint_value = 0;
+  switch (joint->type)
+  {
+    case tesseract_scene_graph::JointType::PRISMATIC:
+    {
+      delta_axis = delta_pose.translation().normalized();
+      delta_joint_value = delta_pose.translation().norm();
+      break;
+    }
+    case tesseract_scene_graph::JointType::REVOLUTE:
+    {
+      Eigen::AngleAxisd delta_rotation;
+      delta_rotation.fromRotationMatrix(delta_pose.rotation());
+
+      delta_axis = delta_rotation.axis();
+      delta_joint_value = delta_rotation.angle();
+      break;
+    }
+    case tesseract_scene_graph::JointType::CONTINUOUS:
+    {
+      Eigen::AngleAxisd delta_rotation;
+      delta_rotation.fromRotationMatrix(delta_pose.rotation());
+
+      delta_axis = delta_rotation.axis();
+      delta_joint_value = delta_rotation.angle();
+      break;
+    }
+    default:
+      assert(false);
+  }
+
+  double new_joint_value;
+  if (delta_axis.dot(joint->axis) > 0)
+    new_joint_value = current_joint_value + delta_joint_value;
+  else
+    new_joint_value = current_joint_value - delta_joint_value;
+
+  Eigen::MatrixX2d limits = kin_group.getLimits().joint_limits;
+  int i = 0;
+  std::unordered_map<std::string, double> state;
+  for (const auto& j : kin_group.getJointNames())
+  {
+    if (joint_name == j)
+    {
+      if (new_joint_value > limits(i, 1))
+        new_joint_value = limits(i, 1);
+      else if (new_joint_value < limits(i, 0))
+        new_joint_value = limits(i, 0);
+
+      state[j] = new_joint_value;
+    }
+    else
+    {
+      state[j] = scene_state.joints[j];
+    }
+
+    ++i;
+  }
+
+  setActiveState(state);
+}
+
+void ROSManipulationWidget::onRender(float dt)
+{
+  if (!isValid())
     return;
 
   if (data_->render_dirty)
@@ -184,7 +491,9 @@ void ROSManipulationWidget::onRender()
             link_vis_props.clear();
         }
 
-        if (data_->render_dirty && !data_->render_group.isEmpty())
+        data_->render_states.at(i) = getState(static_cast<int>(i));
+
+        if (!data_->render_group.isEmpty())
         {
           auto jg = environment().getJointGroup(data_->render_group.toStdString());
           std::vector<std::string> link_names = jg->getActiveLinkNames();
@@ -192,7 +501,7 @@ void ROSManipulationWidget::onRender()
           {
             auto link = environment().getLink(link_name);
             auto entity_container = entity_manager->getEntityContainer(link->getName());
-            Ogre::SceneNode* sn = loadLink(*data_->scene_manager,
+            Ogre::SceneNode* sn = loadLink(*data_->context->getSceneManager(),
                                            *entity_container,
                                            *link,
                                            data_->render_states_visual_material[i],
@@ -206,6 +515,7 @@ void ROSManipulationWidget::onRender()
       data_->render_reset = false;
     }
 
+    int current_state_index = getActiveStateIndex();
     for (std::size_t i = 0; i < getStateCount(); ++i)
     {
       auto& entity_manager = data_->entity_managers[i];
@@ -213,7 +523,8 @@ void ROSManipulationWidget::onRender()
       // Update start state visualization
       if (data_->render_states_dirty[i])
       {
-        for (const auto& pair : data_->render_states[i].link_transforms)
+        const tesseract_scene_graph::SceneState& render_state = data_->render_states[i];
+        for (const auto& pair : render_state.link_transforms)
         {
           if (entity_manager->hasEntityContainer(pair.first))
           {
@@ -223,11 +534,37 @@ void ROSManipulationWidget::onRender()
             toOgre(position, orientation, pair.second);
 
             auto entity = container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, pair.first);
-            Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+            Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
             sn->setPosition(position);
             sn->setOrientation(orientation);
           }
         }
+
+        // Interactive markers are only created of the active state
+        if (i == current_state_index)
+        {
+          // Update Cartesian interactive marker
+          if (data_->interactive_marker != nullptr)
+          {
+            Eigen::Isometry3d pose = render_state.link_transforms.at(getTCPName().toStdString());  // * tcp_offset_;
+            Ogre::Vector3 position;
+            Ogre::Quaternion orientation;
+            toOgre(position, orientation, pose);
+            data_->interactive_marker->setPose(position, orientation, "");
+          }
+
+          // Update joint interactive markers
+          for (auto& jm : data_->joint_interactive_markers)
+          {
+            Eigen::Isometry3d pose =
+                render_state.link_transforms.at(data_->joint_interactive_marker_link_names[jm.first]);
+            Ogre::Vector3 position;
+            Ogre::Quaternion orientation;
+            toOgre(position, orientation, pose);
+            jm.second->setPose(position, orientation, "");
+          }
+        }
+
         data_->render_states_dirty[i] = false;
       }
     }
@@ -248,7 +585,7 @@ void ROSManipulationWidget::onRender()
               if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l))
               {
                 auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l);
-                Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+                Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link, true);
               }
             }
@@ -258,7 +595,7 @@ void ROSManipulationWidget::onRender()
               if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
               {
                 auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-                Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+                Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.visual, true);
               }
             }
@@ -268,7 +605,7 @@ void ROSManipulationWidget::onRender()
               if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
               {
                 auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-                Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+                Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.collision, true);
               }
             }
@@ -278,7 +615,7 @@ void ROSManipulationWidget::onRender()
               if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
               {
                 auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-                Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+                Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.wirebox, true);
               }
             }
@@ -288,7 +625,7 @@ void ROSManipulationWidget::onRender()
               if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
               {
                 auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
-                Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(entity.unique_name);
+                Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.axis, true);
               }
             }
@@ -298,7 +635,29 @@ void ROSManipulationWidget::onRender()
       data_->link_visibility_properties_changed.clear();
     }
 
+    if (data_->render_mode_dirty)
+    {
+      if (data_->render_mode_reset)
+      {
+        data_->interactive_marker = nullptr;
+        data_->joint_interactive_markers.clear();
+        data_->joint_interactive_marker_link_names.clear();
+        addInteractiveMarker();
+        data_->render_mode_reset = false;
+      }
+
+      int mode = getMode();
+      data_->interactive_marker->setVisible(mode == 1);
+      for (auto& jm : data_->joint_interactive_markers)
+        jm.second->setVisible(mode == 0);
+    }
     data_->render_dirty = false;
   }
+
+  if (data_->interactive_marker != nullptr)
+    data_->interactive_marker->update(dt);
+
+  for (auto& joint_marker : data_->joint_interactive_markers)
+    joint_marker.second->update(dt);
 }
 }  // namespace tesseract_rviz

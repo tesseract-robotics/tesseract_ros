@@ -79,7 +79,7 @@ void EnvironmentDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
 
-  data_->widget->onRender();
+  data_->widget->onRender(wall_dt);
 }
 
 void EnvironmentDisplay::load(const rviz::Config& config)

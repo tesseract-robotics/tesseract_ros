@@ -30,7 +30,7 @@ public:
   tesseract_gui::EnvironmentWidget* clone() const override;
 
 public Q_SLOTS:
-  void onRender() override;
+  void onRender(float dt) override;
   void onLinkVisibilityChanged(const std::vector<std::string>& links);
   void onShowContactResults(const tesseract_collision::ContactResultVector& contact_results);
 
