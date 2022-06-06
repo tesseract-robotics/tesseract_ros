@@ -60,6 +60,8 @@ catkin_package(
     ${QT_INCLUDE_DIR}
     ${OGRE_INCLUDE_DIRS}
   LIBRARIES
+    ${PROJECT_NAME}_markers
+    ${PROJECT_NAME}_interactive_marker
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
     ${PROJECT_NAME}_environment_plugin_core
@@ -126,6 +128,38 @@ target_include_directories(${PROJECT_NAME}_markers SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME}_markers PUBLIC $ENV{ROS_DISTRO}_BUILD)
 
+
+qt_wrap_cpp(${PROJECT_NAME}_interactive_marker_cpp_MOCS
+  include/tesseract_rviz/interactive_marker/integer_action.h
+  include/tesseract_rviz/interactive_marker/interactive_marker.h
+)
+
+add_library(${PROJECT_NAME}_interactive_marker SHARED
+  src/interactive_marker/integer_action.cpp
+  src/interactive_marker/interactive_marker.cpp
+  src/interactive_marker/interactive_marker_control.cpp
+  ${${PROJECT_NAME}_interactive_marker_cpp_MOCS}
+)
+target_link_libraries(${PROJECT_NAME}_interactive_marker PUBLIC
+  ${PROJECT_NAME}_markers
+  ${catkin_LIBRARIES}
+  ${OGRE_LIBRARIES}
+  ${QT_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+target_compile_options(${PROJECT_NAME}_interactive_marker PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME}_interactive_marker PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME}_interactive_marker PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_interactive_marker SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_interactive_marker PUBLIC $ENV{ROS_DISTRO}_BUILD)
+
 # Rviz Render Tools
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/trajectory_panel.h
@@ -137,8 +171,6 @@ qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/environment_widget.h
   include/tesseract_rviz/render_tools/trajectory_monitor_widget.h
   include/tesseract_rviz/render_tools/manipulation_widget.h
-  include/tesseract_rviz/interactive_marker/integer_action.h
-  include/tesseract_rviz/interactive_marker/interactive_marker.h
   include/tesseract_rviz/property/button_property.h
   )
 
@@ -153,9 +185,6 @@ add_library(${PROJECT_NAME}_render_tools SHARED
   src/render_tools/environment_widget.cpp
   src/render_tools/trajectory_monitor_widget.cpp
   src/render_tools/manipulation_widget.cpp
-  src/interactive_marker/integer_action.cpp
-  src/interactive_marker/interactive_marker.cpp
-  src/interactive_marker/interactive_marker_control.cpp
   src/property/button_property.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
@@ -166,6 +195,7 @@ target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_visualization
   ${PROJECT_NAME}_markers
+  ${PROJECT_NAME}_interactive_marker
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -390,6 +420,7 @@ target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     tesseract::tesseract_qt_manipulation
     tesseract::tesseract_qt_workbench
     ${PROJECT_NAME}_markers
+    ${PROJECT_NAME}_interactive_marker
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -451,6 +482,7 @@ target_include_directories(${PROJECT_NAME}_workbench_plugin SYSTEM PRIVATE
 # Mark executables and/or libraries for installation
 install(TARGETS
     ${PROJECT_NAME}_markers
+    ${PROJECT_NAME}_interactive_marker
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
     ${PROJECT_NAME}_state_plugin

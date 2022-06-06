@@ -78,7 +78,7 @@ void WorkbenchDisplay::onInitialize()
   setIcon(tesseract_gui::icons::getTesseractIcon());
   data_->environment_widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);  // NOLINT
   data_->joint_trajectory_widget = new tesseract_gui::JointTrajectoryWidget();                        // NOLINT
-  data_->manipulation_widget = new ROSManipulationWidget(scene_manager_, scene_node_);                // NOLINT
+  data_->manipulation_widget = new ROSManipulationWidget(context_, scene_node_);                      // NOLINT
   data_->widget = new tesseract_gui::WorkbenchWidget(
       data_->environment_widget, data_->joint_trajectory_widget, data_->manipulation_widget);  // NOLINT
 
@@ -111,7 +111,7 @@ void WorkbenchDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
 
-  data_->widget->onRender();
+  data_->widget->onRender(wall_dt);
 }
 
 void WorkbenchDisplay::load(const rviz::Config& config)

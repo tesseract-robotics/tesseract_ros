@@ -159,7 +159,7 @@ void ROSEnvironmentWidget::onShowContactResults(const tesseract_collision::Conta
   data_->render_dirty = true;
 }
 
-void ROSEnvironmentWidget::onRender()
+void ROSEnvironmentWidget::onRender(float dt)
 {
   if (getEnvironment() == nullptr)
     return;
