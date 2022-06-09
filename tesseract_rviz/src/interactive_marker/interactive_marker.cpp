@@ -382,6 +382,12 @@ void InteractiveMarker::stopDragging()
   }
 }
 
+bool InteractiveMarker::isDragging() const
+{
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+  return dragging_;
+}
+
 bool InteractiveMarker::handle3DCursorEvent(rviz::ViewportMouseEvent& event,
                                             const Ogre::Vector3& cursor_pos,
                                             const Ogre::Quaternion& /*cursor_rot*/,

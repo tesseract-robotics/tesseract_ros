@@ -13,7 +13,7 @@
 #include <rviz/display_context.h>
 
 #include <set>
-#include <QApplication>
+#include <QLayout>
 
 namespace tesseract_rviz
 {
@@ -59,6 +59,8 @@ struct ROSManipulationWidgetPrivate
 ROSManipulationWidget::ROSManipulationWidget(rviz::DisplayContext* context, Ogre::SceneNode* scene_node)
   : data_(std::make_unique<ROSManipulationWidgetPrivate>())
 {
+  layout()->setSizeConstraint(QLayout::SetNoConstraint);
+
   data_->context = context;
   data_->scene_node = scene_node;
   data_->root_interactive_node = scene_node->createChildSceneNode();
@@ -102,6 +104,8 @@ ROSManipulationWidget::ROSManipulationWidget(rviz::DisplayContext* context, Ogre
           SLOT(onLinkVisibilityChanged(std::vector<std::string>)));
 
   connect(this, SIGNAL(modeChanged(int)), this, SLOT(onModeChanged(int)));
+  connect(this, &ROSManipulationWidget::tcpNameChanged, this, &ROSManipulationWidget::onTCPChanged);
+  connect(this, &ROSManipulationWidget::tcpOffsetNameChanged, this, &ROSManipulationWidget::onTCPChanged);
 }
 
 ROSManipulationWidget::~ROSManipulationWidget()
@@ -207,7 +211,18 @@ void ROSManipulationWidget::onModeChanged(int mode)
   data_->render_mode_dirty = true;
 }
 
-void ROSManipulationWidget::onTCPNameChanged(const QString& tcp_name) {}
+void ROSManipulationWidget::onTCPChanged()
+{
+  // Update Cartesian interactive marker
+  if (data_->interactive_marker != nullptr)
+  {
+    Eigen::Isometry3d pose = getActiveCartesianTransform(true);
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    toOgre(position, orientation, pose);
+    data_->interactive_marker->setPose(position, orientation, "");
+  }
+}
 
 void ROSManipulationWidget::addInteractiveMarker()
 {
@@ -334,60 +349,15 @@ void ROSManipulationWidget::markerFeedback(const std::string& reference_frame,
 {
   const tesseract_kinematics::KinematicGroup& kin_group = kinematicGroup();
   const tesseract_scene_graph::SceneState& state = getActiveState();
+  const std::string working_frame = getWorkingFrame().toStdString();
 
-  //  /** @todo Update where working frame and tcp_offset come from */
-  //  std::string workin_frame = environment().getRootLinkName();
-  //  std::string tcp_name = getTCPName().toStdString();
-  //  Eigen::Isometry3d tcp_offset {Eigen::Isometry3d::Identity()};
-  //  Eigen::Isometry3d tf_world = state.link_transforms.at(reference_frame) * transform;
-  //  Eigen::Isometry3d tf_working_frame = state.link_transforms.at(workin_frame).inverse() * tf_world;
-  //  tesseract_kinematics::KinGroupIKInput ik_input(tf_working_frame * tcp_offset.inverse(), workin_frame, tcp_name);
-  //  tesseract_kinematics::IKSolutions solutions = kin_group.calcInvKin({ ik_input }, inv_seed_);
-  //  if (!solutions.empty())
-  //  {
-  //    // get the closest solution to the seed
-  //    double dist = std::numeric_limits<double>::max();
-  //    Eigen::VectorXd temp_seed = inv_seed_;
-  //    for (const auto& solution : solutions)
-  //    {
-  //      double d = (solution - inv_seed_).norm();
-  //      if (d < dist)
-  //      {
-  //        temp_seed = solution;
-  //        dist = d;
-  //      }
-  //    }
+  Eigen::Isometry3d tf_world{ transform };
+  auto it = state.link_transforms.find(reference_frame);
+  if (it != state.link_transforms.end())
+    tf_world = it->second * transform;
 
-  //    if (!tesseract_common::satisfiesPositionLimits(temp_seed, kin_group.getLimits().joint_limits))
-  //      return;
-
-  ////    inv_seed_ = temp_seed;
-  //    int i = 0;
-  //    std::unordered_map<std::string, double> state;
-  //    for (const auto& j : kin_group.getJointNames())
-  //    {
-  //      state[j] = temp_seed[i++];
-  ////      joints_[j] = inv_seed_[i];
-  ////      bool oldState = joint_values_property_->childAt(i)->blockSignals(true);
-  ////      joint_values_property_->childAt(i)->setValue(inv_seed_[i]);
-  ////      joint_values_property_->childAt(i)->blockSignals(oldState);
-
-  ////      ++i;
-  //    }
-
-  //    on
-
-  //    env_state_ = env_->getState(joints_);
-  //    updateJointConfig();
-  //    updateEnvironmentVisualization();
-  //    updateCartesianMarkerVisualization();
-  //    udpateJointMarkerVisualization();
-  //    publishJointStates();
-  //  }
-  //  else
-  //  {
-  //    updateCartesianMarkerVisualization();
-  //  }
+  const Eigen::Isometry3d tf_working_frame = state.link_transforms.at(working_frame).inverse() * tf_world;
+  setActiveCartesianTransform(tf_working_frame);
 }
 
 void ROSManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
@@ -544,9 +514,9 @@ void ROSManipulationWidget::onRender(float dt)
         if (i == current_state_index)
         {
           // Update Cartesian interactive marker
-          if (data_->interactive_marker != nullptr)
+          if (data_->interactive_marker != nullptr && !data_->interactive_marker->isDragging())
           {
-            Eigen::Isometry3d pose = render_state.link_transforms.at(getTCPName().toStdString());  // * tcp_offset_;
+            Eigen::Isometry3d pose = getActiveCartesianTransform(true);
             Ogre::Vector3 position;
             Ogre::Quaternion orientation;
             toOgre(position, orientation, pose);
@@ -556,12 +526,15 @@ void ROSManipulationWidget::onRender(float dt)
           // Update joint interactive markers
           for (auto& jm : data_->joint_interactive_markers)
           {
-            Eigen::Isometry3d pose =
-                render_state.link_transforms.at(data_->joint_interactive_marker_link_names[jm.first]);
-            Ogre::Vector3 position;
-            Ogre::Quaternion orientation;
-            toOgre(position, orientation, pose);
-            jm.second->setPose(position, orientation, "");
+            if (!jm.second->isDragging())
+            {
+              Eigen::Isometry3d pose =
+                  render_state.link_transforms.at(data_->joint_interactive_marker_link_names[jm.first]);
+              Ogre::Vector3 position;
+              Ogre::Quaternion orientation;
+              toOgre(position, orientation, pose);
+              jm.second->setPose(position, orientation, "");
+            }
           }
         }
 

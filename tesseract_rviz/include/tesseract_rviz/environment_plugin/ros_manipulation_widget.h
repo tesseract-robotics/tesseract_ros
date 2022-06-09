@@ -36,7 +36,7 @@ public Q_SLOTS:
 private Q_SLOTS:
   void onEnvironmentSet(const std::shared_ptr<const tesseract_environment::Environment>& env);
   void onModeChanged(int mode);
-  void onTCPNameChanged(const QString& tcp_name);
+  void onTCPChanged();
   void markerFeedback(const std::string& reference_frame,
                       const Eigen::Isometry3d& transform,
                       const Eigen::Vector3d& mouse_point,

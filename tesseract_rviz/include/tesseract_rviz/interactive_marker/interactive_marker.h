@@ -96,6 +96,7 @@ public:
 
   void startDragging();
   void stopDragging();
+  bool isDragging() const;
 
   const Ogre::Vector3& getPosition() const { return position_; }
   const Ogre::Quaternion& getOrientation() const { return orientation_; }
@@ -250,7 +251,7 @@ protected:
   std::string topic_ns_;
   std::string client_id_;
 
-  boost::recursive_mutex mutex_;
+  mutable boost::recursive_mutex mutex_;
 
   boost::shared_ptr<boost::thread> sys_thread_;
 
