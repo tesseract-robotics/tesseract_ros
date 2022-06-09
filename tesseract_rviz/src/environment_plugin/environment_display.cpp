@@ -10,6 +10,7 @@
 #include <rviz/panel_dock_widget.h>
 
 #include <QApplication>
+#include <QLayout>
 
 namespace tesseract_rviz
 {
@@ -61,7 +62,11 @@ void EnvironmentDisplay::onInitialize()
   data_->widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);
   setAssociatedWidget(data_->widget);
 
+  getAssociatedWidget()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
+  getAssociatedWidget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
+  getAssociatedWidgetPanel()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
+  getAssociatedWidgetPanel()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   disconnect(
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
@@ -140,7 +145,7 @@ void EnvironmentDisplay::onEnableChanged()
 
     if (getAssociatedWidgetPanel() != nullptr)
       getAssociatedWidgetPanel()->setDisabled(true);
-    else if (getAssociatedWidget())
+    else if (getAssociatedWidget() != nullptr)
       getAssociatedWidget()->setDisabled(true);
 
     scene_node_->setVisible(false);

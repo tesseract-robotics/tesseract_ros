@@ -19,6 +19,7 @@
 #include <OgreSceneNode.h>
 
 #include <QApplication>
+#include <QLayout>
 
 namespace tesseract_rviz
 {
@@ -79,12 +80,17 @@ void WorkbenchDisplay::onInitialize()
   data_->environment_widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);  // NOLINT
   data_->joint_trajectory_widget = new tesseract_gui::JointTrajectoryWidget();                        // NOLINT
   data_->manipulation_widget = new ROSManipulationWidget(context_, scene_node_);                      // NOLINT
+  // NOLINTNEXTLINE
   data_->widget = new tesseract_gui::WorkbenchWidget(
-      data_->environment_widget, data_->joint_trajectory_widget, data_->manipulation_widget);  // NOLINT
+      data_->environment_widget, data_->joint_trajectory_widget, data_->manipulation_widget);
 
   setAssociatedWidget(data_->widget);
 
+  getAssociatedWidget()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
+  getAssociatedWidget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
+  getAssociatedWidgetPanel()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
+  getAssociatedWidgetPanel()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   disconnect(
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
@@ -164,7 +170,7 @@ void WorkbenchDisplay::onEnableChanged()
 
     if (getAssociatedWidgetPanel() != nullptr)
       getAssociatedWidgetPanel()->setDisabled(true);
-    else if (getAssociatedWidget())
+    else if (getAssociatedWidget() != nullptr)
       getAssociatedWidget()->setDisabled(true);
 
     scene_node_->setVisible(false);

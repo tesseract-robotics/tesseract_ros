@@ -681,7 +681,11 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
 {
   if (manip_ && !env_state_.link_transforms.empty())
   {
-    Eigen::Isometry3d tf_world = env_state_.link_transforms.at(reference_frame) * transform;
+    Eigen::Isometry3d tf_world{ transform };
+    auto it = env_state_.link_transforms.find(reference_frame);
+    if (it != env_state_.link_transforms.end())
+      tf_world = it->second * transform;
+
     Eigen::Isometry3d tf_working_frame =
         env_state_.link_transforms.at(working_frame_property_->getStdString()).inverse() * tf_world;
     tesseract_kinematics::KinGroupIKInput ik_input(tf_working_frame * tcp_offset_.inverse(),

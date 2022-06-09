@@ -9,6 +9,8 @@
 #include <tesseract_qt/common/entity_container.h>
 #include <tesseract_qt/common/entity_manager.h>
 
+#include <QLayout>
+
 namespace tesseract_rviz
 {
 struct ROSEnvironmentWidgetPrivate
@@ -46,6 +48,8 @@ struct ROSEnvironmentWidgetPrivate
 ROSEnvironmentWidget::ROSEnvironmentWidget(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node)
   : data_(std::make_unique<ROSEnvironmentWidgetPrivate>())
 {
+  layout()->setSizeConstraint(QLayout::SetNoConstraint);
+
   data_->scene_manager = scene_manager;
   data_->scene_node = scene_node;
 
