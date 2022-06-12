@@ -1,7 +1,7 @@
-#include <tesseract_rviz/environment_plugin/environment_display.h>
-#include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
-#include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/set_theme_tool.h>
+#include <tesseract_rviz/environment_display.h>
+#include <tesseract_rviz/ros_environment_widget.h>
+#include <tesseract_rviz/environment_monitor_properties.h>
+#include <tesseract_rviz/set_theme_tool.h>
 
 #include <tesseract_qt/common/icon_utils.h>
 

@@ -1,5 +1,5 @@
-#include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/conversions.h>
+#include <tesseract_rviz/joint_trajectory_monitor_properties.h>
+#include <tesseract_rviz/conversions.h>
 
 #include <tesseract_qt/joint_trajectory/joint_trajectory_widget.h>
 #include <tesseract_qt/common/joint_trajectory_set.h>

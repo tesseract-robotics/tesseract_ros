@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tesseract_rviz/environment_plugin/rostopic_combo_box.h>
+#include <tesseract_rviz/rostopic_combo_box.h>
 #include <ros/master.h>
 
 #include <QApplication>

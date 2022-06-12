@@ -62,8 +62,6 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_markers
     ${PROJECT_NAME}_interactive_marker
-    ${PROJECT_NAME}_render_tools
-    ${PROJECT_NAME}_state_plugin_core
     ${PROJECT_NAME}_environment_plugin_core
   CATKIN_DEPENDS
     roscpp
@@ -160,231 +158,55 @@ target_include_directories(${PROJECT_NAME}_interactive_marker SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME}_interactive_marker PUBLIC $ENV{ROS_DISTRO}_BUILD)
 
-# Rviz Render Tools
-qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
-  include/tesseract_rviz/render_tools/trajectory_panel.h
-  include/tesseract_rviz/render_tools/visualization_widget.h
-  include/tesseract_rviz/render_tools/visualize_trajectory_widget.h
-  include/tesseract_rviz/render_tools/link_widget.h
-  include/tesseract_rviz/render_tools/joint_widget.h
-  include/tesseract_rviz/render_tools/joint_state_monitor_widget.h
-  include/tesseract_rviz/render_tools/environment_widget.h
-  include/tesseract_rviz/render_tools/trajectory_monitor_widget.h
-  include/tesseract_rviz/render_tools/manipulation_widget.h
-  include/tesseract_rviz/property/button_property.h
-  )
+### Planning Response Archive Display
+#qt_wrap_cpp(${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS include/tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h)
 
+#add_library(${PROJECT_NAME}_planning_response_archive_plugin_core SHARED src/planning_response_archive_plugin/planning_response_archive_display.cpp ${${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS})
+#target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
+#    ${PROJECT_NAME}_render_tools
+#    ${PROJECT_NAME}_state_plugin_core
+#    tesseract::tesseract_environment
+#    ${catkin_LIBRARIES}
+#    ${OGRE_LIBRARIES}
+#    ${QT_LIBRARIES}
+#    ${Boost_LIBRARIES})
+#target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+#target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC VERSION 17)
+#target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
+#target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core SYSTEM PUBLIC
+#    ${catkin_INCLUDE_DIRS}
+#    ${Boost_INCLUDE_DIRS}
+#    ${QT_INCLUDE_DIR}
+#    ${OGRE_INCLUDE_DIRS}
+#    ${EIGEN3_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_render_tools SHARED
-  src/render_tools/visualization_widget.cpp
-  src/render_tools/visualize_trajectory_widget.cpp
-  src/render_tools/joint_widget.cpp
-  src/render_tools/link_widget.cpp
-  src/render_tools/trajectory_panel.cpp
-  src/render_tools/joint_state_monitor_widget.cpp
-  src/render_tools/environment_widget.cpp
-  src/render_tools/trajectory_monitor_widget.cpp
-  src/render_tools/manipulation_widget.cpp
-  src/property/button_property.cpp
-  ${${PROJECT_NAME}_render_tools_cpp_MOCS}
-)
+#add_library(${PROJECT_NAME}_planning_response_archive_plugin SHARED src/planning_response_archive_plugin/plugin_init.cpp)
+#target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
+#    ${PROJECT_NAME}_planning_response_archive_plugin_core
+#    tesseract::tesseract_environment
+#    ${catkin_LIBRARIES}
+#    ${Boost_LIBRARIES})
+#target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+#target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC VERSION 17)
+#target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
+#target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin SYSTEM PRIVATE
+#    ${catkin_INCLUDE_DIRS}
+#    ${Boost_INCLUDE_DIRS}
+#    ${EIGEN3_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
-  tesseract::tesseract_common
-  tesseract::tesseract_environment
-  tesseract::tesseract_motion_planners_core
-  tesseract::tesseract_visualization
-  ${PROJECT_NAME}_markers
-  ${PROJECT_NAME}_interactive_marker
-  ${catkin_LIBRARIES}
-  ${OGRE_LIBRARIES}
-  ${QT_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
-
-target_compile_options(${PROJECT_NAME}_render_tools PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_render_tools PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_render_tools PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_render_tools SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${OGRE_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME}_render_tools PUBLIC $ENV{ROS_DISTRO}_BUILD)
-
-#add_library(${PROJECT_NAME}_scene_plugin_core
-#  src/tesseract_scene_plugin/tesseract_scene_display.cpp
-#  include/tesseract_rviz/tesseract_scene_plugin/tesseract_scene_display.h)
-#target_link_libraries(${PROJECT_NAME}_scene_plugin_core ${PROJECT_NAME}_render_tools ${catkin_LIBRARIES} ${OGRE_LIBRARIES} ${QT_LIBRARIES} ${Boost_LIBRARIES})
-
-#add_library(${PROJECT_NAME}_scene_plugin src/tesseract_scene_plugin/plugin_init.cpp)
-#target_link_libraries(${PROJECT_NAME}_scene_plugin ${PROJECT_NAME}_scene_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-
-# Trajectory State Disply
-qt_wrap_cpp(${PROJECT_NAME}_state_plugin_core_cpp_MOCS include/tesseract_rviz/environment_state_plugin/environment_state_display.h)
-
-add_library(${PROJECT_NAME}_state_plugin_core SHARED src/environment_state_plugin/environment_state_display.cpp ${${PROJECT_NAME}_state_plugin_core_cpp_MOCS})
-target_link_libraries(${PROJECT_NAME}_state_plugin_core PUBLIC
-    ${PROJECT_NAME}_render_tools
-    ${catkin_LIBRARIES}
-    ${OGRE_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_state_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_state_plugin_core PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_state_plugin_core PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_state_plugin_core SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${OGRE_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_state_plugin SHARED src/environment_state_plugin/plugin_init.cpp)
-target_link_libraries(${PROJECT_NAME}_state_plugin PRIVATE ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_state_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_state_plugin PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_state_plugin PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_state_plugin SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS})
-
-## Trajectory Display
-qt_wrap_cpp(${PROJECT_NAME}_trajectory_plugin_core_cpp_MOCS include/tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h)
-
-add_library(${PROJECT_NAME}_trajectory_plugin_core SHARED src/tesseract_trajectory_plugin/tesseract_trajectory_display.cpp ${${PROJECT_NAME}_trajectory_plugin_core_cpp_MOCS})
-target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
-    ${PROJECT_NAME}_render_tools
-    ${PROJECT_NAME}_state_plugin_core
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${OGRE_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_trajectory_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_trajectory_plugin_core PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_trajectory_plugin_core SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${OGRE_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_plugin/plugin_init.cpp)
-target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
-    ${PROJECT_NAME}_trajectory_plugin_core
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_trajectory_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_trajectory_plugin PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_trajectory_plugin PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_trajectory_plugin SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-## Planning Response Archive Display
-qt_wrap_cpp(${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS include/tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h)
-
-add_library(${PROJECT_NAME}_planning_response_archive_plugin_core SHARED src/planning_response_archive_plugin/planning_response_archive_display.cpp ${${PROJECT_NAME}_planning_response_archive_plugin_core_cpp_MOCS})
-target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
-    ${PROJECT_NAME}_render_tools
-    ${PROJECT_NAME}_state_plugin_core
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${OGRE_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin_core SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${OGRE_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_planning_response_archive_plugin SHARED src/planning_response_archive_plugin/plugin_init.cpp)
-target_link_libraries(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
-    ${PROJECT_NAME}_planning_response_archive_plugin_core
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_planning_response_archive_plugin PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_planning_response_archive_plugin SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-
-## Manipulation Display
-qt_wrap_cpp(${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS include/tesseract_rviz/tesseract_manipulation_plugin/tesseract_manipulation_display.h)
-
-add_library(${PROJECT_NAME}_manipulation_plugin_core SHARED src/tesseract_manipulation_plugin/tesseract_manipulation_display.cpp ${${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS})
-target_link_libraries(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
-    ${PROJECT_NAME}_render_tools
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${OGRE_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${Boost_LIBRARIES}
-    ${EIGEN3_INCLUDE_DIRS})
-target_compile_options(${PROJECT_NAME}_manipulation_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_manipulation_plugin_core PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_manipulation_plugin_core SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${OGRE_INCLUDE_DIRS})
-
-add_library(${PROJECT_NAME}_manipulation_plugin SHARED src/tesseract_manipulation_plugin/plugin_init.cpp)
-target_link_libraries(${PROJECT_NAME}_manipulation_plugin PRIVATE
-    ${PROJECT_NAME}_manipulation_plugin_core
-    tesseract::tesseract_environment
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_manipulation_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_manipulation_plugin PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_manipulation_plugin PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_manipulation_plugin SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_test src/test.cpp)
-target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_test PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_test PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_test PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})
+#add_executable(${PROJECT_NAME}_test src/test.cpp)
+#target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
+#target_compile_options(${PROJECT_NAME}_test PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+#target_cxx_version(${PROJECT_NAME}_test PUBLIC VERSION 17)
+#target_include_directories(${PROJECT_NAME}_test PRIVATE
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
+#target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
+#    ${catkin_INCLUDE_DIRS})
 
 
 #######################################
@@ -393,28 +215,28 @@ target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
 find_package(tesseract_qt REQUIRED)
 
 # Environment Panel
-qt_wrap_cpp(${PROJECT_NAME}_environment_plugin_core_cpp_MOCS
-  include/tesseract_rviz/environment_plugin/ros_environment_widget.h
-  include/tesseract_rviz/environment_plugin/ros_manipulation_widget.h
-  include/tesseract_rviz/environment_plugin/rostopic_combo_box.h
-  include/tesseract_rviz/environment_plugin/environment_display.h
-  include/tesseract_rviz/environment_plugin/environment_monitor_properties.h
-  include/tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h
-  include/tesseract_rviz/environment_plugin/workbench_display.h
-  include/tesseract_rviz/environment_plugin/set_theme_tool.h
+qt_wrap_cpp(${PROJECT_NAME}_cpp_MOCS
+  include/tesseract_rviz/ros_environment_widget.h
+  include/tesseract_rviz/ros_manipulation_widget.h
+  include/tesseract_rviz/rostopic_combo_box.h
+  include/tesseract_rviz/environment_display.h
+  include/tesseract_rviz/environment_monitor_properties.h
+  include/tesseract_rviz/joint_trajectory_monitor_properties.h
+  include/tesseract_rviz/workbench_display.h
+  include/tesseract_rviz/set_theme_tool.h
 )
-add_library(${PROJECT_NAME}_environment_plugin_core SHARED
-  src/environment_plugin/ros_environment_widget.cpp
-  src/environment_plugin/ros_manipulation_widget.cpp
-  src/environment_plugin/rostopic_combo_box.cpp
-  src/environment_plugin/environment_display.cpp
-  src/environment_plugin/environment_monitor_properties.cpp
-  src/environment_plugin/joint_trajectory_monitor_properties.cpp
-  src/environment_plugin/workbench_display.cpp
-  src/environment_plugin/conversions.cpp
-  src/environment_plugin/set_theme_tool.cpp
-  ${${PROJECT_NAME}_environment_plugin_core_cpp_MOCS})
-target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
+add_library(${PROJECT_NAME} SHARED
+  src/ros_environment_widget.cpp
+  src/ros_manipulation_widget.cpp
+  src/rostopic_combo_box.cpp
+  src/environment_display.cpp
+  src/environment_monitor_properties.cpp
+  src/joint_trajectory_monitor_properties.cpp
+  src/workbench_display.cpp
+  src/conversions.cpp
+  src/set_theme_tool.cpp
+  ${${PROJECT_NAME}_cpp_MOCS})
+target_link_libraries(${PROJECT_NAME} PUBLIC
     tesseract::tesseract_qt_common
     tesseract::tesseract_qt_environment
     tesseract::tesseract_qt_manipulation
@@ -425,21 +247,21 @@ target_link_libraries(${PROJECT_NAME}_environment_plugin_core PUBLIC
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
     ${Boost_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_environment_plugin_core PUBLIC ${TESSERACT_COMPILE_OPTIONS})
-target_cxx_version(${PROJECT_NAME}_environment_plugin_core PUBLIC VERSION 17)
-target_include_directories(${PROJECT_NAME}_environment_plugin_core PUBLIC
+target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
+target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_environment_plugin_core SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${QT_INCLUDE_DIR}
     ${OGRE_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_environment_plugin SHARED src/environment_plugin/environment_plugin_init.cpp)
+add_library(${PROJECT_NAME}_environment_plugin SHARED src/environment_plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_environment_plugin PRIVATE
-  ${PROJECT_NAME}_environment_plugin_core
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
@@ -451,9 +273,9 @@ target_include_directories(${PROJECT_NAME}_environment_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_workbench_plugin SHARED src/environment_plugin/workbench_plugin_init.cpp)
+add_library(${PROJECT_NAME}_workbench_plugin SHARED src/workbench_plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_workbench_plugin PRIVATE
-  ${PROJECT_NAME}_environment_plugin_core
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_workbench_plugin PUBLIC ${TESSERACT_COMPILE_OPTIONS})
@@ -483,16 +305,9 @@ target_include_directories(${PROJECT_NAME}_workbench_plugin SYSTEM PRIVATE
 install(TARGETS
     ${PROJECT_NAME}_markers
     ${PROJECT_NAME}_interactive_marker
-    ${PROJECT_NAME}_render_tools
-    ${PROJECT_NAME}_state_plugin_core
-    ${PROJECT_NAME}_state_plugin
-    ${PROJECT_NAME}_trajectory_plugin_core
-    ${PROJECT_NAME}_trajectory_plugin
-    ${PROJECT_NAME}_planning_response_archive_plugin_core
-    ${PROJECT_NAME}_planning_response_archive_plugin
-    ${PROJECT_NAME}_manipulation_plugin_core
-    ${PROJECT_NAME}_manipulation_plugin
-    ${PROJECT_NAME}_environment_plugin_core
+#    ${PROJECT_NAME}_planning_response_archive_plugin_core
+#    ${PROJECT_NAME}_planning_response_archive_plugin
+    ${PROJECT_NAME}
     ${PROJECT_NAME}_environment_plugin
     ${PROJECT_NAME}_workbench_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -510,10 +325,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 # Mark plugin XML files for installation
 install(
   FILES
-    tesseract_rviz_state_plugin_description.xml
-    tesseract_rviz_trajectory_plugin_description.xml
-    tesseract_rviz_planning_response_archive_plugin_description.xml
-    tesseract_rviz_manipulation_plugin_description.xml
+#    tesseract_rviz_planning_response_archive_plugin_description.xml
     tesseract_rviz_environment_plugin_description.xml
     tesseract_rviz_workbench_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
