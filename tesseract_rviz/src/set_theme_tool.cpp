@@ -1,4 +1,4 @@
-#include <tesseract_rviz/environment_plugin/set_theme_tool.h>
+#include <tesseract_rviz/set_theme_tool.h>
 
 #include <tesseract_qt/common/icon_utils.h>
 #include <tesseract_qt/common/theme_utils.h>

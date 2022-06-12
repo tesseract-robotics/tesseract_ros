@@ -1,9 +1,9 @@
-#include <tesseract_rviz/environment_plugin/workbench_display.h>
-#include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
-#include <tesseract_rviz/environment_plugin/ros_manipulation_widget.h>
-#include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/joint_trajectory_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/set_theme_tool.h>
+#include <tesseract_rviz/workbench_display.h>
+#include <tesseract_rviz/ros_environment_widget.h>
+#include <tesseract_rviz/ros_manipulation_widget.h>
+#include <tesseract_rviz/environment_monitor_properties.h>
+#include <tesseract_rviz/joint_trajectory_monitor_properties.h>
+#include <tesseract_rviz/set_theme_tool.h>
 
 #include <tesseract_qt/workbench/workbench_widget.h>
 #include <tesseract_qt/environment/environment_widget_config.h>

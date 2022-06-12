@@ -1,6 +1,6 @@
-#include <tesseract_rviz/environment_plugin/environment_monitor_properties.h>
-#include <tesseract_rviz/environment_plugin/ros_environment_widget.h>
-#include <tesseract_rviz/environment_plugin/conversions.h>
+#include <tesseract_rviz/environment_monitor_properties.h>
+#include <tesseract_rviz/ros_environment_widget.h>
+#include <tesseract_rviz/conversions.h>
 #include <tesseract_qt/environment/environment_widget_config.h>
 
 #include <tesseract_monitoring/environment_monitor.h>
