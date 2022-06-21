@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.1 (2022-06-21)
+------------------
 * Add cartesian interactive marker support
 * Add joint interactive marker to manipulation widget
 * Contributors: Levi Armstrong
