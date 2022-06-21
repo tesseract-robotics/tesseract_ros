@@ -2,6 +2,11 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add cartesian interactive marker support
+* Contributors: Levi Armstrong
+
 0.5.0 (2022-05-17)
 ------------------
 
