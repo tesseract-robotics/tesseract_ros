@@ -21,12 +21,11 @@ jobs:
       UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
       ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
-      PARALLEL_TESTS: false
       NOT_TEST_BUILD: true
       BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Unstable-Build/.ccache"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
     steps:
       - uses: actions/checkout@v1
 
