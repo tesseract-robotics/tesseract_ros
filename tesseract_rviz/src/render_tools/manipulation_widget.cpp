@@ -707,7 +707,7 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
         }
       }
 
-      if (!tesseract_common::satisfiesPositionLimits(temp_seed, manip_->getLimits().joint_limits))
+      if (!tesseract_common::satisfiesPositionLimits<double>(temp_seed, manip_->getLimits().joint_limits))
         return;
 
       inv_seed_ = temp_seed;
