@@ -47,8 +47,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/PlanningResponseArchive.h>
 #include <tesseract_rviz/planning_response_archive_plugin/planning_response_archive_display.h>
 #include <tesseract_common/serialization.h>
-#include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/utils/utils.h>
+#include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_command_language/utils.h>
 #include <tesseract_msgs/Trajectory.h>
 
 namespace tesseract_rviz
@@ -86,9 +86,9 @@ void PlanningResponseArchiveDisplay::callback(const tesseract_msgs::PlanningResp
   tesseract_environment::Environment::Ptr env = fromMsg(request_archive.environment);
   tesseract_environment::Commands commands = fromMsg(request_archive.commands);
   env->applyCommands(commands);
-  Instruction results = CompositeInstruction();
+  InstructionPoly results = CompositeInstruction();
   if (!msg->results.empty())
-    results = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(msg->results);
+    results = tesseract_common::Serialization::fromArchiveStringXML<InstructionPoly>(msg->results);
 
   // Get the current find tcp callbacks
   std::vector<tesseract_environment::FindTCPOffsetCallbackFn> env_cb;

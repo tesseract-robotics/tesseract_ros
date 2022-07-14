@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/markers/arrow_marker.h>
 #include <tesseract_visualization/markers/axis_marker.h>
 #include <tesseract_visualization/markers/contact_results_marker.h>
-#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/poly/instruction_poly.h>
 
 namespace tesseract_rosutils
 {
@@ -63,11 +63,11 @@ public:
   void plotTrajectory(const tesseract_msgs::Trajectory& traj, std::string ns = "");
 
   void plotTrajectory(const tesseract_environment::Environment& env,
-                      const tesseract_planning::Instruction& instruction,
+                      const tesseract_planning::InstructionPoly& instruction,
                       std::string ns = "");
 
   void plotToolpath(const tesseract_environment::Environment& env,
-                    const tesseract_planning::Instruction& instruction,
+                    const tesseract_planning::InstructionPoly& instruction,
                     std::string ns);
 
   void plotMarker(const tesseract_visualization::Marker& marker, std::string ns = "") override;

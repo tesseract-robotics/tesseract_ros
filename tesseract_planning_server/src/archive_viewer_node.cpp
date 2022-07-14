@@ -60,15 +60,16 @@ public:
 
     // Convert to objects
     tesseract_msgs::PlanningRequestArchive request_archive = archive.planning_request;
-    Instruction instructions{ NullInstruction() };
-    Instruction seed{ NullInstruction() };
-    Instruction results{ NullInstruction() };
+    InstructionPoly instructions;
+    InstructionPoly seed;
+    InstructionPoly results;
     if (!request_archive.instructions.empty())
-      instructions = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(request_archive.instructions);
+      instructions =
+          tesseract_common::Serialization::fromArchiveStringXML<InstructionPoly>(request_archive.instructions);
     if (!request_archive.seed.empty())
-      seed = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(request_archive.seed);
+      seed = tesseract_common::Serialization::fromArchiveStringXML<InstructionPoly>(request_archive.seed);
     if (!archive.results.empty())
-      results = tesseract_common::Serialization::fromArchiveStringXML<Instruction>(archive.results);
+      results = tesseract_common::Serialization::fromArchiveStringXML<InstructionPoly>(archive.results);
 
     // Print debugging info
     ROS_INFO_STREAM("Request Name: " << request_archive.name);

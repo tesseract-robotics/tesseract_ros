@@ -49,7 +49,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_plan_profile.h>
 
-#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_common/serialization.h>
@@ -148,7 +147,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   try
   {
     process_request.instructions =
-        Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.instructions);
+        Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.instructions);
   }
   catch (const std::exception& e)
   {
@@ -163,7 +162,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   }
 
   if (!goal->request.seed.empty())
-    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::Instruction>(goal->request.seed);
+    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.seed);
 
   tesseract_scene_graph::SceneState env_state;
   tesseract_rosutils::fromMsg(env_state.joints, goal->request.environment_state.joint_state);
@@ -183,7 +182,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   result.response.successful = plan_future.interface->isSuccessful();
   result.response.results =
-      Serialization::toArchiveStringXML<tesseract_planning::Instruction>(*(plan_future.problem->results));
+      Serialization::toArchiveStringXML<tesseract_planning::InstructionPoly>(*(plan_future.problem->results));
   plan_future.clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
@@ -237,7 +236,7 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
       std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
 }
 
-Eigen::Isometry3d TesseractPlanningServer::tfFindTCPOffset(const tesseract_planning::ManipulatorInfo& manip_info)
+Eigen::Isometry3d TesseractPlanningServer::tfFindTCPOffset(const tesseract_common::ManipulatorInfo& manip_info)
 {
   if (manip_info.tcp_offset.index() == 1)
     throw std::runtime_error("tfFindTCPOffset: TCP offset is not a string!");
