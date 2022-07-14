@@ -37,9 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/conversions.h>
 
-#include <tesseract_command_language/utils/flatten_utils.h>
-#include <tesseract_command_language/utils/filter_functions.h>
-#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/composite_instruction.h>
 
 #include <tesseract_motion_planners/core/utils.h>
 
@@ -125,7 +123,7 @@ void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj,
 }
 
 void ROSPlotting::plotTrajectory(const tesseract_environment::Environment& env,
-                                 const tesseract_planning::Instruction& instruction,
+                                 const tesseract_planning::InstructionPoly& instruction,
                                  std::string /*ns*/)
 {
   tesseract_msgs::Trajectory msg;
@@ -144,7 +142,7 @@ void ROSPlotting::plotTrajectory(const tesseract_environment::Environment& env,
   }
 
   // Convert to joint trajectory
-  assert(tesseract_planning::isCompositeInstruction(instruction));
+  assert(instruction.isCompositeInstruction());
   const auto& ci = instruction.as<tesseract_planning::CompositeInstruction>();
   tesseract_common::JointTrajectory traj = tesseract_planning::toJointTrajectory(ci);
 
@@ -223,7 +221,7 @@ void ROSPlotting::plotMarkers(const std::vector<tesseract_visualization::Marker:
 }
 
 void ROSPlotting::plotToolpath(const tesseract_environment::Environment& env,
-                               const tesseract_planning::Instruction& instruction,
+                               const tesseract_planning::InstructionPoly& instruction,
                                std::string ns)
 {
   tesseract_common::Toolpath toolpath = toToolpath(instruction, env);
