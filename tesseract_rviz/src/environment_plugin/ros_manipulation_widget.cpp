@@ -112,7 +112,7 @@ ROSManipulationWidget::~ROSManipulationWidget()
 {
   if (data_->root_interactive_node)
     data_->context->getSceneManager()->destroySceneNode(data_->root_interactive_node->getName());
-};
+}
 
 void ROSManipulationWidget::clear()
 {
