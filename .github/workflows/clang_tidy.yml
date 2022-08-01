@@ -18,7 +18,7 @@ jobs:
       OS_CODE_NAME: bionic
       ROS_DISTRO: noetic
       ROS_REPO: main
-      UPSTREAM_WORKSPACE: 'dependencies.rosinstall'
+      UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
       ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow"
       DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Clang-Tidy/.ccache"
