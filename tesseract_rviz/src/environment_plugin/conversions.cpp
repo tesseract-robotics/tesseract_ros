@@ -226,8 +226,9 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
 
   if (!link.visual.empty() || !link.collision.empty())
   {
-    Ogre::AxisAlignedBox aabb = getAABB(*scene_node);
-    scene_node->addChild(loadLinkWireBox(scene, entity_container, link, aabb));
+    Ogre::AxisAlignedBox aabb = getAABB(*scene_node, false);
+    if (aabb.isFinite())
+      scene_node->addChild(loadLinkWireBox(scene, entity_container, link, aabb));
   }
 
   scene_node->addChild(loadLinkAxis(scene, entity_container, link));
@@ -904,7 +905,10 @@ void setOctomapColor(double z_pos, double min_z, double max_z, double color_fact
   }
 }
 
-void getAABBRecursive(Ogre::AxisAlignedBox& aabb, Ogre::SceneNode& scene_node, Ogre::Matrix4 parent_pose)
+void getAABBRecursive(Ogre::AxisAlignedBox& aabb,
+                      Ogre::SceneNode& scene_node,
+                      Ogre::Matrix4 parent_pose,
+                      bool visible_only)
 {
   scene_node._updateBounds();
   scene_node._update(false, true);
@@ -918,7 +922,7 @@ void getAABBRecursive(Ogre::AxisAlignedBox& aabb, Ogre::SceneNode& scene_node, O
   {
     Ogre::MovableObject* obj = scene_node.getAttachedObject(i);
 
-    if (obj->isVisible())
+    if (!visible_only || obj->isVisible())
     {
       Ogre::AxisAlignedBox box = obj->getBoundingBox();
 
@@ -941,22 +945,25 @@ void getAABBRecursive(Ogre::AxisAlignedBox& aabb, Ogre::SceneNode& scene_node, O
   for (unsigned short i = 0; i < num_children; ++i)
   {
     auto* child = dynamic_cast<Ogre::SceneNode*>(scene_node.getChild(i));
-    getAABBRecursive(aabb, *child, transform);
+    getAABBRecursive(aabb, *child, transform, visible_only);
   }
 }
 
-Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node)
+Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node, bool visible_only)
 {
   Ogre::AxisAlignedBox aabb;
-  getAABBRecursive(aabb, scene_node, Ogre::Matrix4::IDENTITY);
+  getAABBRecursive(aabb, scene_node, Ogre::Matrix4::IDENTITY, visible_only);
 
-  Ogre::Vector3 scale(1.15, 1.15, 1.15);
-  Ogre::Vector3 center = aabb.getCenter();
-  Ogre::Vector3 max = aabb.getMaximum();
-  Ogre::Vector3 min = aabb.getMinimum();
+  if (aabb.isFinite())
+  {
+    Ogre::Vector3 scale(1.15, 1.15, 1.15);
+    Ogre::Vector3 center = aabb.getCenter();
+    Ogre::Vector3 max = aabb.getMaximum();
+    Ogre::Vector3 min = aabb.getMinimum();
 
-  aabb.setMaximum(center + (scale * (max - center)));
-  aabb.setMinimum(center + (scale * (min - center)));
+    aabb.setMaximum(center + (scale * (max - center)));
+    aabb.setMinimum(center + (scale * (min - center)));
+  }
 
   return aabb;
 }
