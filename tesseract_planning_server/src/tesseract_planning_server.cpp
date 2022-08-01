@@ -180,6 +180,16 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   plan_future.wait();  // Wait for results
   timer.stop();
 
+  // Store the initial state in the response for publishing trajectories
+  tesseract_scene_graph::SceneState initial_state = plan_future.problem->env->getState();
+  for (const auto& s : initial_state.joints)
+  {
+    tesseract_msgs::StringDoublePair js;
+    js.first = s.first;
+    js.second = s.second;
+    result.response.initial_state.push_back(js);
+  }
+
   result.response.successful = plan_future.interface->isSuccessful();
   result.response.results =
       Serialization::toArchiveStringXML<tesseract_planning::InstructionPoly>(*(plan_future.problem->results));
