@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
-#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_legacy_plan_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
@@ -182,13 +182,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   // Store the initial state in the response for publishing trajectories
   tesseract_scene_graph::SceneState initial_state = plan_future.problem->env->getState();
-  for (const auto& s : initial_state.joints)
-  {
-    tesseract_msgs::StringDoublePair js;
-    js.first = s.first;
-    js.second = s.second;
-    result.response.initial_state.push_back(js);
-  }
+  tesseract_rosutils::toMsg(result.response.initial_state, initial_state.joints);
 
   result.response.successful = plan_future.interface->isSuccessful();
   result.response.results =
@@ -243,7 +237,7 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
   profiles->addProfile<tesseract_planning::SimplePlannerPlanProfile>(
       tesseract_planning::profile_ns::SIMPLE_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
-      std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
+      std::make_shared<tesseract_planning::SimplePlannerLVSNoIKLegacyPlanProfile>());
 }
 
 Eigen::Isometry3d TesseractPlanningServer::tfFindTCPOffset(const tesseract_common::ManipulatorInfo& manip_info)
