@@ -401,6 +401,24 @@ bool toMsg(sensor_msgs::JointState& joint_state_msg, const std::unordered_map<st
 bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_msgs::JointState& joint_state_msg);
 
 /**
+ * @brief This will populate a joint states map message
+ * @param joint_state_msg The joint states map message
+ * @param joint_state The joint state map
+ * @return True if successful, otherwise false
+ */
+bool toMsg(std::vector<tesseract_msgs::StringDoublePair>& joint_state_map_msg,
+           const std::unordered_map<std::string, double>& joint_state);
+
+/**
+ * @brief This will populate a joint states from message
+ * @param joint_state The joint state map
+ * @param joint_state_map_msg The joint states map message
+ * @return True if successful, otherwise false
+ */
+bool fromMsg(std::unordered_map<std::string, double>& joint_state,
+             const std::vector<tesseract_msgs::StringDoublePair>& joint_state_map_msg);
+
+/**
  * @brief Converts a Environment object to a Tesseract msg
  * @param tesseract_msg Resulting Message
  * @param env Input Environment object
