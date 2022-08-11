@@ -2100,6 +2100,25 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state, const sensor_
   return true;
 }
 
+bool toMsg(std::vector<tesseract_msgs::StringDoublePair>& joint_state_map_msg,
+           const std::unordered_map<std::string, double>& joint_state)
+{
+  for (const auto& s : joint_state)
+  {
+    tesseract_msgs::StringDoublePair js;
+    js.first = s.first;
+    js.second = s.second;
+    joint_state_map_msg.push_back(js);
+  }
+}
+
+bool fromMsg(std::unordered_map<std::string, double>& joint_state,
+             const std::vector<tesseract_msgs::StringDoublePair>& joint_state_map_msg)
+{
+  for (const auto& s : joint_state_map_msg)
+    joint_state[s.first] = s.second;
+}
+
 bool toMsg(tesseract_msgs::Environment& environment_msg,
            const tesseract_environment::Environment& env,
            bool include_joint_states)
