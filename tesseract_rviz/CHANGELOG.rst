@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2022-08-25)
+------------------
 * Fix ogre getAABB
 * Disable publishing tf in environment monitor properties
 * Update to use new Poly types in tesseract_planning

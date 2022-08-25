@@ -2,8 +2,8 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2022-08-25)
+------------------
 * Update to use new Poly types in tesseract_planning
 * Contributors: Levi Armstrong
 

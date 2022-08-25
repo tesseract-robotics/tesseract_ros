@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2022-08-25)
+------------------
 * Add initial_state to the PlanningResponse message
 * Update to use new Poly types in tesseract_planning
 * Contributors: Levi Armstrong
