@@ -2,6 +2,14 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix ogre getAABB
+* Disable publishing tf in environment monitor properties
+* Update to use new Poly types in tesseract_planning
+* Update to latest tesseract
+* Contributors: Levi Armstrong
+
 0.5.1 (2022-06-21)
 ------------------
 * Add cartesian interactive marker support

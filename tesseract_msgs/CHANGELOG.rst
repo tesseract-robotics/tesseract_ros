@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add initial_state to the PlanningResponse message
+* Contributors: Levi Armstrong
+
 0.5.1 (2022-06-21)
 ------------------
 
