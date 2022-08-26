@@ -234,7 +234,7 @@ void TesseractPlanningServer::loadDefaultPlannerProfiles()
       std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
 
   // Add Simple Default Profiles
-  profiles->addProfile<tesseract_planning::SimplePlannerPlanProfile>(
+  profiles->addProfile<tesseract_planning::SimplePlannerLegacyPlanProfile>(
       tesseract_planning::profile_ns::SIMPLE_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::SimplePlannerLVSNoIKLegacyPlanProfile>());
