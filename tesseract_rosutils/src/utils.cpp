@@ -2110,6 +2110,7 @@ bool toMsg(std::vector<tesseract_msgs::StringDoublePair>& joint_state_map_msg,
     js.second = s.second;
     joint_state_map_msg.push_back(js);
   }
+  return true;
 }
 
 bool fromMsg(std::unordered_map<std::string, double>& joint_state,
@@ -2117,6 +2118,8 @@ bool fromMsg(std::unordered_map<std::string, double>& joint_state,
 {
   for (const auto& s : joint_state_map_msg)
     joint_state[s.first] = s.second;
+
+  return true;
 }
 
 bool toMsg(tesseract_msgs::Environment& environment_msg,
