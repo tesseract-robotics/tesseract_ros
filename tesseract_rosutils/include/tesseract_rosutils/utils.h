@@ -61,12 +61,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/StringPair.h>
 #include <tesseract_msgs/Environment.h>
 #include <tesseract_msgs/EnvironmentState.h>
-#include <tesseract_msgs/TaskInfo.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/PlannerProfileRemapping.h>
 #include <tesseract_msgs/PluginInfo.h>
+#include <tesseract_msgs/TaskComposerNodeInfo.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
 #include <ros/serialization.h>
@@ -84,7 +84,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_motion_planners/core/types.h>
-#include <tesseract_process_managers/core/task_info.h>
+#include <tesseract_task_composer/task_composer_node_info.h>
 
 namespace tesseract_rosutils
 {
@@ -453,14 +453,14 @@ tesseract_environment::Environment::UPtr fromMsg(const tesseract_msgs::Environme
  * @param task_info TaskInfo object
  * @return True if successful, otherwise false
  */
-bool toMsg(tesseract_msgs::TaskInfo& task_info_msg, tesseract_planning::TaskInfo::ConstPtr task_info);
+bool toMsg(tesseract_msgs::TaskComposerNodeInfo& node_info_msg, tesseract_planning::TaskComposerNodeInfo& node_info);
 
 /**
  * @brief Converts a TaskInfo msg to a TaskInfo object
  * @param task_info_msg Input TaskInfo msg
  * @return Resulting Tesseract Object if successful, nullptr otherwise
  */
-tesseract_planning::TaskInfo::Ptr fromMsg(const tesseract_msgs::TaskInfo& task_info_msg);
+tesseract_planning::TaskComposerNodeInfo::UPtr fromMsg(const tesseract_msgs::TaskComposerNodeInfo& node_info_msg);
 
 /**
  * @brief Converts a tesseract_common::JointTrajectory msg to a trajectory_msgs::JointTrajectory object

@@ -26,7 +26,7 @@ find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_srdf REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_command_language REQUIRED)
-find_package(tesseract_process_managers REQUIRED)
+find_package(tesseract_task_composer REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 catkin_package(
@@ -55,7 +55,7 @@ catkin_package(
     tesseract_motion_planners
     tesseract_command_language
     tesseract_environment
-    tesseract_process_managers
+    tesseract_task_composer
     yaml-cpp
 )
 
@@ -72,7 +72,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_visualization
   tesseract::tesseract_common
   tesseract::tesseract_motion_planners_core
-  tesseract::tesseract_process_managers
+  tesseract::tesseract_task_composer
   tesseract::tesseract_command_language
   yaml-cpp
   ${Boost_LIBRARIES}

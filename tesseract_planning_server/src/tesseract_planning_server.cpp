@@ -40,14 +40,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
-#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_legacy_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_plan_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
+#ifdef TESSERACT_TASK_COMPOSER_HAS_TRAJOPT_IFOPT
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_plan_profile.h>
+#endif
+
+#include <tesseract_task_composer/taskflow/taskflow_task_composer_executor.h>
+#include <tesseract_task_composer/task_composer_utils.h>
+
+#include <tesseract_command_language/poly/instruction_poly.h>
 
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
@@ -57,6 +64,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 using tesseract_common::Serialization;
 using tesseract_rosutils::processMsg;
 
+static const std::string INPUT_KEY{ "input_program" };
+static const std::string OUTPUT_KEY{ "output_program" };
+static const std::string DEFAULT_EXECUTOR{ "TaskflowExecutor" };
+
 namespace tesseract_planning_server
 {
 const std::string TesseractPlanningServer::DEFAULT_GET_MOTION_PLAN_ACTION = "tesseract_get_motion_plan";
@@ -64,8 +75,9 @@ const std::string TesseractPlanningServer::DEFAULT_GET_MOTION_PLAN_ACTION = "tes
 TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_description, std::string name, size_t n)
   : nh_("~")
   , monitor_(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(robot_description, name))
-  , environment_cache_(std::make_shared<tesseract_planning::ProcessEnvironmentCache>(monitor_->getEnvironment()))
-  , planning_server_(std::make_unique<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
+  , environment_cache_(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor_->getEnvironment()))
+  , profiles_(std::make_shared<tesseract_planning::ProfileDictionary>())
+  , planning_server_(std::make_unique<tesseract_planning::TaskComposerServer>())
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
@@ -73,7 +85,7 @@ TesseractPlanningServer::TesseractPlanningServer(const std::string& robot_descri
   , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
   , tf_listener_(*tf_buffer_)
 {
-  ctor();
+  ctor(n);
 }
 
 TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environment::UPtr env,
@@ -81,8 +93,9 @@ TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environm
                                                  size_t n)
   : nh_("~")
   , monitor_(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env), name))
-  , environment_cache_(std::make_shared<tesseract_planning::ProcessEnvironmentCache>(monitor_->getEnvironment()))
-  , planning_server_(std::make_unique<tesseract_planning::ProcessPlanningServer>(environment_cache_, n))
+  , environment_cache_(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor_->getEnvironment()))
+  , profiles_(std::make_shared<tesseract_planning::ProfileDictionary>())
+  , planning_server_(std::make_unique<tesseract_planning::TaskComposerServer>())
   , motion_plan_server_(nh_,
                         DEFAULT_GET_MOTION_PLAN_ACTION,
                         boost::bind(&TesseractPlanningServer::onMotionPlanningCallback, this, _1),
@@ -90,12 +103,14 @@ TesseractPlanningServer::TesseractPlanningServer(tesseract_environment::Environm
   , tf_buffer_(std::make_shared<tf2_ros::Buffer>())
   , tf_listener_(*tf_buffer_)
 {
-  ctor();
+  ctor(n);
 }
 
-void TesseractPlanningServer::ctor()
+void TesseractPlanningServer::ctor(size_t n)
 {
-  planning_server_->loadDefaultProcessPlanners();
+  planning_server_->addExecutor(
+      std::make_shared<tesseract_planning::TaskflowTaskComposerExecutor>(DEFAULT_EXECUTOR, n));
+  tesseract_planning::loadDefaultTaskComposerNodes(*planning_server_, INPUT_KEY, OUTPUT_KEY);
   loadDefaultPlannerProfiles();
   monitor_->environment().addFindTCPOffsetCallback(
       std::bind(&TesseractPlanningServer::tfFindTCPOffset, this, std::placeholders::_1));
@@ -107,17 +122,14 @@ const tesseract_environment::EnvironmentMonitor& TesseractPlanningServer::getEnv
   return *monitor_;
 }
 
-tesseract_planning::ProcessPlanningServer& TesseractPlanningServer::getProcessPlanningServer()
-{
-  return *planning_server_;
-}
-const tesseract_planning::ProcessPlanningServer& TesseractPlanningServer::getProcessPlanningServer() const
+tesseract_planning::TaskComposerServer& TesseractPlanningServer::getTaskComposerServer() { return *planning_server_; }
+const tesseract_planning::TaskComposerServer& TesseractPlanningServer::getTaskComposerServer() const
 {
   return *planning_server_;
 }
 
-tesseract_planning::EnvironmentCache& TesseractPlanningServer::getEnvironmentCache() { return *environment_cache_; }
-const tesseract_planning::EnvironmentCache& TesseractPlanningServer::getEnvironmentCache() const
+tesseract_environment::EnvironmentCache& TesseractPlanningServer::getEnvironmentCache() { return *environment_cache_; }
+const tesseract_environment::EnvironmentCache& TesseractPlanningServer::getEnvironmentCache() const
 {
   return *environment_cache_;
 }
@@ -128,26 +140,26 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   tesseract_msgs::GetMotionPlanResult result;
 
   // Check if process planner exist
-  if (!planning_server_->hasProcessPlanner(goal->request.name))
+  if (!planning_server_->hasTask(goal->request.name))
   {
     result.response.successful = false;
     std::ostringstream oss;
-    oss << "Requested process planner '" << goal->request.name << "' is not supported!" << std::endl;
-    oss << "   Available Process Planners:" << std::endl;
-    for (const auto& planner : planning_server_->getAvailableProcessPlanners())
+    oss << "Requested task '" << goal->request.name << "' is not supported!" << std::endl;
+    oss << "   Available Tasks:" << std::endl;
+    for (const auto& planner : planning_server_->getAvailableTasks())
       oss << "      - " << planner << std::endl;
     ROS_ERROR_STREAM(oss.str());
     motion_plan_server_.setSucceeded(result);
     return;
   }
 
-  tesseract_planning::ProcessPlanningRequest process_request;
-  process_request.name = goal->request.name;
+  tesseract_planning::TaskComposerProblem problem(goal->request.name);
 
   try
   {
-    process_request.instructions =
-        Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.instructions);
+    auto ci = Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.instructions)
+                  .as<tesseract_planning::CompositeInstruction>();
+    problem.input_data.setData(INPUT_KEY, ci);
   }
   catch (const std::exception& e)
   {
@@ -161,33 +173,48 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     return;
   }
 
-  if (!goal->request.seed.empty())
-    process_request.seed = Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.seed);
+  tesseract_environment::Environment::Ptr env = environment_cache_->getCachedEnvironment();
 
   tesseract_scene_graph::SceneState env_state;
   tesseract_rosutils::fromMsg(env_state.joints, goal->request.environment_state.joint_state);
 
-  process_request.env_state = env_state;
-  process_request.commands = tesseract_rosutils::fromMsg(goal->request.commands);
-  process_request.profile = goal->request.profile;
-  process_request.save_io = goal->request.save_io;
-  process_request.plan_profile_remapping = tesseract_rosutils::fromMsg(goal->request.plan_profile_remapping);
-  process_request.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
+  env->applyCommands(tesseract_rosutils::fromMsg(goal->request.commands));
+  env->setState(env_state.joints);
+
+  problem.env = env;
+  //  process_request.save_io = goal->request.save_io;
+  problem.move_profile_remapping = tesseract_rosutils::fromMsg(goal->request.move_profile_remapping);
+  problem.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
+
+  // Store the initial state in the response for publishing trajectories
+  tesseract_scene_graph::SceneState initial_state = env->getState();
+  tesseract_rosutils::toMsg(result.response.initial_state, initial_state.joints);
 
   tesseract_common::Timer timer;
   timer.start();
-  tesseract_planning::ProcessPlanningFuture plan_future = planning_server_->run(process_request);
-  plan_future.wait();  // Wait for results
+  tesseract_planning::TaskComposerInput input(std::move(problem), profiles_);
+  tesseract_planning::TaskComposerFuture::UPtr plan_future = planning_server_->run(input, DEFAULT_EXECUTOR);
+  plan_future->wait();  // Wait for results
   timer.stop();
 
-  // Store the initial state in the response for publishing trajectories
-  tesseract_scene_graph::SceneState initial_state = plan_future.problem->env->getState();
-  tesseract_rosutils::toMsg(result.response.initial_state, initial_state.joints);
+  try
+  {
+    tesseract_common::AnyPoly results = input.data_storage.getData(OUTPUT_KEY);
+    result.response.results = Serialization::toArchiveStringXML<tesseract_planning::InstructionPoly>(
+        results.as<tesseract_planning::CompositeInstruction>());
+  }
+  catch (const std::exception& e)
+  {
+    result.response.successful = false;
+    std::ostringstream oss;
+    oss << "Failed to get output results from task with error: '" << e.what() << "'!" << std::endl;
+    ROS_ERROR_STREAM(oss.str());
+    motion_plan_server_.setSucceeded(result);
+    return;
+  }
 
-  result.response.successful = plan_future.interface->isSuccessful();
-  result.response.results =
-      Serialization::toArchiveStringXML<tesseract_planning::InstructionPoly>(*(plan_future.problem->results));
-  plan_future.clear();
+  result.response.successful = input.isSuccessful();
+  plan_future->clear();
 
   ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
   motion_plan_server_.setSucceeded(result);
@@ -195,49 +222,49 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
 void TesseractPlanningServer::loadDefaultPlannerProfiles()
 {
-  tesseract_planning::ProfileDictionary::Ptr profiles = planning_server_->getProfiles();
-
   // Add TrajOpt Default Profiles
-  profiles->addProfile<tesseract_planning::TrajOptPlanProfile>(
+  profiles_->addProfile<tesseract_planning::TrajOptPlanProfile>(
       tesseract_planning::profile_ns::TRAJOPT_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>());
-  profiles->addProfile<tesseract_planning::TrajOptCompositeProfile>(
+  profiles_->addProfile<tesseract_planning::TrajOptCompositeProfile>(
       tesseract_planning::profile_ns::TRAJOPT_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>());
-  profiles->addProfile<tesseract_planning::TrajOptSolverProfile>(
+  profiles_->addProfile<tesseract_planning::TrajOptSolverProfile>(
       tesseract_planning::profile_ns::TRAJOPT_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>());
 
   // Add TrajOpt IFOPT Default Profiles
-  profiles->addProfile<tesseract_planning::TrajOptIfoptPlanProfile>(
+#ifdef TESSERACT_TASK_COMPOSER_HAS_TRAJOPT_IFOPT
+  profiles_->addProfile<tesseract_planning::TrajOptIfoptPlanProfile>(
       tesseract_planning::profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>());
-  profiles->addProfile<tesseract_planning::TrajOptIfoptCompositeProfile>(
+  profiles_->addProfile<tesseract_planning::TrajOptIfoptCompositeProfile>(
       tesseract_planning::profile_ns::TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>());
+#endif
 
   // Add Descartes Default Profiles
-  profiles->addProfile<tesseract_planning::DescartesPlanProfile<double>>(
+  profiles_->addProfile<tesseract_planning::DescartesPlanProfile<double>>(
       tesseract_planning::profile_ns::DESCARTES_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>());
 
   // Add OMPL Default Profiles
-  profiles->addProfile<tesseract_planning::OMPLPlanProfile>(
+  profiles_->addProfile<tesseract_planning::OMPLPlanProfile>(
       tesseract_planning::profile_ns::OMPL_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
       std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
 
   // Add Simple Default Profiles
-  profiles->addProfile<tesseract_planning::SimplePlannerLegacyPlanProfile>(
+  profiles_->addProfile<tesseract_planning::SimplePlannerPlanProfile>(
       tesseract_planning::profile_ns::SIMPLE_DEFAULT_NAMESPACE,
       tesseract_planning::DEFAULT_PROFILE_KEY,
-      std::make_shared<tesseract_planning::SimplePlannerLVSNoIKLegacyPlanProfile>());
+      std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
 }
 
 Eigen::Isometry3d TesseractPlanningServer::tfFindTCPOffset(const tesseract_common::ManipulatorInfo& manip_info)
