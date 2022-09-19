@@ -16,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
-find_package(tesseract_process_managers REQUIRED)
+find_package(tesseract_motion_planners REQUIRED)
+find_package(tesseract_task_composer REQUIRED)
 find_package(tesseract_common REQUIRED)
 
 catkin_package(
@@ -32,7 +33,8 @@ catkin_package(
     tf2_eigen
   DEPENDS
     tesseract_command_language
-    tesseract_process_managers
+    tesseract_motion_planners
+    tesseract_task_composer
     tesseract_common
 )
 
@@ -41,7 +43,15 @@ tesseract_variables()
 
 add_library(${PROJECT_NAME} SHARED
   src/tesseract_planning_server.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    tesseract::tesseract_command_language
+    tesseract::tesseract_motion_planners_core
+    tesseract::tesseract_motion_planners_simple
+    tesseract::tesseract_motion_planners_trajopt
+    tesseract::tesseract_motion_planners_ompl
+    tesseract::tesseract_motion_planners_descartes
+    tesseract::tesseract_task_composer
+    ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
@@ -76,7 +86,7 @@ target_include_directories(${PROJECT_NAME}_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_raster_example examples/server_raster_example.cpp)
-target_link_libraries(${PROJECT_NAME}_raster_example PRIVATE tesseract::tesseract_command_language tesseract::tesseract_process_managers ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_raster_example PRIVATE tesseract::tesseract_command_language tesseract::tesseract_task_composer ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_raster_example PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_raster_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_raster_example PRIVATE VERSION 17)

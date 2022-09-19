@@ -86,7 +86,7 @@ add_message_files(
     StringLimitsPair.msg
     StringPair.msg
     StringPluginInfoPair.msg
-    TaskInfo.msg
+    TaskComposerNodeInfo.msg
     Trajectory.msg
     TransformMap.msg
     VisualGeometry.msg

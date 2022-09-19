@@ -38,7 +38,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment_monitor.h>
-#include <tesseract_process_managers/core/process_planning_server.h>
+#include <tesseract_environment/environment_cache.h>
+#include <tesseract_task_composer/task_composer_server.h>
 
 namespace tesseract_planning_server
 {
@@ -66,11 +67,11 @@ public:
   tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor();
   const tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor() const;
 
-  tesseract_planning::ProcessPlanningServer& getProcessPlanningServer();
-  const tesseract_planning::ProcessPlanningServer& getProcessPlanningServer() const;
+  tesseract_planning::TaskComposerServer& getTaskComposerServer();
+  const tesseract_planning::TaskComposerServer& getTaskComposerServer() const;
 
-  tesseract_planning::EnvironmentCache& getEnvironmentCache();
-  const tesseract_planning::EnvironmentCache& getEnvironmentCache() const;
+  tesseract_environment::EnvironmentCache& getEnvironmentCache();
+  const tesseract_environment::EnvironmentCache& getEnvironmentCache() const;
 
   void onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
 
@@ -81,10 +82,13 @@ protected:
   tesseract_environment::EnvironmentMonitor::Ptr monitor_;
 
   /** @brief The environment cache being used by the process planning server */
-  tesseract_planning::EnvironmentCache::Ptr environment_cache_;
+  tesseract_environment::EnvironmentCache::Ptr environment_cache_;
 
-  /** @brief The process planning server */
-  tesseract_planning::ProcessPlanningServer::UPtr planning_server_;
+  /** @brief The task profiles */
+  tesseract_planning::ProfileDictionary::Ptr profiles_;
+
+  /** @brief The task planning server */
+  tesseract_planning::TaskComposerServer::UPtr planning_server_;
 
   /** @brief The motion planning action server */
   actionlib::SimpleActionServer<tesseract_msgs::GetMotionPlanAction> motion_plan_server_;
@@ -95,7 +99,7 @@ protected:
   /** @brief TF listener to lookup TCP transforms */
   tf2_ros::TransformListener tf_listener_;
 
-  void ctor();
+  void ctor(size_t n);
 
   void loadDefaultPlannerProfiles();
 
