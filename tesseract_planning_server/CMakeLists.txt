@@ -62,18 +62,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_archive_viewer_node src/archive_viewer_node.cpp)
-target_link_libraries(${PROJECT_NAME}_archive_viewer_node PRIVATE ${PROJECT_NAME} ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_archive_viewer_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-target_clang_tidy(${PROJECT_NAME}_archive_viewer_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-target_cxx_version(${PROJECT_NAME}_archive_viewer_node PRIVATE VERSION 17)
-target_include_directories(${PROJECT_NAME}_archive_viewer_node PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_archive_viewer_node SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS})
-
-
 add_executable(${PROJECT_NAME}_node src/tesseract_planning_server_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${PROJECT_NAME} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
@@ -110,6 +98,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
  )
 
-install(DIRECTORY launch config
+install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
