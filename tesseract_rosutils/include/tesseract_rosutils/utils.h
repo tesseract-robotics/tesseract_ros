@@ -55,7 +55,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/LinkGroup.h>
 #include <tesseract_msgs/Material.h>
 #include <tesseract_msgs/Mesh.h>
-#include <tesseract_msgs/PlanningRequestArchive.h>
 #include <tesseract_msgs/SceneGraph.h>
 #include <tesseract_msgs/StringDoublePair.h>
 #include <tesseract_msgs/StringPair.h>

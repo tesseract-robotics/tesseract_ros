@@ -75,9 +75,7 @@ add_message_files(
     OctreeSubType.msg
     PlannerProfileRemapping.msg
     PlanningRequest.msg
-    PlanningRequestArchive.msg
     PlanningResponse.msg
-    PlanningResponseArchive.msg
     PluginInfo.msg
     PluginInfoContainer.msg
     ProfileMap.msg
