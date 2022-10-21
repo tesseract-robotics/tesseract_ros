@@ -8,20 +8,19 @@ uint8 CHANGE_LINK_ORIGIN=5
 uint8 CHANGE_JOINT_ORIGIN=6
 uint8 CHANGE_LINK_COLLISION_ENABLED = 7
 uint8 CHANGE_LINK_VISIBILITY=8
-uint8 ADD_ALLOWED_COLLISION=9
-uint8 REMOVE_ALLOWED_COLLISION=10
-uint8 REMOVE_ALLOWED_COLLISION_LINK=11
-uint8 UPDATE_JOINT_STATE=12
-uint8 ADD_SCENE_GRAPH=13
-uint8 CHANGE_JOINT_POSITION_LIMITS=14
-uint8 CHANGE_JOINT_VELOCITY_LIMITS=15
-uint8 CHANGE_JOINT_ACCELERATION_LIMITS=16
-uint8 ADD_KINEMATICS_INFORMATION=17
-uint8 REPLACE_JOINT=18
-uint8 CHANGE_COLLISION_MARGINS=19
-uint8 ADD_CONTACT_MANAGERS_PLUGIN_INFO=20
-uint8 SET_ACTIVE_DISCRETE_CONTACT_MANAGER=21
-uint8 SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER=22
+uint8 MODIFY_ALLOWED_COLLISIONS=9
+uint8 REMOVE_ALLOWED_COLLISION_LINK=10
+uint8 UPDATE_JOINT_STATE=11
+uint8 ADD_SCENE_GRAPH=12
+uint8 CHANGE_JOINT_POSITION_LIMITS=13
+uint8 CHANGE_JOINT_VELOCITY_LIMITS=14
+uint8 CHANGE_JOINT_ACCELERATION_LIMITS=15
+uint8 ADD_KINEMATICS_INFORMATION=16
+uint8 REPLACE_JOINT=17
+uint8 CHANGE_COLLISION_MARGINS=18
+uint8 ADD_CONTACT_MANAGERS_PLUGIN_INFO=19
+uint8 SET_ACTIVE_DISCRETE_CONTACT_MANAGER=20
+uint8 SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER=21
 
 # Specifies the type of command. Dictates which of the fields below are used
 uint8 command
@@ -63,11 +62,9 @@ bool change_link_collision_enabled_value
 string change_link_visibility_name
 bool change_link_visibility_value
 
-# ADD_ALLOWED_COLLISION - Adds an allowable collision to the allowable collision matrix
-tesseract_msgs/AllowedCollisionEntry add_allowed_collision
-
-# REMOVE_ALLOWED_COLLISION - Removes an allowable collision from the allowable collision matrix
-tesseract_msgs/AllowedCollisionEntry remove_allowed_collision
+# MODIFY_ALLOWED_COLLISIONS - Modify allowable collisions in the allowable collision matrix
+uint8 modify_allowed_collisions_type # ADD, REMOVE, REPLACE
+tesseract_msgs/AllowedCollisionEntry[] modify_allowed_collisions
 
 # REMOVE_ALLOWED_COLLISION_LINK
 string remove_allowed_collision_link

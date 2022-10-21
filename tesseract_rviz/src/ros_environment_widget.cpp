@@ -249,8 +249,7 @@ void ROSEnvironmentWidget::onRender(float dt)
                 break;
               }
               case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
-              case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
-              case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
+              case tesseract_environment::CommandType::MODIFY_ALLOWED_COLLISIONS:
               case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
               case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
               case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
