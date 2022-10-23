@@ -2,6 +2,15 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to use modify allowed collisions command
+* Remove planning archive plugin
+* Replace tesseract_process_managers with tesseract_task_composer package
+* Fix not returning value for message conversion functions
+* Add ros conversions for joint map
+* Contributors: Levi Armstrong
+
 0.6.0 (2022-08-25)
 ------------------
 * Update to use new Poly types in tesseract_planning

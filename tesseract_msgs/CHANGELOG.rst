@@ -2,6 +2,13 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to use modify allowed collisions command
+* Remove planning archive plugin
+* Replace tesseract_process_managers with tesseract_task_composer package
+* Contributors: Levi Armstrong
+
 0.6.0 (2022-08-25)
 ------------------
 * Add initial_state to the PlanningResponse message

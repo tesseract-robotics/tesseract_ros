@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove use of deprecated items
+* Contributors: Levi Armstrong
+
 0.6.0 (2022-08-25)
 ------------------
 
