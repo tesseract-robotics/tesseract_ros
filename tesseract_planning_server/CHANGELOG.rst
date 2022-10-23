@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.14.0 (2022-10-23)
+-------------------
 * Remove planning archive plugin
 * Replace tesseract_process_managers with tesseract_task_composer package
 * Update planning server to legacy simple planner

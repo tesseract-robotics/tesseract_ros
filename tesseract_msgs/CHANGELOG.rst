@@ -2,8 +2,8 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.14.0 (2022-10-23)
+-------------------
 * Update to use modify allowed collisions command
 * Remove planning archive plugin
 * Replace tesseract_process_managers with tesseract_task_composer package
