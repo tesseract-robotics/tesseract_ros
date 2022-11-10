@@ -2,6 +2,7 @@
 
 uint8 SPHERE=1
 uint8 CYLINDER=2
+uint8 CAPSULE=10
 uint8 CONE=3
 uint8 BOX=4
 uint8 PLANE=5
@@ -18,6 +19,9 @@ float64 sphere_radius
 
 # CYLINDER
 float64[2] cylinder_dimensions
+
+# CAPSULE
+float64[2] capsule_dimensions
 
 # CONE (radius, length)
 float64[2] cone_dimensions

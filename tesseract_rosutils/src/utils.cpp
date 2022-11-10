@@ -316,6 +316,15 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
       geometry_msgs.cylinder_dimensions[1] = cylinder.getLength();
       break;
     }
+    case tesseract_geometry::GeometryType::CAPSULE:
+    {
+      const auto& capsule = static_cast<const tesseract_geometry::Capsule&>(geometry);
+
+      geometry_msgs.type = tesseract_msgs::Geometry::CAPSULE;
+      geometry_msgs.capsule_dimensions[0] = capsule.getRadius();
+      geometry_msgs.capsule_dimensions[1] = capsule.getLength();
+      break;
+    }
     case tesseract_geometry::GeometryType::CONE:
     {
       const auto& cone = static_cast<const tesseract_geometry::Cone&>(geometry);
@@ -492,6 +501,11 @@ bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::
   {
     geometry = std::make_shared<tesseract_geometry::Cylinder>(geometry_msg.cylinder_dimensions[0],
                                                               geometry_msg.cylinder_dimensions[1]);
+  }
+  else if (geometry_msg.type == tesseract_msgs::Geometry::CAPSULE)
+  {
+    geometry = std::make_shared<tesseract_geometry::Capsule>(geometry_msg.capsule_dimensions[0],
+                                                             geometry_msg.capsule_dimensions[1]);
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::CONE)
   {
