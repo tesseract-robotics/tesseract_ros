@@ -1,16 +1,15 @@
 #include <tesseract_rviz/workbench_display.h>
-#include <tesseract_rviz/ros_environment_widget.h>
-#include <tesseract_rviz/ros_manipulation_widget.h>
 #include <tesseract_rviz/environment_monitor_properties.h>
 #include <tesseract_rviz/joint_trajectory_monitor_properties.h>
 #include <tesseract_rviz/set_theme_tool.h>
 
 #include <tesseract_qt/workbench/workbench_widget.h>
-#include <tesseract_qt/environment/environment_widget_config.h>
-#include <tesseract_qt/joint_trajectory/joint_trajectory_widget.h>
+#include <tesseract_qt/joint_trajectory/widgets/joint_trajectory_widget.h>
+#include <tesseract_qt/common/component_info.h>
 #include <tesseract_qt/common/joint_trajectory_set.h>
 #include <tesseract_qt/common/theme_utils.h>
 #include <tesseract_qt/common/icon_utils.h>
+#include <tesseract_qt/common/events/render_events.h>
 
 #include <rviz/panel_dock_widget.h>
 #include <rviz/display_context.h>
@@ -23,9 +22,9 @@
 
 namespace tesseract_rviz
 {
-struct WorkbenchDisplayPrivate
+struct WorkbenchDisplay::Implementation
 {
-  WorkbenchDisplayPrivate()
+  Implementation()
   {
     workbench_display_counter++;
     workbench_display_id = workbench_display_counter;
@@ -35,9 +34,6 @@ struct WorkbenchDisplayPrivate
   std::shared_ptr<SetThemeTool> theme_tool;
 
   tesseract_gui::WorkbenchWidget* widget{ nullptr };
-  ROSEnvironmentWidget* environment_widget{ nullptr };
-  tesseract_gui::JointTrajectoryWidget* joint_trajectory_widget{ nullptr };
-  ROSManipulationWidget* manipulation_widget{ nullptr };
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties{ nullptr };
   std::unique_ptr<JointTrajectoryMonitorProperties> joint_trajectory_properties{ nullptr };
@@ -51,9 +47,9 @@ struct WorkbenchDisplayPrivate
   std::string workbench_display_ns;
 };
 
-int WorkbenchDisplayPrivate::workbench_display_counter = -1;  // NOLINT
+int WorkbenchDisplay::Implementation::workbench_display_counter = -1;  // NOLINT
 
-WorkbenchDisplay::WorkbenchDisplay() : data_(std::make_unique<WorkbenchDisplayPrivate>())
+WorkbenchDisplay::WorkbenchDisplay() : data_(std::make_unique<Implementation>())
 {
   auto* monitor_property =
       new rviz::Property("Environment Properties", "", "Tesseract environment properties", this, nullptr, this);
@@ -77,12 +73,8 @@ void WorkbenchDisplay::onInitialize()
   Display::onInitialize();
 
   setIcon(tesseract_gui::icons::getTesseractIcon());
-  data_->environment_widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);  // NOLINT
-  data_->joint_trajectory_widget = new tesseract_gui::JointTrajectoryWidget();                        // NOLINT
-  data_->manipulation_widget = new ROSManipulationWidget(context_, scene_node_);                      // NOLINT
   // NOLINTNEXTLINE
-  data_->widget = new tesseract_gui::WorkbenchWidget(
-      data_->environment_widget, data_->joint_trajectory_widget, data_->manipulation_widget);
+  data_->widget = new tesseract_gui::WorkbenchWidget();
 
   setAssociatedWidget(data_->widget);
 
@@ -95,8 +87,13 @@ void WorkbenchDisplay::onInitialize()
   disconnect(
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
-  data_->monitor_properties->onInitialize(data_->environment_widget);
-  data_->joint_trajectory_properties->onInitialize(data_->joint_trajectory_widget);
+  connect(data_->monitor_properties.get(),
+          SIGNAL(componentInfoChanged(tesseract_gui::ComponentInfo)),
+          this,
+          SLOT(onComponentInfoChanged(tesseract_gui::ComponentInfo)));
+
+  data_->monitor_properties->onInitialize();
+  data_->joint_trajectory_properties->onInitialize();
 
   data_->theme_tool = SetThemeTool::instance();
   if (!data_->theme_tool->isInitialized())
@@ -106,7 +103,7 @@ void WorkbenchDisplay::onInitialize()
 void WorkbenchDisplay::onEnable()
 {
   Display::onEnable();
-  data_->widget->onEnable();
+  //  data_->widget->onEnable();
 }
 
 void WorkbenchDisplay::onDisable() { Display::onDisable(); }
@@ -117,7 +114,8 @@ void WorkbenchDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
 
-  data_->widget->onRender(wall_dt);
+  if (data_->widget != nullptr)
+    QApplication::sendEvent(qApp, new tesseract_gui::events::PreRender(data_->widget->getComponentInfo().scene_name));
 }
 
 void WorkbenchDisplay::load(const rviz::Config& config)
@@ -176,6 +174,12 @@ void WorkbenchDisplay::onEnableChanged()
     scene_node_->setVisible(false);
   }
   QApplication::restoreOverrideCursor();
+}
+
+void WorkbenchDisplay::onComponentInfoChanged(tesseract_gui::ComponentInfo component_info)
+{
+  data_->widget->setComponentInfo(component_info);
+  data_->joint_trajectory_properties->setComponentInfo(data_->widget->getJointTrajectoryWidget().getComponentInfo());
 }
 
 }  // namespace tesseract_rviz
