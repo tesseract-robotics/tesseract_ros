@@ -75,6 +75,9 @@ public:
   tesseract_environment::EnvironmentCache& getEnvironmentCache();
   const tesseract_environment::EnvironmentCache& getEnvironmentCache() const;
 
+  tesseract_planning::ProfileDictionary& getProfileDictionary();
+  const tesseract_planning::ProfileDictionary& getProfileDictionary() const;
+
   void onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal);
 
 protected:

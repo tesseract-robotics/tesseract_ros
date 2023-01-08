@@ -12,6 +12,12 @@ class Config;
 class Property;
 }  // namespace rviz
 
+namespace Ogre
+{
+class SceneManager;
+class SceneNode;
+}  // namespace Ogre
+
 namespace tesseract_gui
 {
 class EnvironmentWidget;
@@ -28,7 +34,7 @@ public:
                                rviz::Property* main_property = nullptr);
   ~EnvironmentMonitorProperties() override;
 
-  void onInitialize();
+  void onInitialize(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node);
 
   /**
    * @brief Return the component info based on the settings of the object

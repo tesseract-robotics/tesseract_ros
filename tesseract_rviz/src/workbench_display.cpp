@@ -92,7 +92,7 @@ void WorkbenchDisplay::onInitialize()
           this,
           SLOT(onComponentInfoChanged(tesseract_gui::ComponentInfo)));
 
-  data_->monitor_properties->onInitialize();
+  data_->monitor_properties->onInitialize(scene_manager_, scene_node_);
   data_->joint_trajectory_properties->onInitialize();
 
   data_->theme_tool = SetThemeTool::instance();
