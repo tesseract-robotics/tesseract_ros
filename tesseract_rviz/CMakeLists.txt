@@ -179,6 +179,7 @@ add_library(${PROJECT_NAME} SHARED
   src/joint_trajectory_monitor_properties.cpp
   src/workbench_display.cpp
   src/conversions.cpp
+  src/ros_contact_results_render_manager.cpp
   src/ros_scene_graph_render_manager.cpp
   src/set_theme_tool.cpp
   ${${PROJECT_NAME}_cpp_MOCS})

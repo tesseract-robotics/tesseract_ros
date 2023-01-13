@@ -366,7 +366,7 @@ Ogre::SceneNode* loadLinkAxis(Ogre::SceneManager& scene,
   /** @todo Does this need to be manually deleted */
   auto axis = std::make_shared<rviz::Axes>(&scene, scene_node);
   axis->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
-  entity_container.addUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, axis);
+  entity_container.addUntrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, axis);
 
   scene_node->setVisible(false, true);
   return scene_node;
@@ -731,7 +731,7 @@ Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
         data.shape_type = octomap.getSubType();
 
         offset_node->attachObject(data.point_cloud.get());
-        entity_container.addUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, data.point_cloud);
+        entity_container.addUntrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, data.point_cloud);
       }
 
       offset_node->setScale(ogre_scale);

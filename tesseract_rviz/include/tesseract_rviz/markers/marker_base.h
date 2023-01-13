@@ -80,6 +80,7 @@ public:
   virtual void setOrientation(const Ogre::Quaternion& orientation);
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
+  void setVisible(bool visible);
 
   virtual void setScale(Ogre::Vector3 scale) = 0;
   virtual Ogre::Vector3 getScale() const = 0;

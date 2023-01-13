@@ -66,6 +66,8 @@ const Ogre::Vector3& MarkerBase::getPosition() { return scene_node_->getPosition
 
 const Ogre::Quaternion& MarkerBase::getOrientation() { return scene_node_->getOrientation(); }
 
+void MarkerBase::setVisible(bool visible) { scene_node_->setVisible(visible); }
+
 void MarkerBase::extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialPtr>& materials)
 {
   uint32_t num_sub_entities = entity->getNumSubEntities();
