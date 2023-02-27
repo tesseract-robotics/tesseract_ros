@@ -17,6 +17,8 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
+const std::string USER_VISIBILITY = "user_visibility";
+
 namespace tesseract_rviz
 {
 struct ROSSceneGraphRenderManager::Implementation
@@ -173,9 +175,11 @@ void ROSSceneGraphRenderManager::render()
 
             if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::LINK ||
                 e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::ALL)
-              sn->setUserAny(Ogre::Any(e.visible()));
+            {
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+            }
 
-            link_visible = Ogre::any_cast<bool>(sn->getUserAny());
+            link_visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
             sn->setVisible(link_visible, true);
           }
 
@@ -188,9 +192,11 @@ void ROSSceneGraphRenderManager::render()
 
             if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::VISUAL ||
                 e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::ALL)
-              sn->setUserAny(Ogre::Any(e.visible()));
+            {
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+            }
 
-            bool visible = Ogre::any_cast<bool>(sn->getUserAny());
+            bool visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
             sn->setVisible(link_visible & visible, true);
           }
 
@@ -203,9 +209,11 @@ void ROSSceneGraphRenderManager::render()
 
             if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::COLLISION ||
                 e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::ALL)
-              sn->setUserAny(Ogre::Any(e.visible()));
+            {
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+            }
 
-            bool visible = Ogre::any_cast<bool>(sn->getUserAny());
+            bool visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
             sn->setVisible(link_visible & visible, true);
           }
 
@@ -218,9 +226,11 @@ void ROSSceneGraphRenderManager::render()
 
             if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::WIREBOX ||
                 e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::ALL)
-              sn->setUserAny(Ogre::Any(e.visible()));
+            {
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+            }
 
-            bool visible = Ogre::any_cast<bool>(sn->getUserAny());
+            bool visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
             sn->setVisible(link_visible & visible, true);
           }
 
@@ -233,9 +243,11 @@ void ROSSceneGraphRenderManager::render()
 
             if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::AXIS ||
                 e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::ALL)
-              sn->setUserAny(Ogre::Any(e.visible()));
+            {
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+            }
 
-            bool visible = Ogre::any_cast<bool>(sn->getUserAny());
+            bool visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
             sn->setVisible(link_visible & visible, true);
           }
         }
@@ -260,46 +272,49 @@ void ROSSceneGraphRenderManager::render()
 
               if (e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::LINK)
               {
-                link_visual_node->setUserAny(Ogre::Any(e.visible()));
-                bool link_visible = Ogre::any_cast<bool>(link_visual_node->getUserAny());
+                link_visual_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
+                bool link_visible =
+                    Ogre::any_cast<bool>(link_visual_node->getUserObjectBindings().getUserAny(USER_VISIBILITY));
 
                 Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(ns.second.unique_name);
-                bool visible = Ogre::any_cast<bool>(sn->getUserAny());
+                bool visible = Ogre::any_cast<bool>(sn->getUserObjectBindings().getUserAny(USER_VISIBILITY));
                 sn->setVisible(link_visible & visible, true);
               }
 
               if (sub_ns[1] == "Visuals" && e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::VISUAL)
               {
                 if (e.visible())
-                  link_visual_node->setUserAny(Ogre::Any(e.visible()));
+                  link_visual_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
 
-                bool link_visible = Ogre::any_cast<bool>(link_visual_node->getUserAny());
+                bool link_visible =
+                    Ogre::any_cast<bool>(link_visual_node->getUserObjectBindings().getUserAny(USER_VISIBILITY));
                 Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(ns.second.unique_name);
-                sn->setUserAny(Ogre::Any(e.visible()));
+                sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
                 sn->setVisible(link_visible & e.visible(), true);
               }
 
               if (sub_ns[1] == "Collisions" && e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::COLLISION)
               {
                 if (e.visible())
-                  link_visual_node->setUserAny(Ogre::Any(e.visible()));
+                  link_visual_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
 
-                bool link_visible = Ogre::any_cast<bool>(link_visual_node->getUserAny());
+                bool link_visible =
+                    Ogre::any_cast<bool>(link_visual_node->getUserObjectBindings().getUserAny(USER_VISIBILITY));
                 Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(ns.second.unique_name);
-                sn->setUserAny(Ogre::Any(e.visible()));
+                sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
                 sn->setVisible(link_visible & e.visible(), true);
               }
             }
             else if (sub_ns[1] == "Axis" && e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::AXIS)
             {
               Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(ns.second.unique_name);
-              sn->setUserAny(Ogre::Any(e.visible()));
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
               sn->setVisible(e.visible(), true);
             }
             else if (sub_ns[1] == "WireBox" && e.getVisibilityFlags() & tesseract_gui::LinkVisibilityFlags::WIREBOX)
             {
               Ogre::SceneNode* sn = data_->scene_manager->getSceneNode(ns.second.unique_name);
-              sn->setUserAny(Ogre::Any(e.visible()));
+              sn->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.visible()));
               sn->setVisible(e.visible(), true);
             }
           }

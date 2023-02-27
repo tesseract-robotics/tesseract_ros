@@ -81,6 +81,8 @@ public:
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
   void setVisible(bool visible);
+  Ogre::UserObjectBindings& getUserObjectBindings();
+  const Ogre::UserObjectBindings& getUserObjectBindings() const;
 
   virtual void setScale(Ogre::Vector3 scale) = 0;
   virtual Ogre::Vector3 getScale() const = 0;

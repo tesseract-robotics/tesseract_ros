@@ -56,6 +56,8 @@
 
 #include <tesseract_geometry/geometries.h>
 
+const std::string USER_VISIBILITY = "user_visibility";
+
 namespace tesseract_rviz
 {
 static Ogre::NameGenerator material_name_generator("tesseract::material::");
@@ -262,15 +264,15 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
 {
   auto entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, link.getName());
   Ogre::SceneNode* scene_node = scene.createSceneNode(entity.unique_name);
-  scene_node->setUserAny(Ogre::Any(true));
+  scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(true));
 
   Ogre::SceneNode* visuals_scene_node = loadLinkVisuals(scene, entity_container, link, visual_material_override);
-  visuals_scene_node->setUserAny(Ogre::Any(true));
+  visuals_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(true));
   scene_node->addChild(visuals_scene_node);
 
   Ogre::SceneNode* collisions_scene_node =
       loadLinkCollisions(scene, entity_container, link, collision_material_override);
-  collisions_scene_node->setUserAny(Ogre::Any(false));
+  collisions_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
   scene_node->addChild(collisions_scene_node);
 
   if (!link.visual.empty() || !link.collision.empty())
@@ -279,13 +281,13 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
     if (aabb.isFinite())
     {
       Ogre::SceneNode* wirebox_scene_node = loadLinkWireBox(scene, entity_container, link, aabb);
-      wirebox_scene_node->setUserAny(Ogre::Any(false));
+      wirebox_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
       scene_node->addChild(wirebox_scene_node);
     }
   }
 
   Ogre::SceneNode* axis_scene_node = loadLinkAxis(scene, entity_container, link);
-  axis_scene_node->setUserAny(Ogre::Any(false));
+  axis_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
   scene_node->addChild(axis_scene_node);
 
   return scene_node;

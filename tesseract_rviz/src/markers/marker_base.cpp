@@ -68,6 +68,13 @@ const Ogre::Quaternion& MarkerBase::getOrientation() { return scene_node_->getOr
 
 void MarkerBase::setVisible(bool visible) { scene_node_->setVisible(visible); }
 
+Ogre::UserObjectBindings& MarkerBase::getUserObjectBindings() { return scene_node_->getUserObjectBindings(); }
+
+const Ogre::UserObjectBindings& MarkerBase::getUserObjectBindings() const
+{
+  return scene_node_->getUserObjectBindings();
+}
+
 void MarkerBase::extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialPtr>& materials)
 {
   uint32_t num_sub_entities = entity->getNumSubEntities();

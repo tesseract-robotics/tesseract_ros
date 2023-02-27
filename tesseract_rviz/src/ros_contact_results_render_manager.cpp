@@ -173,9 +173,9 @@ void ROSContactResultsRenderManager::render()
           arrow->setColor(Ogre::ColourValue(1, 0, 0));
           arrow->setVisible(false);
 
-          std::string axis_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
+          std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
           entity_container->addTrackedUnmanagedObject(
-              tesseract_gui::EntityContainer::VISUAL_NS, axis_key_name, std::move(arrow));
+              tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name, std::move(arrow));
         }
       }
       else
@@ -203,9 +203,9 @@ void ROSContactResultsRenderManager::render()
             arrow->setColor(Ogre::ColourValue(1, 0, 0));
             arrow->setVisible(false);
 
-            std::string axis_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
+            std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
             entity_container->addTrackedUnmanagedObject(
-                tesseract_gui::EntityContainer::VISUAL_NS, axis_key_name, std::move(arrow));
+                tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name, std::move(arrow));
           }
         }
       }
@@ -218,11 +218,11 @@ void ROSContactResultsRenderManager::render()
 
       if (!e.getChildUUID().is_nil())
       {
-        std::string axis_key_name = "ContactResults::" + boost::uuids::to_string(e.getChildUUID());
-        if (entity_container->hasTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, axis_key_name))
+        std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(e.getChildUUID());
+        if (entity_container->hasTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name))
         {
           tesseract_gui::UnmanagedObject obj =
-              entity_container->getTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, axis_key_name);
+              entity_container->getTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name);
           std::static_pointer_cast<ArrowMarker>(obj)->setVisible(e.getVisibility());
         }
       }
