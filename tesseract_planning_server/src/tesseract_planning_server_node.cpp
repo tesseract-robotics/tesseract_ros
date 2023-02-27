@@ -50,14 +50,28 @@ int main(int argc, char** argv)
   std::string continuous_plugin;
   std::string monitor_namespace;
   std::string monitored_namespace;
+  std::string task_composer_config;
+  std::string input_key;
+  std::string output_key;
   bool publish_environment{ false };
   int cache_size{ 5 };
   double cache_refresh_rate{ 0.1 };
-  int threads = static_cast<int>(std::thread::hardware_concurrency());
 
   if (!pnh.getParam("monitor_namespace", monitor_namespace))
   {
     ROS_ERROR("Missing required parameter monitor_namespace!");
+    return 1;
+  }
+
+  if (!pnh.getParam("input_key", input_key))
+  {
+    ROS_ERROR("Missing required parameter input_key!");
+    return 1;
+  }
+
+  if (!pnh.getParam("output_key", output_key))
+  {
+    ROS_ERROR("Missing required parameter output_key!");
     return 1;
   }
 
@@ -66,10 +80,10 @@ int main(int argc, char** argv)
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
   pnh.param<int>("cache_size", cache_size, cache_size);
   pnh.param<double>("cache_refresh_rate", cache_refresh_rate, cache_refresh_rate);
-  pnh.param<int>("threads", threads, threads);
+  pnh.param<std::string>("task_composer_config", task_composer_config, task_composer_config);
 
   planning_server = std::make_shared<tesseract_planning_server::TesseractPlanningServer>(
-      robot_description, monitor_namespace, static_cast<std::size_t>(threads));
+      robot_description, input_key, output_key, monitor_namespace);
 
   planning_server->getEnvironmentCache().setCacheSize(cache_size);
 
@@ -78,6 +92,12 @@ int main(int argc, char** argv)
 
   if (!monitored_namespace.empty())
     planning_server->getEnvironmentMonitor().startMonitoringEnvironment(monitored_namespace);
+
+  if (!task_composer_config.empty())
+  {
+    tesseract_common::fs::path config(task_composer_config);
+    planning_server->getTaskComposerServer().loadConfig(config);
+  }
 
   ros::Timer update_cache = nh.createTimer(ros::Duration(cache_refresh_rate), updateCacheCallback);
 
