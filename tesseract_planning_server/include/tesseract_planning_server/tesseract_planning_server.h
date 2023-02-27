@@ -51,12 +51,14 @@ public:
   static const std::string DEFAULT_GET_MOTION_PLAN_ACTION;  // "/tesseract_get_motion_plan"
 
   TesseractPlanningServer(const std::string& robot_description,
-                          std::string name,
-                          size_t n = std::thread::hardware_concurrency());
+                          std::string input_key,
+                          std::string output_key,
+                          std::string name);
 
   TesseractPlanningServer(tesseract_environment::Environment::UPtr env,
-                          std::string name,
-                          size_t n = std::thread::hardware_concurrency());
+                          std::string input_key,
+                          std::string output_key,
+                          std::string name);
 
   ~TesseractPlanningServer() = default;
   TesseractPlanningServer(const TesseractPlanningServer&) = delete;
@@ -90,6 +92,12 @@ protected:
   /** @brief The task planning server */
   tesseract_planning::TaskComposerServer::UPtr planning_server_;
 
+  /** @brief The input key */
+  std::string input_key_;
+
+  /** @brief The output key */
+  std::string output_key_;
+
   /** @brief The motion planning action server */
   actionlib::SimpleActionServer<tesseract_msgs::GetMotionPlanAction> motion_plan_server_;
 
@@ -99,7 +107,7 @@ protected:
   /** @brief TF listener to lookup TCP transforms */
   tf2_ros::TransformListener tf_listener_;
 
-  void ctor(size_t n);
+  void ctor();
 
   void loadDefaultPlannerProfiles();
 
