@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QObject>
+#include <tesseract_qt/common/component_info.h>
 
 namespace rviz
 {
@@ -11,16 +12,19 @@ class Config;
 class Property;
 }  // namespace rviz
 
+namespace Ogre
+{
+class SceneManager;
+class SceneNode;
+}  // namespace Ogre
+
 namespace tesseract_gui
 {
-class EnvironmentWidgetConfig;
+class EnvironmentWidget;
 }
 
 namespace tesseract_rviz
 {
-class ROSEnvironmentWidget;
-class EnvironmentMonitorPropertiesPrivate;
-
 class EnvironmentMonitorProperties : public QObject
 {
   Q_OBJECT
@@ -30,16 +34,19 @@ public:
                                rviz::Property* main_property = nullptr);
   ~EnvironmentMonitorProperties() override;
 
-  void onInitialize(ROSEnvironmentWidget* widget);
+  void onInitialize(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node);
 
   /**
-   * @brief Return the config based on the settings of the object
-   * @return The environment config
+   * @brief Return the component info based on the settings of the object
+   * @return The component info
    */
-  std::shared_ptr<tesseract_gui::EnvironmentWidgetConfig> getConfig() const;
+  tesseract_gui::ComponentInfo getComponentInfo() const;
 
   void load(const rviz::Config& config);
   void save(rviz::Config config) const;
+
+Q_SIGNALS:
+  void componentInfoChanged(tesseract_gui::ComponentInfo component_info);
 
 public Q_SLOTS:
   void onDisplayModeChanged();
@@ -48,7 +55,8 @@ public Q_SLOTS:
   void onJointStateTopicChanged();
 
 protected:
-  std::unique_ptr<EnvironmentMonitorPropertiesPrivate> data_;
+  struct Implementation;
+  std::unique_ptr<Implementation> data_;
 };
 
 }  // namespace tesseract_rviz

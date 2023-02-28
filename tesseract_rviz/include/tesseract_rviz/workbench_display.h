@@ -2,11 +2,10 @@
 #define TESSERACT_RVIZ_WORKBENCH_DISPLAY_H
 
 #include <rviz/display.h>
+#include <tesseract_qt/common/component_info.h>
 
 namespace tesseract_rviz
 {
-struct WorkbenchDisplayPrivate;
-
 class WorkbenchDisplay : public rviz::Display
 {
   Q_OBJECT
@@ -22,6 +21,7 @@ public:
 
 public Q_SLOTS:
   void onEnableChanged() override;
+  void onComponentInfoChanged(tesseract_gui::ComponentInfo component_info);
 
 protected:
   // overrides from Display
@@ -29,7 +29,8 @@ protected:
   void onEnable() override;
   void onDisable() override;
 
-  std::unique_ptr<WorkbenchDisplayPrivate> data_;
+  struct Implementation;
+  std::unique_ptr<Implementation> data_;
 };
 }  // namespace tesseract_rviz
 

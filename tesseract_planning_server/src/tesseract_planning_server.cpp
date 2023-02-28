@@ -137,6 +137,12 @@ const tesseract_environment::EnvironmentCache& TesseractPlanningServer::getEnvir
   return *environment_cache_;
 }
 
+tesseract_planning::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() { return *profiles_; }
+const tesseract_planning::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() const
+{
+  return *profiles_;
+}
+
 void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::GetMotionPlanGoalConstPtr& goal)
 {
   ROS_INFO("Tesseract Planning Server Received Request!");
