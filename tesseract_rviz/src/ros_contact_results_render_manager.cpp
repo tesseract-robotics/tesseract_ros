@@ -15,6 +15,8 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
+static const std::string USER_VISIBILITY = "user_visibility";
+
 namespace tesseract_rviz
 {
 struct ROSContactResultsRenderManager::Implementation
@@ -124,35 +126,42 @@ void ROSContactResultsRenderManager::render()
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsClear&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
-      auto entity_container = entity_manager->getEntityContainer("ContactResults");
-      if (!entity_container->empty())
-      {
-        data_->clear(*entity_container);
-        entity_container->clear();
-      }
+      data_->clear(*entity_manager);
     }
     else if (event->type() == tesseract_gui::events::ContactResultsRemove::kType)
     {
+      auto& e = static_cast<tesseract_gui::events::ContactResultsRemove&>(*event);
+      tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
+      const std::string parent_key = boost::uuids::to_string(e.getUUID());
+      auto entity_container = entity_manager->getEntityContainer(parent_key);
+      if (e.getChildUUID().is_nil())
+      {
+        data_->clear(*entity_container);
+        entity_manager->removeEntityContainer(parent_key);
+      }
+      else
+      {
+        ROS_ERROR("ROSContactResultsRenderManager, removing child elements is currently not supported");
+      }
     }
     else if (event->type() == tesseract_gui::events::ContactResultsSet::kType)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsSet&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
-      auto entity_container = entity_manager->getEntityContainer("ContactResults");
-      if (!entity_container->empty())
-      {
-        data_->clear(*entity_container);
-        entity_container->clear();
-      }
-
-      auto entity = entity_container->addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, "ContactResults");
-      auto* scene_node = data_->scene_manager->createSceneNode(entity.unique_name);
-      data_->scene_node->addChild(scene_node);
+      data_->clear(*entity_manager);
 
       auto contacts = e.getContactResults();
       if (contacts.index() == 0)
       {
         const tesseract_gui::ContactResultVector& crv = std::get<tesseract_gui::ContactResultVector>(contacts);
+        const std::string parent_key = boost::uuids::to_string(crv.getUUID());
+
+        tesseract_gui::EntityContainer::Ptr entity_container = entity_manager->getEntityContainer(parent_key);
+        auto entity = entity_container->addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, parent_key);
+        auto* scene_node = data_->scene_manager->createSceneNode(entity.unique_name);
+        scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
+        data_->scene_node->addChild(scene_node);
+
         int cnt = 0;
         for (const auto& crt : crv())
         {
@@ -172,8 +181,9 @@ void ROSContactResultsRenderManager::render()
               "ContactResults", cnt++, p1, direction, proportions, data_->scene_manager, scene_node);
           arrow->setColor(Ogre::ColourValue(1, 0, 0));
           arrow->setVisible(false);
+          arrow->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(true));
 
-          std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
+          const std::string arrow_key_name = boost::uuids::to_string(crt.getUUID());
           entity_container->addTrackedUnmanagedObject(
               tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name, std::move(arrow));
         }
@@ -181,9 +191,18 @@ void ROSContactResultsRenderManager::render()
       else
       {
         const tesseract_gui::ContactResultMap& crm = std::get<tesseract_gui::ContactResultMap>(contacts);
+
         int cnt = 0;
         for (const auto& pair : crm)
         {
+          const std::string parent_key = boost::uuids::to_string(pair.second.getUUID());
+
+          tesseract_gui::EntityContainer::Ptr entity_container = entity_manager->getEntityContainer(parent_key);
+          auto entity = entity_container->addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, parent_key);
+          auto* scene_node = data_->scene_manager->createSceneNode(entity.unique_name);
+          scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
+          data_->scene_node->addChild(scene_node);
+
           for (const auto& crt : pair.second())
           {
             const auto& cr = crt();
@@ -202,8 +221,9 @@ void ROSContactResultsRenderManager::render()
                 "ContactResults", cnt++, p1, direction, proportions, data_->scene_manager, scene_node);
             arrow->setColor(Ogre::ColourValue(1, 0, 0));
             arrow->setVisible(false);
+            arrow->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(true));
 
-            std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(crt.getUUID());
+            const std::string arrow_key_name = boost::uuids::to_string(crt.getUUID());
             entity_container->addTrackedUnmanagedObject(
                 tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name, std::move(arrow));
           }
@@ -214,21 +234,59 @@ void ROSContactResultsRenderManager::render()
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsVisbility&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
-      auto entity_container = entity_manager->getEntityContainer("ContactResults");
-
-      if (!e.getChildUUID().is_nil())
+      const std::string parent_key = boost::uuids::to_string(e.getUUID());
+      auto entity_container = entity_manager->getEntityContainer(parent_key);
+      if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, parent_key))
       {
-        std::string arrow_key_name = "ContactResults::" + boost::uuids::to_string(e.getChildUUID());
-        if (entity_container->hasTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name))
+        auto parent_entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, parent_key);
+        auto* parent_scene_node = data_->scene_manager->getSceneNode(parent_entity.unique_name);
+        auto parent_visibility =
+            Ogre::any_cast<bool>(parent_scene_node->getUserObjectBindings().getUserAny(USER_VISIBILITY));
+        if (e.getChildUUID().is_nil())
         {
-          tesseract_gui::UnmanagedObject obj =
-              entity_container->getTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name);
-          std::static_pointer_cast<ArrowMarker>(obj)->setVisible(e.getVisibility());
+          parent_visibility = e.getVisibility();
+          parent_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(parent_visibility));
+
+          auto objects = entity_container->getTrackedUnmanagedObjects(tesseract_gui::EntityContainer::VISUAL_NS);
+          for (auto& obj : objects)
+          {
+            auto arrow = std::static_pointer_cast<ArrowMarker>(obj.second);
+            auto user_visible = Ogre::any_cast<bool>(arrow->getUserObjectBindings().getUserAny(USER_VISIBILITY));
+            arrow->setVisible(parent_visibility & user_visible);
+          }
+        }
+        else
+        {
+          const std::string arrow_key_name = boost::uuids::to_string(e.getChildUUID());
+          if (entity_container->hasTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name))
+          {
+            tesseract_gui::UnmanagedObject obj =
+                entity_container->getTrackedUnmanagedObject(tesseract_gui::EntityContainer::VISUAL_NS, arrow_key_name);
+            auto arrow = std::static_pointer_cast<ArrowMarker>(obj);
+            arrow->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(e.getVisibility()));
+            arrow->setVisible(parent_visibility & e.getVisibility());
+          }
         }
       }
     }
     else if (event->type() == tesseract_gui::events::ContactResultsVisbilityAll::kType)
     {
+      auto& e = static_cast<tesseract_gui::events::ContactResultsVisbilityAll&>(*event);
+      const bool visibility = e.getVisibility();
+      tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
+      for (auto& container : entity_manager->getEntityContainers())
+      {
+        auto parent_entity =
+            container.second->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, container.first);
+        auto* parent_scene_node = data_->scene_manager->getSceneNode(parent_entity.unique_name);
+        parent_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(visibility));
+        for (auto& obj : container.second->getTrackedUnmanagedObjects(tesseract_gui::EntityContainer::VISUAL_NS))
+        {
+          auto arrow = std::static_pointer_cast<ArrowMarker>(obj.second);
+          arrow->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(visibility));
+          arrow->setVisible(visibility);
+        }
+      }
     }
   }
 
