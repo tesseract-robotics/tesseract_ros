@@ -2,8 +2,8 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.0 (2023-03-04)
+-------------------
 * Update planner server to leverage task composer plugins
 * Fix toMsg and fromMsg for capsule (`#194 <https://github.com/tesseract-robotics/tesseract_ros/issues/194>`_)
 * Contributors: Levi Armstrong, Matthew Powelson

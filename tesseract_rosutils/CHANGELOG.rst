@@ -2,8 +2,8 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.15.0 (2023-03-04)
+-------------------
 * Fix toMsg and fromMsg for capsule (`#194 <https://github.com/tesseract-robotics/tesseract_ros/issues/194>`_)
 * Contributors: Matthew Powelson
 
