@@ -60,9 +60,9 @@ catkin_package(
     ${QT_INCLUDE_DIR}
     ${OGRE_INCLUDE_DIRS}
   LIBRARIES
+    ${PROJECT_NAME}
     ${PROJECT_NAME}_markers
     ${PROJECT_NAME}_interactive_marker
-    ${PROJECT_NAME}_environment_plugin_core
   CATKIN_DEPENDS
     roscpp
     message_generation
