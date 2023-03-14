@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix tesseract rviz export libraries
+* Contributors: Levi Armstrong
+
 0.15.1 (2023-03-05)
 -------------------
 
