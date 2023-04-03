@@ -696,8 +696,13 @@ bool fromMsg(tesseract_scene_graph::Visual::Ptr& visual, const tesseract_msgs::V
   visual = std::make_shared<tesseract_scene_graph::Visual>();
   visual->name = visual_msg.name;
   tf::poseMsgToEigen(visual_msg.origin, visual->origin);
-  fromMsg(visual->geometry, visual_msg.geometry);
+
+  tesseract_geometry::Geometry::Ptr geom;
+  fromMsg(geom, visual_msg.geometry);
+  visual->geometry = geom;
+
   fromMsg(visual->material, visual_msg.material);
+
   return true;
 }
 
@@ -714,7 +719,11 @@ bool fromMsg(tesseract_scene_graph::Collision::Ptr& collision, const tesseract_m
   collision = std::make_shared<tesseract_scene_graph::Collision>();
   collision->name = collision_msg.name;
   tf::poseMsgToEigen(collision_msg.origin, collision->origin);
-  fromMsg(collision->geometry, collision_msg.geometry);
+
+  tesseract_geometry::Geometry::Ptr geom;
+  fromMsg(geom, collision_msg.geometry);
+  collision->geometry = geom;
+
   return true;
 }
 
@@ -1415,6 +1424,16 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
       command_msg.set_active_continuous_contact_manager = cmd.getName();
       return true;
     }
+    case tesseract_environment::CommandType::ADD_TRAJECTORY_LINK:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_TRAJECTORY_LINK;
+      const auto& cmd = static_cast<const tesseract_environment::AddTrajectoryLinkCommand&>(command);
+      command_msg.add_trajectory_link_name = cmd.getLinkName();
+      command_msg.add_trajectory_link_parent_name = cmd.getParentLinkName();
+      toMsg(command_msg.add_trajectory_link_traj, cmd.getTrajectory());
+      command_msg.add_trajectory_link_replace_allowed = cmd.replaceAllowed();
+      return true;
+    }
     default:
     {
       CONSOLE_BRIDGE_logWarn("Unhandled CommandType '%d' in toMsg", command.getType());
@@ -1586,6 +1605,15 @@ tesseract_environment::Command::Ptr fromMsg(const tesseract_msgs::EnvironmentCom
     {
       return std::make_shared<tesseract_environment::SetActiveContinuousContactManagerCommand>(
           command_msg.set_active_continuous_contact_manager);
+    }
+    case tesseract_msgs::EnvironmentCommand::ADD_TRAJECTORY_LINK:
+    {
+      tesseract_common::JointTrajectory traj = fromMsg(command_msg.add_trajectory_link_traj);
+      return std::make_shared<tesseract_environment::AddTrajectoryLinkCommand>(
+          command_msg.add_trajectory_link_name,
+          command_msg.add_trajectory_link_parent_name,
+          traj,
+          command_msg.add_trajectory_link_replace_allowed);
     }
     default:
     {
