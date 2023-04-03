@@ -21,6 +21,7 @@ uint8 CHANGE_COLLISION_MARGINS=18
 uint8 ADD_CONTACT_MANAGERS_PLUGIN_INFO=19
 uint8 SET_ACTIVE_DISCRETE_CONTACT_MANAGER=20
 uint8 SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER=21
+uint8 ADD_TRAJECTORY_LINK=22
 
 # Specifies the type of command. Dictates which of the fields below are used
 uint8 command
@@ -101,3 +102,9 @@ string set_active_discrete_contact_manager
 
 # SET_ACTIVE_CONTINUOUS_CONTACT_MANAGER Command
 string set_active_continuous_contact_manager
+
+# ADD_TRAJECTORY_LINK Command
+string add_trajectory_link_name
+string add_trajectory_link_parent_name
+tesseract_msgs/JointTrajectory add_trajectory_link_traj
+bool add_trajectory_link_replace_allowed

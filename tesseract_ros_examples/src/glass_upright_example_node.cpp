@@ -57,6 +57,11 @@ int main(int argc, char** argv)
   pnh.param("ifopt", ifopt, ifopt);
   pnh.param("debug", debug, debug);
 
+  if (ifopt == true)
+  {
+    ROS_INFO("Using TrajOpt Ifopt!");
+  }
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
