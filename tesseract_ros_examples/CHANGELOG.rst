@@ -2,8 +2,8 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.0 (2023-04-10)
+-------------------
 * Add support for AddTrajectoryLinkCommand
 * Contributors: Levi Armstrong
 
