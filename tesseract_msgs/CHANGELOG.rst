@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add support for AddTrajectoryLinkCommand
+* Contributors: Levi Armstrong
+
 0.15.2 (2023-03-14)
 -------------------
 
