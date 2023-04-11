@@ -10,6 +10,7 @@
 #include <tesseract_monitoring/environment_monitor.h>
 
 #include <tesseract_msgs/EnvironmentState.h>
+#include <tesseract_msgs/Environment.h>
 #include <sensor_msgs/JointState.h>
 
 #include <rviz/display.h>
@@ -31,6 +32,7 @@ struct EnvironmentMonitorProperties::Implementation
   Ogre::SceneNode* scene_node{ nullptr };
   std::string monitor_namespace;
   tesseract_environment::EnvironmentMonitor::Ptr monitor;
+  ros::Subscriber snapshot;
 
   tesseract_gui::ComponentInfo component_info{ "rviz_scene" };
   tesseract_gui::SceneGraphRenderManager::Ptr render_manager;
@@ -39,6 +41,7 @@ struct EnvironmentMonitorProperties::Implementation
   rviz::EnumProperty* display_mode_property{ nullptr };
   rviz::StringProperty* urdf_description_string_property{ nullptr };
   rviz::RosTopicProperty* environment_topic_property{ nullptr };
+  rviz::RosTopicProperty* environment_snapshot_topic_property{ nullptr };
   rviz::RosTopicProperty* joint_state_topic_property{ nullptr };
 };
 
@@ -63,6 +66,7 @@ EnvironmentMonitorProperties::EnvironmentMonitorProperties(rviz::Display* parent
 
   data_->display_mode_property->addOptionStd("URDF", 0);
   data_->display_mode_property->addOptionStd("Monitor", 1);
+  data_->display_mode_property->addOptionStd("Snapshot", 2);
 
   data_->urdf_description_string_property = new rviz::StringProperty("URDF Parameter",
                                                                      "robot_description",
@@ -79,6 +83,15 @@ EnvironmentMonitorProperties::EnvironmentMonitorProperties(rviz::Display* parent
                                  "This will monitor this topic for environment changes.",
                                  data_->main_property,
                                  SLOT(onEnvironmentTopicChanged()),
+                                 this);
+
+  data_->environment_snapshot_topic_property =
+      new rviz::RosTopicProperty("Snapshot Topic",
+                                 "/tesseract_environment_snapshot",
+                                 ros::message_traits::datatype<tesseract_msgs::Environment>(),
+                                 "This will monitor this topic for environment snapshots.",
+                                 data_->main_property,
+                                 SLOT(onEnvironmentSnapshotTopicChanged()),
                                  this);
 
   data_->joint_state_topic_property =
@@ -119,6 +132,9 @@ void EnvironmentMonitorProperties::load(const rviz::Config& config)
   if (config.mapGetString("tesseract::EnvMonitorTopic", &topic))
     data_->environment_topic_property->setString(topic);
 
+  if (config.mapGetString("tesseract::EnvMonitorSnapshotTopic", &topic))
+    data_->environment_snapshot_topic_property->setString(topic);
+
   if (config.mapGetString("tesseract::EnvMonitorJointStateTopic", &topic))
     data_->joint_state_topic_property->setString(topic);
 }
@@ -128,6 +144,7 @@ void EnvironmentMonitorProperties::save(rviz::Config config) const
   config.mapSetValue("tesseract::EnvMonitorMode", data_->display_mode_property->getString());
   config.mapSetValue("tesseract::EnvMonitorURDFDescription", data_->urdf_description_string_property->getString());
   config.mapSetValue("tesseract::EnvMonitorTopic", data_->environment_topic_property->getString());
+  config.mapSetValue("tesseract::EnvMonitorSnapshotTopic", data_->environment_topic_property->getString());
   config.mapSetValue("tesseract::EnvMonitorJointStateTopic", data_->joint_state_topic_property->getString());
 }
 
@@ -136,14 +153,27 @@ void EnvironmentMonitorProperties::onDisplayModeChanged()
   if (data_->display_mode_property->getOptionInt() == 0)
   {
     data_->environment_topic_property->setHidden(true);
+    data_->environment_snapshot_topic_property->setHidden(true);
+    data_->snapshot.shutdown();
+
     data_->urdf_description_string_property->setHidden(false);
     onURDFDescriptionChanged();
   }
   else if (data_->display_mode_property->getOptionInt() == 1)
   {
     data_->urdf_description_string_property->setHidden(true);
+    data_->environment_snapshot_topic_property->setHidden(true);
+    data_->snapshot.shutdown();
+
     data_->environment_topic_property->setHidden(false);
     onEnvironmentTopicChanged();
+  }
+  else if (data_->display_mode_property->getOptionInt() == 2)
+  {
+    data_->urdf_description_string_property->setHidden(true);
+    data_->environment_topic_property->setHidden(true);
+    data_->environment_snapshot_topic_property->setHidden(false);
+    onEnvironmentSnapshotTopicChanged();
   }
   onJointStateTopicChanged();
 }
@@ -152,6 +182,8 @@ void EnvironmentMonitorProperties::onURDFDescriptionChanged()
 {
   if (data_->scene_manager == nullptr || data_->scene_node == nullptr)
     return;
+
+  data_->parent->deleteStatus("Tesseract");
 
   tesseract_gui::EnvironmentManager::remove(data_->component_info);
   data_->render_manager = nullptr;
@@ -197,6 +229,8 @@ void EnvironmentMonitorProperties::onEnvironmentTopicChanged()
   if (data_->scene_manager == nullptr || data_->scene_node == nullptr)
     return;
 
+  data_->parent->deleteStatus("Tesseract");
+
   if (data_->monitor != nullptr)
     data_->monitor->shutdown();
 
@@ -228,6 +262,79 @@ void EnvironmentMonitorProperties::onEnvironmentTopicChanged()
 
     onJointStateTopicChanged();
   }
+}
+
+void EnvironmentMonitorProperties::snapshotCallback(const tesseract_msgs::Environment::ConstPtr& msg)
+{
+  if (data_->scene_manager == nullptr || data_->scene_node == nullptr)
+    return;
+
+  if (data_->monitor != nullptr)
+    data_->monitor->shutdown();
+
+  data_->parent->deleteStatus("Tesseract");
+
+  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  data_->render_manager = nullptr;
+  data_->contact_results_render_manager = nullptr;
+
+  tesseract_environment::Commands commands = tesseract_rosutils::fromMsg(msg->command_history);
+  std::unordered_map<std::string, double> jv;
+  tesseract_rosutils::fromMsg(jv, msg->joint_states);
+  auto env = std::make_shared<tesseract_environment::Environment>();
+  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  env->setResourceLocator(locator);
+  if (env->init(commands))
+  {
+    env->setState(jv);
+
+    if (data_->monitor != nullptr)
+      data_->monitor->shutdown();
+
+    data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(
+        env, data_->urdf_description_string_property->getStdString());
+    if (data_->monitor != nullptr)
+    {
+      data_->render_manager =
+          std::make_shared<ROSSceneGraphRenderManager>(data_->component_info, data_->scene_manager, data_->scene_node);
+      data_->contact_results_render_manager = std::make_shared<ROSContactResultsRenderManager>(
+          data_->component_info, data_->scene_manager, data_->scene_node);
+
+      Q_EMIT componentInfoChanged(data_->component_info);
+
+      auto env_wrapper =
+          std::make_shared<tesseract_gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
+      tesseract_gui::EnvironmentManager::set(env_wrapper);
+
+      onJointStateTopicChanged();
+    }
+  }
+  else
+  {
+    data_->parent->setStatus(rviz::StatusProperty::Error, "Tesseract", "Snapshot failed to load from message");
+  }
+}
+
+void EnvironmentMonitorProperties::onEnvironmentSnapshotTopicChanged()
+{
+  if (data_->scene_manager == nullptr || data_->scene_node == nullptr)
+    return;
+
+  if (data_->monitor != nullptr)
+    data_->monitor->shutdown();
+
+  // Shutdown the callback
+  data_->snapshot.shutdown();
+
+  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  data_->render_manager = nullptr;
+  data_->contact_results_render_manager = nullptr;
+
+  // Connect to new topic
+  data_->snapshot = data_->nh.subscribe(data_->environment_snapshot_topic_property->getTopicStd(),
+                                        10,
+                                        &EnvironmentMonitorProperties::snapshotCallback,
+                                        this);
 }
 
 void EnvironmentMonitorProperties::onJointStateTopicChanged()
