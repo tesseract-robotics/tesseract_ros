@@ -2,6 +2,9 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.16.0 (2023-04-10)
 -------------------
 * Update to leverge ContactResultMap class (`#205 <https://github.com/tesseract-robotics/tesseract_ros/issues/205>`_)
