@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.1 (2023-04-11)
+-------------------
 * Add environment snapshot viewing to environment monitor
 * Contributors: Levi Armstrong
 
