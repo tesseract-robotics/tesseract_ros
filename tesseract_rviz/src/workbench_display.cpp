@@ -6,6 +6,7 @@
 #include <tesseract_qt/workbench/workbench_widget.h>
 #include <tesseract_qt/joint_trajectory/widgets/joint_trajectory_widget.h>
 #include <tesseract_qt/common/component_info.h>
+#include <tesseract_qt/common/component_info_manager.h>
 #include <tesseract_qt/common/joint_trajectory_set.h>
 #include <tesseract_qt/common/theme_utils.h>
 #include <tesseract_qt/common/icon_utils.h>
@@ -74,7 +75,7 @@ void WorkbenchDisplay::onInitialize()
 
   setIcon(tesseract_gui::icons::getTesseractIcon());
   // NOLINTNEXTLINE
-  data_->widget = new tesseract_gui::WorkbenchWidget();
+  data_->widget = new tesseract_gui::WorkbenchWidget(data_->monitor_properties->getComponentInfo());
 
   setAssociatedWidget(data_->widget);
 
@@ -88,9 +89,9 @@ void WorkbenchDisplay::onInitialize()
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
   connect(data_->monitor_properties.get(),
-          SIGNAL(componentInfoChanged(tesseract_gui::ComponentInfo)),
+          SIGNAL(componentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)),
           this,
-          SLOT(onComponentInfoChanged(tesseract_gui::ComponentInfo)));
+          SLOT(onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)));
 
   data_->monitor_properties->onInitialize(scene_manager_, scene_node_);
   data_->joint_trajectory_properties->onInitialize();
@@ -115,7 +116,8 @@ void WorkbenchDisplay::update(float wall_dt, float ros_dt)
   Display::update(wall_dt, ros_dt);
 
   if (data_->widget != nullptr)
-    QApplication::sendEvent(qApp, new tesseract_gui::events::PreRender(data_->widget->getComponentInfo().scene_name));
+    QApplication::sendEvent(qApp,
+                            new tesseract_gui::events::PreRender(data_->widget->getComponentInfo()->getSceneName()));
 }
 
 void WorkbenchDisplay::load(const rviz::Config& config)
@@ -176,9 +178,9 @@ void WorkbenchDisplay::onEnableChanged()
   QApplication::restoreOverrideCursor();
 }
 
-void WorkbenchDisplay::onComponentInfoChanged(tesseract_gui::ComponentInfo component_info)
+void WorkbenchDisplay::onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info)
 {
-  data_->widget->setComponentInfo(component_info);
+  data_->widget->setComponentInfo(std::move(component_info));
   data_->joint_trajectory_properties->setComponentInfo(data_->widget->getJointTrajectoryWidget().getComponentInfo());
 }
 

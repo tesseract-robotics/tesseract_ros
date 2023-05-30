@@ -3,6 +3,7 @@
 #include <tesseract_rviz/set_theme_tool.h>
 
 #include <tesseract_qt/common/component_info.h>
+#include <tesseract_qt/common/component_info_manager.h>
 #include <tesseract_qt/common/icon_utils.h>
 #include <tesseract_qt/common/events/render_events.h>
 
@@ -62,8 +63,8 @@ void EnvironmentDisplay::onInitialize()
 {
   Display::onInitialize();
   setIcon(tesseract_gui::icons::getTesseractIcon());
-  data_->widget = new tesseract_gui::EnvironmentWidget();
-  //  data_->widget = new tesseract_rviz::ROSEnvironmentWidget(scene_manager_, scene_node_);
+  data_->widget = new tesseract_gui::EnvironmentWidget(data_->monitor_properties->getComponentInfo());
+
   setAssociatedWidget(data_->widget);
 
   getAssociatedWidget()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
@@ -76,9 +77,9 @@ void EnvironmentDisplay::onInitialize()
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
   connect(data_->monitor_properties.get(),
-          SIGNAL(componentInfoChanged(tesseract_gui::ComponentInfo)),
+          SIGNAL(componentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)),
           this,
-          SLOT(onComponentInfoChanged(tesseract_gui::ComponentInfo)));
+          SLOT(onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)));
 
   data_->monitor_properties->onInitialize(scene_manager_, scene_node_);
 
@@ -94,7 +95,8 @@ void EnvironmentDisplay::update(float wall_dt, float ros_dt)
   Display::update(wall_dt, ros_dt);
 
   if (data_->widget != nullptr)
-    QApplication::sendEvent(qApp, new tesseract_gui::events::PreRender(data_->widget->getComponentInfo().scene_name));
+    QApplication::sendEvent(qApp,
+                            new tesseract_gui::events::PreRender(data_->widget->getComponentInfo()->getSceneName()));
 }
 
 void EnvironmentDisplay::load(const rviz::Config& config)
@@ -163,7 +165,7 @@ void EnvironmentDisplay::onEnableChanged()
   QApplication::restoreOverrideCursor();
 }
 
-void EnvironmentDisplay::onComponentInfoChanged(tesseract_gui::ComponentInfo component_info)
+void EnvironmentDisplay::onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info)
 {
   data_->widget->setComponentInfo(component_info);
 }

@@ -21,7 +21,7 @@ namespace tesseract_rviz
 {
 struct ROSContactResultsRenderManager::Implementation
 {
-  std::unordered_map<tesseract_gui::ComponentInfo, tesseract_gui::EntityManager::Ptr> entity_managers;
+  std::map<std::shared_ptr<const tesseract_gui::ComponentInfo>, tesseract_gui::EntityManager::Ptr> entity_managers;
 
   Ogre::SceneManager* scene_manager;
   Ogre::SceneNode* scene_node;
@@ -34,7 +34,7 @@ struct ROSContactResultsRenderManager::Implementation
     entity_managers.clear();
   }
 
-  void clear(const tesseract_gui::ComponentInfo& ci)
+  void clear(const std::shared_ptr<const tesseract_gui::ComponentInfo>& ci)
   {
     auto it = entity_managers.find(ci);
     if (it != entity_managers.end())
@@ -89,10 +89,11 @@ struct ROSContactResultsRenderManager::Implementation
   }
 };
 
-ROSContactResultsRenderManager::ROSContactResultsRenderManager(tesseract_gui::ComponentInfo component_info,
-                                                               Ogre::SceneManager* scene_manager,
-                                                               Ogre::SceneNode* scene_node)
-  : tesseract_gui::ContactResultsRenderManager(component_info), data_(std::make_unique<Implementation>())
+ROSContactResultsRenderManager::ROSContactResultsRenderManager(
+    std::shared_ptr<const tesseract_gui::ComponentInfo> component_info,
+    Ogre::SceneManager* scene_manager,
+    Ogre::SceneNode* scene_node)
+  : tesseract_gui::ContactResultsRenderManager(std::move(component_info)), data_(std::make_unique<Implementation>())
 {
   data_->scene_manager = scene_manager;
   data_->scene_node = scene_node;
@@ -109,8 +110,8 @@ void ROSContactResultsRenderManager::render()
   if (events_.empty())
     return;
 
-  auto getEntityManager =
-      [this](const tesseract_gui::ComponentInfo& component_info) -> tesseract_gui::EntityManager::Ptr {
+  auto getEntityManager = [this](const std::shared_ptr<const tesseract_gui::ComponentInfo>& component_info)
+      -> tesseract_gui::EntityManager::Ptr {
     auto it = data_->entity_managers.find(component_info);
     if (it != data_->entity_managers.end())
       return it->second;

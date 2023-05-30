@@ -23,7 +23,7 @@ namespace tesseract_rviz
 class ROSContactResultsRenderManager : public tesseract_gui::ContactResultsRenderManager
 {
 public:
-  ROSContactResultsRenderManager(tesseract_gui::ComponentInfo component_info,
+  ROSContactResultsRenderManager(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info,
                                  Ogre::SceneManager* scene_manager,
                                  Ogre::SceneNode* scene_node);
   ~ROSContactResultsRenderManager();

@@ -23,7 +23,7 @@ namespace tesseract_rviz
 {
 struct ROSSceneGraphRenderManager::Implementation
 {
-  std::unordered_map<tesseract_gui::ComponentInfo, tesseract_gui::EntityManager::Ptr> entity_managers;
+  std::map<std::shared_ptr<const tesseract_gui::ComponentInfo>, tesseract_gui::EntityManager::Ptr> entity_managers;
 
   Ogre::SceneManager* scene_manager;
   Ogre::SceneNode* scene_node;
@@ -36,7 +36,7 @@ struct ROSSceneGraphRenderManager::Implementation
     entity_managers.clear();
   }
 
-  void clear(const tesseract_gui::ComponentInfo& ci)
+  void clear(const std::shared_ptr<const tesseract_gui::ComponentInfo>& ci)
   {
     auto it = entity_managers.find(ci);
     if (it != entity_managers.end())
@@ -91,10 +91,11 @@ struct ROSSceneGraphRenderManager::Implementation
   }
 };
 
-ROSSceneGraphRenderManager::ROSSceneGraphRenderManager(tesseract_gui::ComponentInfo component_info,
-                                                       Ogre::SceneManager* scene_manager,
-                                                       Ogre::SceneNode* scene_node)
-  : tesseract_gui::SceneGraphRenderManager(component_info), data_(std::make_unique<Implementation>())
+ROSSceneGraphRenderManager::ROSSceneGraphRenderManager(
+    std::shared_ptr<const tesseract_gui::ComponentInfo> component_info,
+    Ogre::SceneManager* scene_manager,
+    Ogre::SceneNode* scene_node)
+  : tesseract_gui::SceneGraphRenderManager(std::move(component_info)), data_(std::make_unique<Implementation>())
 {
   data_->scene_manager = scene_manager;
   data_->scene_node = scene_node;
@@ -111,8 +112,8 @@ void ROSSceneGraphRenderManager::render()
   if (events_.empty())
     return;
 
-  auto getEntityManager =
-      [this](const tesseract_gui::ComponentInfo& component_info) -> tesseract_gui::EntityManager::Ptr {
+  auto getEntityManager = [this](const std::shared_ptr<const tesseract_gui::ComponentInfo>& component_info)
+      -> tesseract_gui::EntityManager::Ptr {
     auto it = data_->entity_managers.find(component_info);
     if (it != data_->entity_managers.end())
       return it->second;

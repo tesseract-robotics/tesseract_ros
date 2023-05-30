@@ -4,6 +4,7 @@
 #include <tesseract_rviz/conversions.h>
 
 #include <tesseract_qt/common/component_info.h>
+#include <tesseract_qt/common/component_info_manager.h>
 #include <tesseract_qt/common/environment_manager.h>
 #include <tesseract_qt/common/environment_wrapper.h>
 
@@ -34,7 +35,7 @@ struct EnvironmentMonitorProperties::Implementation
   tesseract_environment::EnvironmentMonitor::Ptr monitor;
   ros::Subscriber snapshot;
 
-  tesseract_gui::ComponentInfo component_info{ "rviz_scene" };
+  std::shared_ptr<const tesseract_gui::ComponentInfo> component_info;
   tesseract_gui::SceneGraphRenderManager::Ptr render_manager;
   tesseract_gui::ContactResultsRenderManager::Ptr contact_results_render_manager;
 
@@ -52,6 +53,7 @@ EnvironmentMonitorProperties::EnvironmentMonitorProperties(rviz::Display* parent
 {
   data_->parent = parent;
   data_->monitor_namespace = monitor_namespace;
+  data_->component_info = tesseract_gui::ComponentInfoManager::create("rviz_scene");
 
   data_->main_property = main_property;
   if (data_->main_property == nullptr)
@@ -116,7 +118,10 @@ void EnvironmentMonitorProperties::onInitialize(Ogre::SceneManager* scene_manage
   onDisplayModeChanged();
 }
 
-tesseract_gui::ComponentInfo EnvironmentMonitorProperties::getComponentInfo() const { return data_->component_info; }
+std::shared_ptr<const tesseract_gui::ComponentInfo> EnvironmentMonitorProperties::getComponentInfo() const
+{
+  return data_->component_info;
+}
 
 void EnvironmentMonitorProperties::load(const rviz::Config& config)
 {

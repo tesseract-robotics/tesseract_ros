@@ -23,7 +23,7 @@ namespace tesseract_rviz
 class ROSSceneGraphRenderManager : public tesseract_gui::SceneGraphRenderManager
 {
 public:
-  ROSSceneGraphRenderManager(tesseract_gui::ComponentInfo component_info,
+  ROSSceneGraphRenderManager(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info,
                              Ogre::SceneManager* scene_manager,
                              Ogre::SceneNode* scene_node);
   ~ROSSceneGraphRenderManager();

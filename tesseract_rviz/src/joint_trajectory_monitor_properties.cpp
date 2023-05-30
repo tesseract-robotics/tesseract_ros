@@ -6,6 +6,7 @@
 #include <tesseract_qt/common/events/joint_trajectory_events.h>
 #include <tesseract_qt/common/joint_trajectory_set.h>
 #include <tesseract_qt/common/component_info.h>
+#include <tesseract_qt/common/component_info_manager.h>
 
 #include <trajectory_msgs/JointTrajectory.h>
 #include <tesseract_msgs/Trajectory.h>
@@ -28,7 +29,7 @@ struct JointTrajectoryMonitorProperties::Implementation
   rviz::Display* parent;
   rviz::Property* main_property;
 
-  tesseract_gui::ComponentInfo component_info{ "rviz_scene" };
+  std::shared_ptr<const tesseract_gui::ComponentInfo> component_info;
 
   rviz::BoolProperty* legacy_main;
   rviz::RosTopicProperty* legacy_joint_trajectory_topic_property;
@@ -106,6 +107,7 @@ JointTrajectoryMonitorProperties::JointTrajectoryMonitorProperties(rviz::Display
   : data_(std::make_unique<Implementation>())
 {
   data_->parent = parent;
+  data_->component_info = tesseract_gui::ComponentInfoManager::create("rviz_scene");
 
   data_->main_property = main_property;
   if (data_->main_property == nullptr)
@@ -156,12 +158,13 @@ void JointTrajectoryMonitorProperties::onInitialize()
   onTesseractJointTrajectoryTopicConnect();
 }
 
-void JointTrajectoryMonitorProperties::setComponentInfo(tesseract_gui::ComponentInfo component_info)
+void JointTrajectoryMonitorProperties::setComponentInfo(
+    std::shared_ptr<const tesseract_gui::ComponentInfo> component_info)
 {
   data_->component_info = std::move(component_info);
 }
 
-tesseract_gui::ComponentInfo JointTrajectoryMonitorProperties::getComponentInfo() const
+std::shared_ptr<const tesseract_gui::ComponentInfo> JointTrajectoryMonitorProperties::getComponentInfo() const
 {
   return data_->component_info;
 }
