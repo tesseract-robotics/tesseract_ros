@@ -21,7 +21,7 @@ public:
 
 public Q_SLOTS:
   void onEnableChanged() override;
-  void onComponentInfoChanged(tesseract_gui::ComponentInfo component_info);
+  void onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info);
 
 protected:
   // overrides from Display
