@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EnvironmentMonitorWidget</class>
+ <widget class="QWidget" name="EnvironmentMonitorWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>152</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="display_mode_label">
+     <property name="text">
+      <string>Display Mode;</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="display_mode_combo_box">
+     <item>
+      <property name="text">
+       <string>URDF</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Monitor</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Snapshot</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="urdf_param_label">
+     <property name="text">
+      <string>URDF Parameter:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="urdf_param_line_edit">
+     <property name="text">
+      <string>robot_description</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="joint_state_topic_label">
+     <property name="text">
+      <string>Joint State Topic:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="tesseract_gui::ROSTopicComboBox" name="joint_state_topic_combo_box"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="monitor_topic_label">
+     <property name="text">
+      <string>Monitor Topic:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="tesseract_gui::ROSTopicComboBox" name="monitor_topic_combo_box"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="snapshot_topic_label">
+     <property name="text">
+      <string>Snapshot Topic:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="tesseract_gui::ROSTopicComboBox" name="snapshot_topic_combo_box"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>tesseract_gui::ROSTopicComboBox</class>
+   <extends>QComboBox</extends>
+   <header>tesseract_qt_ros/widgets/ros_topic_combo_box.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
