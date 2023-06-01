@@ -1,0 +1,54 @@
+studio_config:
+  search_paths:
+    - /home/larmstrong/catkin_ws/tesseract_ws/devel/lib
+  search_libraries:
+    - tesseract_qt_ros_studio_plugins
+    - tesseract_qt_studio_plugins
+  component_infos:
+    Scene:
+      scene_name: studio_scene
+      description: ""
+      ns: f203e94e-f59a-4612-88fe-358188aeed02
+    Joint Trajectory:
+      scene_name: studio_scene
+      description: ""
+      ns: bc184caf-74f7-457f-a2e2-a659f88b90f1
+      parent: f203e94e-f59a-4612-88fe-358188aeed02
+  dock_widgets:
+    central_widget: Scene
+    plugins:
+      Environment:
+        class: StudioEnvironmentDockWidgetFactory
+        config:
+          component_info: f203e94e-f59a-4612-88fe-358188aeed02
+      Environment Monitor:
+        class: StudioEnvironmentMonitorDockWidgetFactory
+        config:
+          component_info: f203e94e-f59a-4612-88fe-358188aeed02
+          display_mode: 1
+          urdf_param: robot_description
+          monitor_topic: ""
+          snapshot_topic: ""
+          joint_state_topic: ""
+      Joint Trajectory:
+        class: StudioJointTrajectoryDockWidgetFactory
+        config:
+          component_info: bc184caf-74f7-457f-a2e2-a659f88b90f1
+      Manipulation:
+        class: StudioManipulationDockWidgetFactory
+        config:
+          component_info: f203e94e-f59a-4612-88fe-358188aeed02
+          create_child_environment: false
+      Scene:
+        class: StudioRenderDockWidgetFactory
+        config:
+          component_info: f203e94e-f59a-4612-88fe-358188aeed02
+          engine_name: ogre2
+          show_sky: true
+          show_grid: true
+          show_shadows: false
+          central_widget: true
+      Tool Path:
+        class: StudioToolPathDockWidgetFactory
+        config:
+          component_info: f203e94e-f59a-4612-88fe-358188aeed02

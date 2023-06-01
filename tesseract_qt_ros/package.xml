@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_qt_ros</name>
+  <version>0.16.2</version>
+  <description>The tesseract_qt_ros package</description>
+  <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
+  <license>LGPL3.0</license>
+  <author >Levi Armstrong</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+
+  <depend>tesseract_msgs</depend>
+  <depend>tesseract_environment</depend>
+  <depend>tesseract_rosutils</depend>
+  <depend>tesseract_common</depend>
+  <depend>tesseract_monitoring</depend>
+  <depend>tesseract_qt</depend>
+
+  <depend>roscpp</depend>
+
+</package>
