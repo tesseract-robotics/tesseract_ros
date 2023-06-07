@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_planning_server</name>
-  <version>0.16.2</version>
+  <version>0.17.0</version>
   <description>Tesseract ROS Planning Server</description>
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
