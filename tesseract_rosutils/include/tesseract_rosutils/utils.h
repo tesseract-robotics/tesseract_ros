@@ -83,7 +83,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_motion_planners/core/types.h>
-#include <tesseract_task_composer/task_composer_node_info.h>
+#include <tesseract_task_composer/core/task_composer_node_info.h>
 
 namespace tesseract_rosutils
 {

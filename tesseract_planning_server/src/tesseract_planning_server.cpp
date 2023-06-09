@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning_server/tesseract_planning_server.h>
+#include <tesseract_task_composer/planning/planning_task_composer_problem.h>
 
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
@@ -181,13 +182,13 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
     return;
   }
 
-  tesseract_planning::TaskComposerProblem problem(goal->request.name);
+  auto problem = std::make_unique<tesseract_planning::PlanningTaskComposerProblem>(goal->request.name);
 
   try
   {
     auto ci = Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.instructions)
                   .as<tesseract_planning::CompositeInstruction>();
-    problem.input_data.setData(input_key_, ci);
+    problem->input_data.setData(input_key_, ci);
   }
   catch (const std::exception& e)
   {
@@ -209,10 +210,11 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   env->applyCommands(tesseract_rosutils::fromMsg(goal->request.commands));
   env->setState(env_state.joints);
 
-  problem.env = env;
+  problem->env = env;
   //  process_request.save_io = goal->request.save_io;
-  problem.move_profile_remapping = tesseract_rosutils::fromMsg(goal->request.move_profile_remapping);
-  problem.composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
+  problem->profiles = profiles_;
+  problem->move_profile_remapping = tesseract_rosutils::fromMsg(goal->request.move_profile_remapping);
+  problem->composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
 
   // Store the initial state in the response for publishing trajectories
   tesseract_scene_graph::SceneState initial_state = env->getState();
@@ -220,7 +222,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
 
   tesseract_common::Timer timer;
   timer.start();
-  tesseract_planning::TaskComposerInput input(std::move(problem), profiles_);
+  tesseract_planning::TaskComposerInput input(std::move(problem));
   tesseract_planning::TaskComposerFuture::UPtr plan_future = planning_server_->run(input, executor_name);
   plan_future->wait();  // Wait for results
   timer.stop();
