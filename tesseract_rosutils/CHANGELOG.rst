@@ -2,8 +2,8 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.18.0 (2023-07-03)
+-------------------
 * Changes to support task composer restructure
 * Contributors: Levi Armstrong
 
