@@ -2,6 +2,9 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.17.0 (2023-06-07)
 -------------------
 * Add tessseract_qt_ros package

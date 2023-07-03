@@ -2,6 +2,12 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Expose flag for generating DOT Graph in planning request
+* Changes to support task composer restructure
+* Contributors: Levi Armstrong
+
 0.17.0 (2023-06-07)
 -------------------
 

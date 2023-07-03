@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Expose flag for generating DOT Graph in planning request
+* Contributors: Levi Armstrong
+
 0.17.0 (2023-06-07)
 -------------------
 

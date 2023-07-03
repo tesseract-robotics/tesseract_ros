@@ -2,6 +2,9 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.17.0 (2023-06-07)
 -------------------
 * Update based on changes to tesseract_qt to support studio plugins (`#212 <https://github.com/tesseract-robotics/tesseract_ros/issues/212>`_)
