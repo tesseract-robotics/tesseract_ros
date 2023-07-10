@@ -62,10 +62,12 @@ struct ROSMonitor::Implementation
 
 ROSMonitor::ROSMonitor() : data_(std::make_unique<Implementation>())
 {
-  assert(!ros::isInitialized());
-  int argc = 0;
-  char** argv = NULL;
-  ros::init(argc, argv, "tesseract_studio_client", ros::init_options::NoSigintHandler);
+  if (!ros::isInitialized())
+  {
+    int argc = 0;
+    char** argv = NULL;
+    ros::init(argc, argv, "tesseract_studio_client", ros::init_options::NoSigintHandler);
+  }
 
   connect(&data_->status_thread, SIGNAL(status(bool)), this, SLOT(onStatus(bool)));
   data_->status_thread.start(QThread::Priority::LowestPriority);
