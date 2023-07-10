@@ -95,11 +95,23 @@ target_include_directories(
   ${PROJECT_NAME}_studio_plugins PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                         "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/studio>" "$<INSTALL_INTERFACE:include>")
 
+add_executable(${PROJECT_NAME}_studio src/studio_app.cpp)
+target_link_libraries(
+  ${PROJECT_NAME}_studio
+  PRIVATE Qt5::Core
+          Qt5::Gui
+          Qt5::Widgets
+          ${catkin_LIBRARIES}
+          tesseract::tesseract_qt_studio_widgets
+          tesseract::tesseract_qt_common)
+target_include_directories(${PROJECT_NAME}_studio SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
+
 # Demos
 add_subdirectory(demo)
 
 # Mark executables and/or libraries for installation
 install(TARGETS
+    ${PROJECT_NAME}_studio
     ${PROJECT_NAME}_widgets
     ${PROJECT_NAME}_studio_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
