@@ -2,6 +2,9 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.18.0 (2023-07-03)
 -------------------
 

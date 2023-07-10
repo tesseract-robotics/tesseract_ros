@@ -2,6 +2,11 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add Tesseract Studio ROS executable
+* Contributors: Levi Armstrong
+
 0.18.0 (2023-07-03)
 -------------------
 
