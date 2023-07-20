@@ -60,6 +60,7 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
   , state_monitor_started_(false)
   , copy_dynamics_(false)
   , error_(std::numeric_limits<double>::epsilon())
+  , tf_listener_(tf_buffer_)
 {
 }
 
@@ -107,6 +108,9 @@ void CurrentStateMonitor::startStateMonitor(const std::string& joint_states_topi
       ROS_ERROR("The joint states topic cannot be an empty string");
     else
       joint_state_subscriber_ = nh_.subscribe(joint_states_topic, 25, &CurrentStateMonitor::jointStateCallback, this);
+
+    tf_updated_joints_ = getPlanerJointNames(env_->getJointNames());
+
     state_monitor_started_ = true;
     monitor_start_time_ = ros::Time::now();
     ROS_DEBUG("Listening to joint states on topic '%s'", nh_.resolveName(joint_states_topic).c_str());
@@ -330,21 +334,64 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     if (last_environment_revision_ != env_->getRevision())
     {
       env_state_ = env_->getState();
+      tf_updated_joints_ = getPlanerJointNames(env_->getJointNames());
       last_environment_revision_ = env_->getRevision();
     }
 
+    // Update joints updated from TF
+    for (const auto& tf_updated_joint : tf_updated_joints_)
+    {
+      // Get the TF for the base
+      const auto tf_wait_duration = ros::Duration(1);
+      std::string error_string;
+      const std::string planar_parent = env_->getJoint(tf_updated_joint + "_x_planar")->parent_link_name;
+      const std::string planar_child = env_->getJoint(tf_updated_joint + "_yaw_planar")->child_link_name;
+      geometry_msgs::TransformStamped planar_tf;
+      if (tf_buffer_.canTransform(planar_parent, planar_child, current_state_time_, tf_wait_duration, &error_string))
+      {
+        try
+        {
+          planar_tf = tf_buffer_.lookupTransform(planar_parent, planar_child, current_state_time_, tf_wait_duration);
+        }
+        catch (const std::runtime_error& ex)
+        {
+          ROS_ERROR_STREAM("TF lookupTransform failed for planar joint: " << ex.what());
+          continue;
+        }
+      }
+      else
+      {
+        ROS_ERROR_STREAM("TF canTransform failed for planar joint: " << error_string);
+        continue;
+      }
+
+      // Set env_state_
+      {
+        const std::string joint_name = tf_updated_joint + "_x_planar";
+        const double joint_position = planar_tf.transform.translation.x;
+        update = update || updateJoint(joint_name, joint_position, joint_state->header.stamp);
+      }
+      {
+        const std::string joint_name = tf_updated_joint + "_y_planar";
+        const double joint_position = planar_tf.transform.translation.y;
+        update = update || updateJoint(joint_name, joint_position, joint_state->header.stamp);
+      }
+      {
+        const std::string joint_name = tf_updated_joint + "_yaw_planar";
+        const Eigen::Isometry3d pose = tf2::transformToEigen(planar_tf.transform);
+        const Eigen::Matrix3d rot_mat = pose.matrix().block<3, 3>(0, 0);
+        const Eigen::Vector3d euler = rot_mat.eulerAngles(2, 1, 0);
+        const double joint_position = euler[2];
+        update = update || updateJoint(joint_name, joint_position, joint_state->header.stamp);
+      }
+    }
+
+    // Update joints updated from JointStates
     for (unsigned i = 0; i < joint_state->name.size(); ++i)
     {
-      if (env_state_.joints.find(joint_state->name[i]) != env_state_.joints.end())
-      {
-        double diff = env_state_.joints[joint_state->name[i]] - joint_state->position[i];
-        if (std::fabs(diff) > std::numeric_limits<double>::epsilon())
-        {
-          env_state_.joints[joint_state->name[i]] = joint_state->position[i];
-          update = true;
-        }
-        joint_time_[joint_state->name[i]] = joint_state->header.stamp;
-      }
+      const std::string& joint_name = joint_state->name[i];
+      const double& joint_position = joint_state->position[i];
+      update = update || updateJoint(joint_name, joint_position, joint_state->header.stamp);
     }
 
     if (update)
@@ -377,5 +424,36 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
 
   // notify waitForCurrentState() *after* potential update callbacks
   state_update_condition_.notify_all();
+}
+
+std::vector<std::string> CurrentStateMonitor::getPlanerJointNames(const std::vector<std::string>& all_joint_names) const
+{
+  std::vector<std::string> ret;
+  for (const auto& name : all_joint_names)
+  {
+    // Planar joints get split into <base_joint_name>_<x,y,yaw>_planar, so only search for x to get <base_joint_name>
+    const auto pos = name.find("_x_planar");
+    if (pos != std::string::npos)
+    {
+      ret.push_back(name.substr(0, pos));
+    }
+  }
+  return ret;
+}
+
+bool CurrentStateMonitor::updateJoint(const std::string& joint_name, double joint_value, const ros::Time& stamp)
+{
+  bool update = false;
+  if (env_state_.joints.find(joint_name) != env_state_.joints.end())
+  {
+    const double diff = env_state_.joints[joint_name] - joint_value;
+    if (std::fabs(diff) > std::numeric_limits<double>::epsilon())
+    {
+      env_state_.joints[joint_name] = joint_value;
+      update = true;
+    }
+    joint_time_[joint_name] = stamp;
+  }
+  return update;
 }
 }  // namespace tesseract_monitoring

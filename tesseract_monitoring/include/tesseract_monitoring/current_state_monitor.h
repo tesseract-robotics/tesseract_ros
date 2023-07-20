@@ -48,6 +48,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <map>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment.h>
@@ -185,6 +187,22 @@ private:
   void jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
   bool isPassiveOrMimicDOF(const std::string& dof) const;
 
+  /**
+   * @brief getPlanerJointNames
+   * @details Assumes the base joint name (in the urdf) does not include the substring _x_planar
+   * @param all_joint_names All joints in the environment
+   * @return Base joint names of the planar joints (the name in the urdf)
+   */
+  std::vector<std::string> getPlanerJointNames(const std::vector<std::string>& all_joint_names) const;
+
+  /**
+   * @brief Update a specified joint in env_state_
+   * @param joint_name Name of the joint to update
+   * @param joint_value Value of the joint to update
+   * @return Whether or not this updated a joint
+   */
+  bool updateJoint(const std::string& joint_name, double joint_value, const ros::Time& stamp);
+
   ros::NodeHandle nh_;
   tesseract_environment::Environment::ConstPtr env_;
   tesseract_scene_graph::SceneState env_state_;
@@ -195,6 +213,9 @@ private:
   ros::Time monitor_start_time_;
   double error_;
   ros::Subscriber joint_state_subscriber_;
+  std::vector<std::string> tf_updated_joints_;  /// Joints updated from TF instead of joint_states
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
