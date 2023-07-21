@@ -8,6 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_monitoring/environment_monitor.h>
 
 using namespace tesseract_environment;
+using namespace tesseract_monitoring;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 
@@ -40,10 +41,11 @@ int main(int argc, char** argv)
   if (!monitored_namespace.empty())
     monitor.startMonitoringEnvironment(monitored_namespace);
 
+  bool publish_tf = monitored_namespace.empty();
   if (joint_state_topic.empty())
-    monitor.startStateMonitor();
+    monitor.startStateMonitor(DEFAULT_JOINT_STATES_TOPIC, publish_tf);
   else
-    monitor.startStateMonitor(joint_state_topic);
+    monitor.startStateMonitor(joint_state_topic, publish_tf);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
