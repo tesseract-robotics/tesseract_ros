@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.19.0 (2023-09-06)
+-------------------
 * Update to use tesseract package components
 * Contributors: Levi Armstrong
 
