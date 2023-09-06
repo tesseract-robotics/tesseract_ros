@@ -16,8 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
-find_package(tesseract_motion_planners REQUIRED)
-find_package(tesseract_task_composer REQUIRED)
+find_package(tesseract_motion_planners REQUIRED COMPONENTS core simple OPTIONAL_COMPONENTS descartes ompl trajopt trajopt_ifopt)
+find_package(tesseract_task_composer REQUIRED COMPONENTS core planning)
 find_package(tesseract_common REQUIRED)
 
 catkin_package(
@@ -41,19 +41,38 @@ catkin_package(
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
 
-add_library(${PROJECT_NAME} SHARED
-  src/tesseract_planning_server.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    tesseract::tesseract_command_language
-    tesseract::tesseract_motion_planners_core
-    tesseract::tesseract_motion_planners_simple
-    tesseract::tesseract_motion_planners_trajopt
-    tesseract::tesseract_motion_planners_ompl
-    tesseract::tesseract_motion_planners_descartes
-    tesseract::tesseract_task_composer
-    tesseract::tesseract_task_composer_planning
-    ${catkin_LIBRARIES})
+set(LIB_COMPILE_DEFINITIONS ${TESSERACT_COMPILE_DEFINITIONS})
+set(LIB_SOURCE_LINK_LIBRARIES
+  tesseract::tesseract_command_language
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_motion_planners_simple
+  tesseract::tesseract_task_composer
+  tesseract::tesseract_task_composer_planning)
+
+if(tesseract_motion_planners_trajopt_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_trajopt)
+  list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_TRAJOPT")
+endif()
+
+if(tesseract_motion_planners_trajopt_ifopt_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_trajopt_ifopt)
+  list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT")
+endif()
+
+if(tesseract_motion_planners_ompl_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_ompl)
+  list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_OMPL")
+endif()
+
+if(tesseract_motion_planners_descartes_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_descartes)
+  list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_DESCARTES")
+endif()
+
+add_library(${PROJECT_NAME} SHARED src/tesseract_planning_server.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIB_SOURCE_LINK_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${LIB_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
 target_include_directories(${PROJECT_NAME} PUBLIC
