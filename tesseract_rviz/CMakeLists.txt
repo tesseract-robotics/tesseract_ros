@@ -19,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED thread date_time system filesystem)
 find_package(tesseract_environment REQUIRED)
-find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -79,7 +78,6 @@ catkin_package(
     tesseract_environment
     tesseract_common
     tesseract_visualization
-    tesseract_motion_planners
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
