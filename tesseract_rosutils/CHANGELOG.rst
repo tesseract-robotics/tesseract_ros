@@ -2,6 +2,11 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to use tesseract package components
+* Contributors: Levi Armstrong
+
 0.18.1 (2023-07-10)
 -------------------
 

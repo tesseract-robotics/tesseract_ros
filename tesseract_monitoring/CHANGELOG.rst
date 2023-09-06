@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix environment monitor node to not publish tf if monitoring another environment
+* Contributors: Levi Armstrong
+
 0.18.1 (2023-07-10)
 -------------------
 
