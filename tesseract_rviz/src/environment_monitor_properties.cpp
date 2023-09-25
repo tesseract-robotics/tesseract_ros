@@ -149,7 +149,7 @@ void EnvironmentMonitorProperties::save(rviz::Config config) const
   config.mapSetValue("tesseract::EnvMonitorMode", data_->display_mode_property->getString());
   config.mapSetValue("tesseract::EnvMonitorURDFDescription", data_->urdf_description_string_property->getString());
   config.mapSetValue("tesseract::EnvMonitorTopic", data_->environment_topic_property->getString());
-  config.mapSetValue("tesseract::EnvMonitorSnapshotTopic", data_->environment_topic_property->getString());
+  config.mapSetValue("tesseract::EnvMonitorSnapshotTopic", data_->environment_snapshot_topic_property->getString());
   config.mapSetValue("tesseract::EnvMonitorJointStateTopic", data_->joint_state_topic_property->getString());
 }
 
