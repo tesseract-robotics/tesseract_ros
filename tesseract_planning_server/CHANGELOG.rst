@@ -2,6 +2,12 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Upgrade to tesseract version 0.20.0
+* Update to leverage TaskComposerContext
+* Contributors: Levi Armstrong
+
 0.19.0 (2023-09-06)
 -------------------
 * Update to use tesseract package components

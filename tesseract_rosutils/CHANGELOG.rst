@@ -2,6 +2,9 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.19.0 (2023-09-06)
 -------------------
 * Update to use tesseract package components

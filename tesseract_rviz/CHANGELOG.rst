@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix saving EnvMonitorSnapshotTopic
+* Contributors: Roelof
+
 0.19.0 (2023-09-06)
 -------------------
 * Update to use tesseract package components
