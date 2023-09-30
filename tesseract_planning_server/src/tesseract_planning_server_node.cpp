@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_planning_server/tesseract_planning_server.h>
 
 using namespace tesseract_environment;
+using tesseract_planning_server::TesseractPlanningServer;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 static std::shared_ptr<tesseract_planning_server::TesseractPlanningServer> planning_server;
@@ -51,8 +52,6 @@ int main(int argc, char** argv)
   std::string monitor_namespace;
   std::string monitored_namespace;
   std::string task_composer_config;
-  std::string input_key;
-  std::string output_key;
   bool publish_environment{ false };
   int cache_size{ 5 };
   double cache_refresh_rate{ 0.1 };
@@ -63,18 +62,6 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  if (!pnh.getParam("input_key", input_key))
-  {
-    ROS_ERROR("Missing required parameter input_key!");
-    return 1;
-  }
-
-  if (!pnh.getParam("output_key", output_key))
-  {
-    ROS_ERROR("Missing required parameter output_key!");
-    return 1;
-  }
-
   pnh.param<std::string>("monitored_namespace", monitored_namespace, "");
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<bool>("publish_environment", publish_environment, publish_environment);
@@ -82,9 +69,7 @@ int main(int argc, char** argv)
   pnh.param<double>("cache_refresh_rate", cache_refresh_rate, cache_refresh_rate);
   pnh.param<std::string>("task_composer_config", task_composer_config, task_composer_config);
 
-  planning_server = std::make_shared<tesseract_planning_server::TesseractPlanningServer>(
-      robot_description, input_key, output_key, monitor_namespace);
-
+  planning_server = std::make_shared<TesseractPlanningServer>(robot_description, monitor_namespace);
   planning_server->getEnvironmentCache().setCacheSize(cache_size);
 
   if (publish_environment)
