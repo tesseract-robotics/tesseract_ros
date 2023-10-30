@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.20.1 (2023-10-30)
+-------------------
 * Fix Qt SendEvent Calls
 * Contributors: Levi Armstrong
 
