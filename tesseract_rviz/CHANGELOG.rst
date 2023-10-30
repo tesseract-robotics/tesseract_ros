@@ -2,6 +2,11 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Qt SendEvent Calls
+* Contributors: Levi Armstrong
+
 0.20.0 (2023-09-30)
 -------------------
 * Fix saving EnvMonitorSnapshotTopic
