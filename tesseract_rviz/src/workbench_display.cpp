@@ -116,8 +116,10 @@ void WorkbenchDisplay::update(float wall_dt, float ros_dt)
   Display::update(wall_dt, ros_dt);
 
   if (data_->widget != nullptr)
-    QApplication::sendEvent(qApp,
-                            new tesseract_gui::events::PreRender(data_->widget->getComponentInfo()->getSceneName()));
+  {
+    tesseract_gui::events::PreRender event(data_->widget->getComponentInfo()->getSceneName());
+    QApplication::sendEvent(qApp, &event);
+  }
 }
 
 void WorkbenchDisplay::load(const rviz::Config& config)

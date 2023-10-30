@@ -55,7 +55,8 @@ struct JointTrajectoryMonitorProperties::Implementation
     tesseract_common::JointTrajectorySet trajectory_set(initial_state);
     tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(*msg);
     trajectory_set.appendJointTrajectory(joint_trajectory);
-    QApplication::sendEvent(qApp, new tesseract_gui::events::JointTrajectoryAdd(component_info, trajectory_set));
+    tesseract_gui::events::JointTrajectoryAdd event(component_info, trajectory_set);
+    QApplication::sendEvent(qApp, &event);
   }
 
   void tesseractJointTrajectoryCallback(const tesseract_msgs::Trajectory::ConstPtr& msg)
@@ -93,7 +94,8 @@ struct JointTrajectoryMonitorProperties::Implementation
       {
         tesseract_common::JointTrajectory joint_trajectory = tesseract_rosutils::fromMsg(joint_trajectory_msg);
         trajectory_set.appendJointTrajectory(joint_trajectory);
-        QApplication::sendEvent(qApp, new tesseract_gui::events::JointTrajectoryAdd(component_info, trajectory_set));
+        tesseract_gui::events::JointTrajectoryAdd event(component_info, trajectory_set);
+        QApplication::sendEvent(qApp, &event);
       }
     }
     catch (...)
