@@ -59,7 +59,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_plan_profile.h>
 
-#include <tesseract_command_language/poly/instruction_poly.h>
+#include <tesseract_common/any_poly.h>
 
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
@@ -186,8 +186,7 @@ void TesseractPlanningServer::onMotionPlanningCallback(const tesseract_msgs::Get
   auto problem = std::make_unique<tesseract_planning::PlanningTaskComposerProblem>(goal->request.name);
   try
   {
-    problem->input_instruction =
-        Serialization::fromArchiveStringXML<tesseract_planning::InstructionPoly>(goal->request.instructions);
+    problem->input = Serialization::fromArchiveStringXML<tesseract_common::AnyPoly>(goal->request.input);
   }
   catch (const std::exception& e)
   {
