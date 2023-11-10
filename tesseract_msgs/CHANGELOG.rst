@@ -2,8 +2,8 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.21.0 (2023-11-10)
+-------------------
 * Update planning request input to leverage AnyPoly
 * Contributors: Levi Armstrong
 
