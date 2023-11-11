@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Load universal robot description format (URDF) -->
+    <param name="robot_description" textfile="$(find tesseract_support)/urdf/lbr_iiwa_14_r820_with_planar.urdf" />
+
+    <!-- The semantic description that corresponds to the URDF -->
+    <param name="robot_description_semantic" textfile="$(find tesseract_support)/urdf/lbr_iiwa_14_r820.srdf" />
+
+    <!-- Launch visualization -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tesseract_monitoring)/demos/demo_scene.rviz" />
+
+    <!-- STATE PUBLISHER -->
+    <node name="joint_state_publisher_gui"
+          pkg="joint_state_publisher_gui"
+          type="joint_state_publisher_gui" >
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="world_broadcaster" args="0.1 0.2 0.0 0.0 0.0 0.3  world base_link 1"/>
+
+</launch>
