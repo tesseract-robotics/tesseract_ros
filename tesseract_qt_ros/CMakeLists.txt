@@ -5,38 +5,19 @@ find_package(ros_industrial_cmake_boilerplate REQUIRED)
 extract_package_metadata(pkg)
 project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tesseract_msgs
-  tesseract_rosutils
-  tesseract_monitoring
-)
+find_package(catkin REQUIRED COMPONENTS roscpp tesseract_msgs)
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED thread date_time system filesystem)
+find_package(Boost REQUIRED COMPONENTS thread date_time system filesystem)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_qt REQUIRED)
+find_package(tesseract_rosutils REQUIRED)
+find_package(tesseract_monitoring REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
-
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES
-      ${PROJECT_NAME}_widgets
-    CATKIN_DEPENDS
-      roscpp
-      tesseract_msgs
-      tesseract_rosutils
-      tesseract_monitoring
-    DEPENDS
-      tesseract_common
-      tesseract_environment
-      tesseract_qt
-      QT
-)
 
 qt5_wrap_cpp(
   WIDGETS_headers_MOC
@@ -62,6 +43,8 @@ target_link_libraries(
          Qt5::Widgets
          ${catkin_LIBRARIES}
          tesseract::tesseract_environment
+         tesseract::tesseract_rosutils
+         tesseract::tesseract_monitoring_environment
          tesseract::tesseract_qt_common
          tesseract::tesseract_qt_studio_plugin_factory)
 target_include_directories(
@@ -109,23 +92,32 @@ target_include_directories(${PROJECT_NAME}_studio SYSTEM PRIVATE ${catkin_INCLUD
 # Demos
 add_subdirectory(demo)
 
-# Mark executables and/or libraries for installation
-install(TARGETS
+# Configure Package
+configure_package(
+  NAMESPACE tesseract
+  TARGETS
     ${PROJECT_NAME}_studio
     ${PROJECT_NAME}_widgets
     ${PROJECT_NAME}_studio_plugins
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DEPENDENCIES
+    "Boost COMPONENTS thread date_time system filesystem"
+    "Qt5 COMPONENTS Core Gui Widgets"
+    tesseract_common
+    tesseract_environment
+    tesseract_qt
+    tesseract_rosutils
+    tesseract_monitoring
+    "catkin REQUIRED COMPONENTS roscpp tesseract_msgs"
 )
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE)
 
-install(DIRECTORY config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+foreach(dir config)
+  install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
+endforeach()

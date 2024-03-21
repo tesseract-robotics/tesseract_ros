@@ -116,6 +116,11 @@ generate_messages(
     actionlib_msgs
 )
 
+# catkin_package(
+#   SKIP_CMAKE_CONFIG_GENERATION
+#   SKIP_PKG_CONFIG_GENERATION
+# )
+
 catkin_package(
   CATKIN_DEPENDS
     message_runtime

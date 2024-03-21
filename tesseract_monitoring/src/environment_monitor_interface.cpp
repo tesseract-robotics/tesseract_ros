@@ -25,14 +25,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <ros/ros.h>
 #include <ros/console.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
+#include <tesseract_msgs/GetEnvironmentInformation.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_monitoring/constants.h>
 #include <tesseract_monitoring/environment_monitor_interface.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_monitoring/constants.h>
+
+#include <tesseract_scene_graph/scene_state.h>
+#include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
 
 namespace tesseract_monitoring
 {
@@ -134,8 +140,8 @@ ROSEnvironmentMonitorInterface::applyCommand(const tesseract_environment::Comman
   return failed_namespace;
 }
 
-std::vector<std::string>
-ROSEnvironmentMonitorInterface::applyCommands(const tesseract_environment::Commands& commands) const
+std::vector<std::string> ROSEnvironmentMonitorInterface::applyCommands(
+    const std::vector<std::shared_ptr<const tesseract_environment::Command>>& commands) const
 {
   std::vector<std::string> failed_namespace;
   failed_namespace.reserve(ns_.size());
@@ -170,8 +176,9 @@ bool ROSEnvironmentMonitorInterface::applyCommand(const std::string& monitor_nam
   return false;
 }
 
-bool ROSEnvironmentMonitorInterface::applyCommands(const std::string& monitor_namespace,
-                                                   const tesseract_environment::Commands& commands) const
+bool ROSEnvironmentMonitorInterface::applyCommands(
+    const std::string& monitor_namespace,
+    const std::vector<std::shared_ptr<const tesseract_environment::Command>>& commands) const
 {
   std::vector<tesseract_msgs::EnvironmentCommand> commands_msg;
   if (tesseract_rosutils::toMsg(commands_msg, commands, 0))
@@ -318,7 +325,7 @@ ROSEnvironmentMonitorInterface::setEnvironmentState(const std::vector<std::strin
   return failed_namespace;
 }
 
-tesseract_environment::Environment::UPtr
+std::unique_ptr<tesseract_environment::Environment>
 ROSEnvironmentMonitorInterface::getEnvironment(const std::string& monitor_namespace) const
 {
   tesseract_msgs::GetEnvironmentInformation res;

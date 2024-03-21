@@ -23,6 +23,7 @@
 #ifndef TESSERACT_QT_ROS_STUDIO_ENVIRONMENT_MONITOR_DOCK_WIDGET_H
 #define TESSERACT_QT_ROS_STUDIO_ENVIRONMENT_MONITOR_DOCK_WIDGET_H
 
+#include <memory>
 #include <tesseract_qt/studio/studio_dock_widget.h>
 
 namespace tesseract_gui

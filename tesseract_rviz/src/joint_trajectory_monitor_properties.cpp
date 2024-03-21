@@ -12,6 +12,9 @@
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_rosutils/utils.h>
 
+#include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
+
 #include <rviz/display.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/panel_dock_widget.h>

@@ -52,7 +52,6 @@
 #include <tesseract_rviz/interactive_marker/integer_action.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker.h>
 #include <tesseract_rviz/markers/utils.h>
-#include <tesseract_rviz/conversions.h>
 
 namespace tesseract_rviz
 {
@@ -525,7 +524,9 @@ void InteractiveMarker::publishFeedback(bool mouse_point_valid, const Ogre::Vect
   Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition(position_);
   Ogre::Quaternion world_orientation = reference_node_->convertLocalToWorldOrientation(orientation_);
 
-  toEigen(transform, world_position, world_orientation);
+  transform.linear() =
+      Eigen::Quaterniond(world_orientation.w, world_orientation.x, world_orientation.y, world_orientation.z).matrix();
+  transform.translation() = Eigen::Vector3d(world_position.x, world_position.y, world_position.z);
 
   if (mouse_point_valid)
   {
