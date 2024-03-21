@@ -39,8 +39,6 @@
 #include <OgreMath.h>
 #include <OgreRenderWindow.h>
 
-#include <ros/ros.h>
-
 #include "rviz/frame_manager.h"
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
@@ -52,7 +50,6 @@
 #include <tesseract_rviz/interactive_marker/integer_action.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker.h>
 #include <tesseract_rviz/markers/utils.h>
-#include <tesseract_rviz/conversions.h>
 
 namespace tesseract_rviz
 {
@@ -174,30 +171,30 @@ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const 
 // Recursively append menu and submenu entries to menu, based on a
 // vector of menu entry id numbers describing the menu entries at the
 // current level.
-void InteractiveMarker::populateMenu(QMenu* /*menu*/, std::vector<uint32_t>& ids)
+void InteractiveMarker::populateMenu(QMenu* /*menu*/, std::vector<uint32_t>& /*ids*/)
 {
-  for (unsigned int id : ids)
-  {
-    auto node_it = menu_entries_.find(id);
-    ROS_ASSERT_MSG(
-        node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
-    MenuNode node = (*node_it).second;
+  // for (unsigned int id : ids)
+  // {
+  //   auto node_it = menu_entries_.find(id);
+  //   ROS_ASSERT_MSG(
+  //       node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
+  //   MenuNode node = (*node_it).second;
 
-    //    if ( node.child_ids.empty() )
-    //    {
-    //      IntegerAction* action = new IntegerAction( makeMenuString( node.entry.title ),
-    //                                                 menu,
-    //                                                 (int) node.entry.id );
-    //      connect( action, SIGNAL( triggered( int )), this, SLOT( handleMenuSelect( int )));
-    //      menu->addAction( action );
-    //    }
-    //    else
-    //    {
-    //      // make sub-menu
-    //      QMenu* sub_menu = menu->addMenu( makeMenuString( node.entry.title ));
-    //      populateMenu( sub_menu, node.child_ids );
-    //    }
-  }
+  //      if ( node.child_ids.empty() )
+  //      {
+  //        IntegerAction* action = new IntegerAction( makeMenuString( node.entry.title ),
+  //                                                   menu,
+  //                                                   (int) node.entry.id );
+  //        connect( action, SIGNAL( triggered( int )), this, SLOT( handleMenuSelect( int )));
+  //        menu->addAction( action );
+  //      }
+  //      else
+  //      {
+  //        // make sub-menu
+  //        QMenu* sub_menu = menu->addMenu( makeMenuString( node.entry.title ));
+  //        populateMenu( sub_menu, node.child_ids );
+  //      }
+  // }
 }
 
 QString InteractiveMarker::makeMenuString(const std::string& entry)
@@ -525,7 +522,9 @@ void InteractiveMarker::publishFeedback(bool mouse_point_valid, const Ogre::Vect
   Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition(position_);
   Ogre::Quaternion world_orientation = reference_node_->convertLocalToWorldOrientation(orientation_);
 
-  toEigen(transform, world_position, world_orientation);
+  transform.linear() =
+      Eigen::Quaterniond(world_orientation.w, world_orientation.x, world_orientation.y, world_orientation.z).matrix();
+  transform.translation() = Eigen::Vector3d(world_position.x, world_position.y, world_position.z);
 
   if (mouse_point_valid)
   {

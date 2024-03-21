@@ -29,9 +29,11 @@
 #ifndef TESSERACT_QT_ROS_ROS_TOPIC_COMBO_BOX_H
 #define TESSERACT_QT_ROS_ROS_TOPIC_COMBO_BOX_H
 
+#ifndef Q_MOC_RUN
 #include <QComboBox>
 #include <QString>
 #include <ros/builtin_message_traits.h>
+#endif
 
 namespace tesseract_gui
 {

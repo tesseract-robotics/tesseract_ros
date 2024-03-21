@@ -23,11 +23,21 @@
 #ifndef TESSERACT_QT_ROS_ENVIRONMENT_MONITOR_WIDGET_H
 #define TESSERACT_QT_ROS_ENVIRONMENT_MONITOR_WIDGET_H
 
+#ifndef Q_MOC_RUN
 #include <memory>
 #include <QWidget>
 
-#include <tesseract_msgs/Environment.h>
-#include <yaml-cpp/yaml.h>
+#include <ros/message_forward.h>
+namespace tesseract_msgs
+{
+ROS_DECLARE_MESSAGE(Environment)
+}
+#endif
+
+namespace YAML
+{
+class Node;
+}
 
 namespace Ui
 {
@@ -71,7 +81,7 @@ private:
   std::unique_ptr<Ui::EnvironmentMonitorWidget> ui;
   std::unique_ptr<Implementation> data_;
 
-  void snapshotCallback(const tesseract_msgs::Environment::ConstPtr& msg);
+  void snapshotCallback(const tesseract_msgs::EnvironmentConstPtr& msg);
 };
 }  // namespace tesseract_gui
 

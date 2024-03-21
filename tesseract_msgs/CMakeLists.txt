@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -115,6 +115,11 @@ generate_messages(
     trajectory_msgs
     actionlib_msgs
 )
+
+# catkin_package(
+#   SKIP_CMAKE_CONFIG_GENERATION
+#   SKIP_PKG_CONFIG_GENERATION
+# )
 
 catkin_package(
   CATKIN_DEPENDS

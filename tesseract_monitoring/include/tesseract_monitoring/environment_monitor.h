@@ -39,36 +39,16 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
-#include <ros/service_client.h>
-#include <message_filters/subscriber.h>
 #include <memory>
-#include <shared_mutex>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-#include <functional>
-#include <tesseract_msgs/EnvironmentState.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/GetEnvironmentChanges.h>
-#include <tesseract_msgs/GetEnvironmentInformation.h>
-#include <tesseract_msgs/SaveSceneGraph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/environment_monitor.h>
-#include <tesseract_monitoring/current_state_monitor.h>
-#include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_monitoring/constants.h>
-#include <tesseract_rosutils/utils.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_urdf/urdf_parser.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_environment/environment_monitor.h>
 
 namespace tesseract_monitoring
 {
+class CurrentStateMonitor;
+
 /**
  * @brief TesseractMonitor
  * Subscribes to the topic \e tesseract_environment */
@@ -92,7 +72,7 @@ public:
    * @param env The environment
    * @param monitor_namespace A name identifying this monitor, must be unique
    */
-  ROSEnvironmentMonitor(tesseract_environment::Environment::Ptr env, std::string monitor_namespace);
+  ROSEnvironmentMonitor(std::shared_ptr<tesseract_environment::Environment> env, std::string monitor_namespace);
 
   ~ROSEnvironmentMonitor() override;
   ROSEnvironmentMonitor(const ROSEnvironmentMonitor&) = delete;
@@ -140,98 +120,9 @@ public:
   const CurrentStateMonitor& getStateMonitor() const;
   CurrentStateMonitor& getStateMonitor();
 
-protected:
-  /** @brief Initialize the planning scene monitor
-   *  @param scene The scene instance to fill with data (an instance is allocated if the one passed in is not allocated)
-   */
-  bool initialize();
-
-  ros::Time last_update_time_;        /// Last time the state was updated
-  ros::Time last_robot_motion_time_;  /// Last time the robot has moved
-  bool enforce_next_state_update_;    /// flag to enforce immediate state update in onStateUpdate()
-
-  ros::NodeHandle nh_;
-  ros::NodeHandle root_nh_;
-  std::string robot_description_;
-
-  // variables for planning scene publishing
-  ros::Publisher environment_publisher_;
-  std::unique_ptr<std::thread> publish_environment_;
-  double publish_environment_frequency_;
-
-  // variables for monitored environment
-  ros::Subscriber monitored_environment_subscriber_;
-  ros::ServiceClient get_monitored_environment_changes_client_;
-  ros::ServiceClient get_monitored_environment_information_client_;
-  ros::ServiceClient modify_monitored_environment_client_;
-
-  // host a service for modifying the environment
-  ros::ServiceServer modify_environment_server_;
-
-  // host a service for getting the environment changes
-  ros::ServiceServer get_environment_changes_server_;
-
-  // host a service for getting the environment information
-  ros::ServiceServer get_environment_information_server_;
-
-  // host a service for saving the scene graph to a DOT file
-  ros::ServiceServer save_scene_graph_server_;
-
-  // include a current state monitor
-  CurrentStateMonitor::UPtr current_state_monitor_;
-
 private:
-  // publish environment update diffs (runs in its own thread)
-  void environmentPublishingThread();
-
-  // called by current_state_monitor_ when robot state (as monitored on joint state topic) changes
-  void onJointStateUpdate(const sensor_msgs::JointStateConstPtr& joint_state);
-
-  // called by state_update_timer_ when a state update it pending
-  void updateJointStateTimerCallback(const ros::WallTimerEvent& event);
-
-  // Callback for a new state msg
-  void newEnvironmentStateCallback(const tesseract_msgs::EnvironmentStateConstPtr& env);
-
-  /** @brief Callback for modifying the environment via service request */
-  bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,
-                                 tesseract_msgs::ModifyEnvironmentResponse& res);
-
-  /** @brief Callback for get the environment changes via service request */
-  bool getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
-                                     tesseract_msgs::GetEnvironmentChangesResponse& res);
-
-  /** @brief Callback for get the environment information via service request */
-  bool getEnvironmentInformationCallback(tesseract_msgs::GetEnvironmentInformationRequest& req,
-                                         tesseract_msgs::GetEnvironmentInformationResponse& res);
-
-  /** @brief Callback to save the scene graph to a DOT via a service request */
-  bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req, tesseract_msgs::SaveSceneGraphResponse& res);
-
-  // Called when new service request is called to modify the environment.
-  bool applyEnvironmentCommandsMessage(const std::string& id,
-                                       int revision,
-                                       const std::vector<tesseract_msgs::EnvironmentCommand>& commands);
-
-  // Lock for state_update_pending_ and dt_state_update_
-  std::mutex state_pending_mutex_;
-
-  /// True when we need to update the RobotState from current_state_monitor_
-  // This field is protected by state_pending_mutex_
-  volatile bool state_update_pending_;
-
-  /// the amount of time to wait in between updates to the robot state
-  // This field is protected by state_pending_mutex_
-  ros::WallDuration dt_state_update_;
-
-  /// timer for state updates.
-  // Check if last_state_update_ is true and if so call updateSceneWithCurrentState()
-  // Not safe to access from callback functions.
-  ros::WallTimer state_update_timer_;
-
-  /// Last time the state was updated from current_state_monitor_
-  // Only access this from callback functions (and constructor)
-  ros::WallTime last_robot_state_update_wall_time_;
+  struct Implementation;
+  std::unique_ptr<Implementation> impl_;
 };
 
 }  // namespace tesseract_monitoring

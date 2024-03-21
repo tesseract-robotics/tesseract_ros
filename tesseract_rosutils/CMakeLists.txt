@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -29,35 +29,14 @@ find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_task_composer REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-catkin_package(
-  INCLUDE_DIRS
-    include
-    ${EIGEN3_INCLUDE_DIRS}
-  LIBRARIES
-    ${PROJECT_NAME}
-  CATKIN_DEPENDS
-    tesseract_msgs
-    roscpp
-    eigen_conversions
-    roslib
-    geometry_msgs
-    std_msgs
-    visualization_msgs
-  DEPENDS
-    Boost
-    EIGEN3
-    tesseract_scene_graph
-    tesseract_srdf
-    tesseract_geometry
-    tesseract_visualization
-    tesseract_collision
-    tesseract_common
-    tesseract_motion_planners
-    tesseract_command_language
-    tesseract_environment
-    tesseract_task_composer
-    yaml-cpp
-)
+# Catkin Packages
+find_package(roscpp REQUIRED)
+find_package(roslib REQUIRED)
+find_package(eigen_conversions REQUIRED)
+find_package(tesseract_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
@@ -75,6 +54,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_task_composer
   tesseract::tesseract_command_language
   yaml-cpp
+  Eigen3::Eigen
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
@@ -85,47 +65,36 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
-install(
+configure_package(
+  NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DEPENDENCIES
+    Boost
+    Eigen3
+    "tesseract_collision COMPONENTS core"
+    tesseract_common
+    tesseract_environment
+    "tesseract_motion_planners COMPONENTS core"
+    tesseract_scene_graph
+    tesseract_srdf
+    tesseract_visualization
+    tesseract_command_language
+    tesseract_task_composer
+    yaml-cpp
+    "catkin COMPONENTS tesseract_msgs roscpp roslib eigen_conversions geometry_msgs std_msgs visualization_msgs"
 )
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
- )
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE)
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(GTest REQUIRED)
-  find_package(tesseract_support REQUIRED)
-  catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME} ${catkin_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-  target_clang_tidy(${PROJECT_NAME}_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-  target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 17)
-  target_include_directories(${PROJECT_NAME}_unit PRIVATE
-      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-      "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_unit SYSTEM PRIVATE
-      ${catkin_INCLUDE_DIRS}
-      ${EIGEN3_INCLUDE_DIRS})
-
-  catkin_add_gtest(${PROJECT_NAME}_geometry_msg_conversions test/${PROJECT_NAME}_geometry_msg_conversions.cpp)
-  target_link_libraries(${PROJECT_NAME}_geometry_msg_conversions GTest::GTest GTest::Main tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME} ${catkin_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_geometry_msg_conversions PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-  target_clang_tidy(${PROJECT_NAME}_geometry_msg_conversions ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
-  target_cxx_version(${PROJECT_NAME}_geometry_msg_conversions PUBLIC VERSION 17)
-  target_include_directories(${PROJECT_NAME}_geometry_msg_conversions PRIVATE
-      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-      "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${PROJECT_NAME}_geometry_msg_conversions SYSTEM PRIVATE
-      ${catkin_INCLUDE_DIRS}
-      ${EIGEN3_INCLUDE_DIRS})
+if(TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(test)
 endif()

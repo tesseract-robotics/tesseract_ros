@@ -3,18 +3,29 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <memory>
+#include <Eigen/Eigen>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/conversions.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_environment/environment.h>
+#include <tesseract_rosutils/ros_serialization.h>
+
+#include <tesseract_common/types.h>
+#include <tesseract_common/joint_state.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_srdf/kinematics_information.h>
+#include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/scene_state.h>
+#include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
+#include <tesseract_environment/commands/add_link_command.h>
 
+#include <tesseract_msgs/Environment.h>
 #include <tesseract_msgs/EnvironmentState.h>
-#include <tesseract_common/types.h>
-#include <Eigen/Eigen>
+#include <tesseract_msgs/JointTrajectory.h>
+#include <trajectory_msgs/JointTrajectory.h>
 
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
