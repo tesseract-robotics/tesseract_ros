@@ -25,8 +25,8 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/console.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <sensor_msgs/JointState.h>
+#include <tesseract_msgs/JointState.h>
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string/classification.hpp>

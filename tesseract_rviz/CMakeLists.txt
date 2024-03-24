@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -7,10 +7,7 @@ project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  message_generation
   tesseract_msgs
-  tesseract_rosutils
-  tesseract_monitoring
   rviz
   pluginlib
   interactive_markers
@@ -21,6 +18,8 @@ find_package(Boost REQUIRED thread date_time system filesystem)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_visualization REQUIRED)
+find_package(tesseract_rosutils REQUIRED)
+find_package(tesseract_monitoring REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 # Ogre
@@ -64,10 +63,7 @@ catkin_package(
     ${PROJECT_NAME}_interactive_marker
   CATKIN_DEPENDS
     roscpp
-    message_generation
     tesseract_msgs
-    tesseract_rosutils
-    tesseract_monitoring
     rviz
     pluginlib
     interactive_markers
@@ -78,6 +74,8 @@ catkin_package(
     tesseract_environment
     tesseract_common
     tesseract_visualization
+    tesseract_rosutils
+    tesseract_monitoring
 )
 
 # Load variable for clang tidy args, compiler options and cxx version
@@ -186,6 +184,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tesseract::tesseract_qt_environment_widgets
     tesseract::tesseract_qt_manipulation_widgets
     tesseract::tesseract_qt_workbench_widgets
+    tesseract::tesseract_rosutils
+    tesseract::tesseract_monitoring_environment
     ${PROJECT_NAME}_markers
     ${PROJECT_NAME}_interactive_marker
     ${catkin_LIBRARIES}

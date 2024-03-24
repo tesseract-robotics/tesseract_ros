@@ -31,6 +31,7 @@
 
 #include <tesseract_qt/common/entity_manager.h>
 #include <tesseract_qt/common/entity_container.h>
+#include <tesseract_common/eigen_types.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometry.h>
@@ -112,7 +113,7 @@ void setOctomapColor(double z_pos, double min_z, double max_z, double color_fact
 std::shared_ptr<rviz::PointCloud> createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
                                                    tesseract_gui::EntityContainer& entity_container,
                                                    float size,
-                                                   tesseract_geometry::Octree::SubType subtype);
+                                                   tesseract_geometry::OctreeSubType subtype);
 
 Ogre::AxisAlignedBox getAABB(Ogre::SceneNode& scene_node, bool visible_only = true);
 

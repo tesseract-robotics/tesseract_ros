@@ -9,6 +9,10 @@
 #include <tesseract_qt/common/environment_wrapper.h>
 
 #include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_rosutils/utils.h>
+
+#include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
 
 #include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/Environment.h>

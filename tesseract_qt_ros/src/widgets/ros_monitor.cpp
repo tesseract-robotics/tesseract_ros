@@ -26,7 +26,8 @@
 #include <tesseract_qt/common/icon_utils.h>
 #include <tesseract_qt/common/utils.h>
 
-#include <ros/ros.h>
+#include <ros/init.h>
+#include <ros/master.h>
 #include <mutex>
 
 #include <QToolBar>

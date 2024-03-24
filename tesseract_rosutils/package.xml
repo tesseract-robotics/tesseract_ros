@@ -35,5 +35,6 @@
   <test_depend>tesseract_support</test_depend>
 
   <export>
+    <build_type>cmake</build_type>
   </export>
 </package>

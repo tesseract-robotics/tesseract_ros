@@ -27,10 +27,10 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
+#include <ros/node_handle.h>
 #include <boost/thread/thread.hpp>
+#include <boost/algorithm/string.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment.h>
 #include <tesseract_scene_graph/graph.h>
@@ -39,8 +39,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 
 // Stuff for the contact monitor
-const static std::string ROBOT_DESCRIPTION_PARAM =
-    "robot_description"; /**< Default ROS parameter for robot description */
+/** @brief Default ROS parameter for robot description */
+const static std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
 const static double DEFAULT_CONTACT_DISTANCE = 0.1;
 
 int main(int argc, char** argv)

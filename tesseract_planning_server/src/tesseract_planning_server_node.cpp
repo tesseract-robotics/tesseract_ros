@@ -25,12 +25,15 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/environment.h>
+#include <tesseract_environment/environment_cache.h>
+#include <tesseract_environment/environment_monitor.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
+#include <tesseract_task_composer/core/task_composer_server.h>
 
 using namespace tesseract_environment;
 using tesseract_planning_server::TesseractPlanningServer;

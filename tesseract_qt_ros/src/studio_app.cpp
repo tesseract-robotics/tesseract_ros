@@ -13,7 +13,8 @@
 #include <unistd.h>
 
 // ROS section
-#include <ros/ros.h>
+#include <ros/init.h>
+#include <ros/master.h>
 #include <ros/console.h>
 
 // SIGINT handler function

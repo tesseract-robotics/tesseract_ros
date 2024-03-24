@@ -24,14 +24,21 @@
 #include <tesseract_qt_ros/widgets/ros_monitor.h>
 #include "ui_environment_monitor_widget.h"
 
+#include <ros/node_handle.h>
+
 #include <tesseract_qt/common/component_info.h>
 #include <tesseract_qt/common/component_info_manager.h>
 #include <tesseract_qt/common/environment_manager.h>
 #include <tesseract_qt/common/environment_wrapper.h>
 #include <tesseract_qt/common/utils.h>
 
-#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_environment/environment.h>
+#include <tesseract_environment/command.h>
 
+#include <tesseract_monitoring/environment_monitor.h>
+#include <tesseract_rosutils/utils.h>
+
+#include <tesseract_msgs/Environment.h>
 #include <tesseract_msgs/EnvironmentState.h>
 
 #include <sensor_msgs/JointState.h>
@@ -39,6 +46,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <yaml-cpp/yaml.h>
 
 namespace tesseract_gui
 {
@@ -247,7 +256,7 @@ void EnvironmentMonitorWidget::onMonitorTopicChanged()
   }
 }
 
-void EnvironmentMonitorWidget::snapshotCallback(const tesseract_msgs::Environment::ConstPtr& msg)
+void EnvironmentMonitorWidget::snapshotCallback(const tesseract_msgs::EnvironmentConstPtr& msg)
 {
   if (data_->monitor != nullptr)
     data_->monitor->shutdown();

@@ -19,4 +19,7 @@
 
   <depend>roscpp</depend>
 
+  <export>
+    <build_type>cmake</build_type>
+  </export>
 </package>
