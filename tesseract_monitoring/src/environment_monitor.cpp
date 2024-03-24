@@ -36,8 +36,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
 #include <ros/console.h>
+#include <ros/node_handle.h>
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include <utility>

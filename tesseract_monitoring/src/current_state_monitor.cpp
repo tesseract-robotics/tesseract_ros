@@ -37,7 +37,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 
 #include <limits>
 #include <utility>
@@ -83,10 +83,10 @@ struct CurrentStateMonitor::Implementation
   mutable std::condition_variable state_update_condition;
   std::vector<JointStateUpdateCallback> update_callbacks;
 
-  Implementation(const tesseract_environment::Environment::ConstPtr& env, const ros::NodeHandle& nh)
-    : nh(nh)
-    , env(env)
-    , env_state(env->getState())
+  Implementation(const tesseract_environment::Environment::ConstPtr& env_, const ros::NodeHandle& nh_)
+    : nh(nh_)
+    , env(env_)
+    , env_state(env_->getState())
     , last_environment_revision(this->env->getRevision())
     , state_monitor_started(false)
     , copy_dynamics(false)

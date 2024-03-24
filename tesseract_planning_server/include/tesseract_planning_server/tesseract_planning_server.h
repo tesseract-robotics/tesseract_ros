@@ -65,7 +65,7 @@ public:
   tesseract_planning::ProfileDictionary& getProfileDictionary();
   const tesseract_planning::ProfileDictionary& getProfileDictionary() const;
 
-protected:
+private:
   struct Implementation;
   std::unique_ptr<Implementation> impl_;
 };

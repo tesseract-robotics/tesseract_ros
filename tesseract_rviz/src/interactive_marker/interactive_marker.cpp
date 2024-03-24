@@ -39,8 +39,6 @@
 #include <OgreMath.h>
 #include <OgreRenderWindow.h>
 
-#include <ros/ros.h>
-
 #include "rviz/frame_manager.h"
 #include "rviz/display_context.h"
 #include "rviz/selection/selection_manager.h"
@@ -173,30 +171,30 @@ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const 
 // Recursively append menu and submenu entries to menu, based on a
 // vector of menu entry id numbers describing the menu entries at the
 // current level.
-void InteractiveMarker::populateMenu(QMenu* /*menu*/, std::vector<uint32_t>& ids)
+void InteractiveMarker::populateMenu(QMenu* /*menu*/, std::vector<uint32_t>& /*ids*/)
 {
-  for (unsigned int id : ids)
-  {
-    auto node_it = menu_entries_.find(id);
-    ROS_ASSERT_MSG(
-        node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
-    MenuNode node = (*node_it).second;
+  // for (unsigned int id : ids)
+  // {
+  //   auto node_it = menu_entries_.find(id);
+  //   ROS_ASSERT_MSG(
+  //       node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
+  //   MenuNode node = (*node_it).second;
 
-    //    if ( node.child_ids.empty() )
-    //    {
-    //      IntegerAction* action = new IntegerAction( makeMenuString( node.entry.title ),
-    //                                                 menu,
-    //                                                 (int) node.entry.id );
-    //      connect( action, SIGNAL( triggered( int )), this, SLOT( handleMenuSelect( int )));
-    //      menu->addAction( action );
-    //    }
-    //    else
-    //    {
-    //      // make sub-menu
-    //      QMenu* sub_menu = menu->addMenu( makeMenuString( node.entry.title ));
-    //      populateMenu( sub_menu, node.child_ids );
-    //    }
-  }
+  //      if ( node.child_ids.empty() )
+  //      {
+  //        IntegerAction* action = new IntegerAction( makeMenuString( node.entry.title ),
+  //                                                   menu,
+  //                                                   (int) node.entry.id );
+  //        connect( action, SIGNAL( triggered( int )), this, SLOT( handleMenuSelect( int )));
+  //        menu->addAction( action );
+  //      }
+  //      else
+  //      {
+  //        // make sub-menu
+  //        QMenu* sub_menu = menu->addMenu( makeMenuString( node.entry.title ));
+  //        populateMenu( sub_menu, node.child_ids );
+  //      }
+  // }
 }
 
 QString InteractiveMarker::makeMenuString(const std::string& entry)

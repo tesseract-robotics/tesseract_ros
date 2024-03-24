@@ -23,6 +23,7 @@
 #ifndef TESSERACT_QT_ROS_ENVIRONMENT_MONITOR_WIDGET_H
 #define TESSERACT_QT_ROS_ENVIRONMENT_MONITOR_WIDGET_H
 
+#ifndef Q_MOC_RUN
 #include <memory>
 #include <QWidget>
 
@@ -31,6 +32,7 @@ namespace tesseract_msgs
 {
 ROS_DECLARE_MESSAGE(Environment)
 }
+#endif
 
 namespace YAML
 {

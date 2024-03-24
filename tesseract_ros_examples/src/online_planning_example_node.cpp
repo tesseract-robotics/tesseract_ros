@@ -31,7 +31,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/JointState.h>
 #include <ros/subscriber.h>

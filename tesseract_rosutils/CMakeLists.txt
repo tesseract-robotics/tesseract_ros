@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -56,13 +56,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   yaml-cpp
   Eigen3::Eigen
   ${Boost_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  ${roslib_LIBRARIES}
-  ${eigen_conversions_LIBRARIES}
-  ${tesseract_msgs_LIBRARIES}
-  ${geometry_msgs_LIBRARIES}
-  ${std_msgs_LIBRARIES}
-  ${visualization_msgs_LIBRARIES})
+  ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 17)
@@ -70,13 +64,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${roscpp_INCLUDE_DIRS}
-    ${roslib_INCLUDE_DIRS}
-    ${eigen_conversions_INCLUDE_DIRS}
-    ${tesseract_msgs_INCLUDE_DIRS}
-    ${geometry_msgs_INCLUDE_DIRS}
-    ${std_msgs_INCLUDE_DIRS}
-    ${visualization_msgs_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
 configure_package(
@@ -95,13 +83,7 @@ configure_package(
     tesseract_command_language
     tesseract_task_composer
     yaml-cpp
-    roscpp
-    roslib
-    eigen_conversions
-    tesseract_msgs
-    geometry_msgs
-    std_msgs
-    visualization_msgs
+    "catkin COMPONENTS tesseract_msgs roscpp roslib eigen_conversions geometry_msgs std_msgs visualization_msgs"
 )
 
 # Mark cpp header files for installation
@@ -112,7 +94,7 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-if(CATKIN_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING)
   enable_testing()
   add_subdirectory(test)
 endif()

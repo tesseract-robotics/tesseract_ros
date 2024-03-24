@@ -25,7 +25,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/service.h>
 #include <ros/console.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
@@ -42,6 +42,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
+bool sendCommands(const std::string& env_name,
+                  const std::string& ns,
+                  const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
+{
+  tesseract_msgs::ModifyEnvironment res;
+  res.request.id = env_name;
+  res.request.append = true;
+  res.request.commands = commands;
+
+  bool status = ros::service::call(R"(/)" + ns + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, res);
+  if (!status || !res.response.success)
+  {
+    ROS_ERROR_STREAM_NAMED(ns, "sendCommands: Failed to update monitored environment!");
+    return false;
+  }
+
+  return true;
+}
+
 ROSEnvironmentMonitorInterface::ROSEnvironmentMonitorInterface(std::string env_name)
   : EnvironmentMonitorInterface(std::move(env_name))
 {
@@ -169,7 +188,7 @@ bool ROSEnvironmentMonitorInterface::applyCommand(const std::string& monitor_nam
 {
   tesseract_msgs::EnvironmentCommand command_msg;
   if (tesseract_rosutils::toMsg(command_msg, command))
-    return sendCommands(monitor_namespace, { command_msg });
+    return sendCommands(env_name_, monitor_namespace, { command_msg });
 
   ROS_ERROR_STREAM_NAMED(monitor_namespace,
                          "Failed to convert latest changes to message and update monitored environment!");
@@ -182,7 +201,7 @@ bool ROSEnvironmentMonitorInterface::applyCommands(
 {
   std::vector<tesseract_msgs::EnvironmentCommand> commands_msg;
   if (tesseract_rosutils::toMsg(commands_msg, commands, 0))
-    return sendCommands(monitor_namespace, commands_msg);
+    return sendCommands(env_name_, monitor_namespace, commands_msg);
 
   ROS_ERROR_STREAM_NAMED(monitor_namespace,
                          "Failed to convert latest changes to message and update monitored environment!");
@@ -209,25 +228,7 @@ bool ROSEnvironmentMonitorInterface::applyCommands(const std::string& monitor_na
     }
   }
 
-  return sendCommands(monitor_namespace, commands_msg);
-}
-
-bool ROSEnvironmentMonitorInterface::sendCommands(const std::string& ns,
-                                                  const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const
-{
-  tesseract_msgs::ModifyEnvironment res;
-  res.request.id = env_name_;
-  res.request.append = true;
-  res.request.commands = commands;
-
-  bool status = ros::service::call(R"(/)" + ns + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, res);
-  if (!status || !res.response.success)
-  {
-    ROS_ERROR_STREAM_NAMED(ns, "sendCommands: Failed to update monitored environment!");
-    return false;
-  }
-
-  return true;
+  return sendCommands(env_name_, monitor_namespace, commands_msg);
 }
 
 tesseract_scene_graph::SceneState
@@ -256,7 +257,7 @@ bool ROSEnvironmentMonitorInterface::setEnvironmentState(const std::string& moni
   tesseract_msgs::EnvironmentCommand command;
   command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
   tesseract_rosutils::toMsg(command.joint_state, joints);
-  return sendCommands(monitor_namespace, { command });
+  return sendCommands(env_name_, monitor_namespace, { command });
 }
 
 bool ROSEnvironmentMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
@@ -270,7 +271,7 @@ bool ROSEnvironmentMonitorInterface::setEnvironmentState(const std::string& moni
   tesseract_msgs::EnvironmentCommand command;
   command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
   tesseract_rosutils::toMsg(command.joint_state, joints);
-  return sendCommands(monitor_namespace, { command });
+  return sendCommands(env_name_, monitor_namespace, { command });
 }
 
 bool ROSEnvironmentMonitorInterface::setEnvironmentState(const std::string& monitor_namespace,
@@ -284,7 +285,7 @@ bool ROSEnvironmentMonitorInterface::setEnvironmentState(const std::string& moni
   tesseract_msgs::EnvironmentCommand command;
   command.command = tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE;
   tesseract_rosutils::toMsg(command.joint_state, joints);
-  return sendCommands(monitor_namespace, { command });
+  return sendCommands(env_name_, monitor_namespace, { command });
 }
 
 std::vector<std::string>

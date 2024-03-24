@@ -30,7 +30,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <sensor_msgs/JointState.h>
 #include <tesseract_msgs/ComputeContactResultVector.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
@@ -74,28 +74,28 @@ struct ContactMonitor::Implementation
   boost::shared_ptr<sensor_msgs::JointState> current_joint_states;
   std::condition_variable current_joint_states_evt;
 
-  Implementation(std::string monitor_namespace,
-                 tesseract_environment::Environment::UPtr env,
-                 ros::NodeHandle& nh,
-                 ros::NodeHandle& pnh,
-                 std::vector<std::string> monitored_link_names,
-                 std::vector<std::string> disabled_link_names,
-                 tesseract_collision::ContactTestType type,
-                 double contact_distance,
+  Implementation(std::string monitor_namespace_,
+                 tesseract_environment::Environment::UPtr env_,
+                 ros::NodeHandle& nh_,
+                 ros::NodeHandle& pnh_,
+                 std::vector<std::string> monitored_link_names_,
+                 std::vector<std::string> disabled_link_names_,
+                 tesseract_collision::ContactTestType type_,
+                 double contact_distance_,
                  const std::string& joint_state_topic)
-    : monitor_namespace(std::move(monitor_namespace))
-    , nh(nh)
-    , pnh(pnh)
-    , monitored_link_names(std::move(monitored_link_names))
-    , disabled_link_names(std::move(disabled_link_names))
-    , type(type)
-    , contact_distance(contact_distance)
+    : monitor_namespace(std::move(monitor_namespace_))
+    , nh(nh_)
+    , pnh(pnh_)
+    , monitored_link_names(std::move(monitored_link_names_))
+    , disabled_link_names(std::move(disabled_link_names_))
+    , type(type_)
+    , contact_distance(contact_distance_)
   {
-    if (env == nullptr)
+    if (env_ == nullptr)
       throw std::runtime_error("Null pointer passed for environment object to contact monitor.");
 
     // Create Environment Monitor
-    monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env), monitor_namespace);
+    monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env_), monitor_namespace);
     manager = monitor->environment().getDiscreteContactManager();
 
     if (manager == nullptr)

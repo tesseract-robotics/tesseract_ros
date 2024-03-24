@@ -24,7 +24,7 @@
 #include <tesseract_qt_ros/widgets/ros_monitor.h>
 #include "ui_environment_monitor_widget.h"
 
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 
 #include <tesseract_qt/common/component_info.h>
 #include <tesseract_qt/common/component_info_manager.h>

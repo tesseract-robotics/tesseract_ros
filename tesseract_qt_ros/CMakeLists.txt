@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
@@ -56,13 +56,10 @@ target_include_directories(${PROJECT_NAME}_widgets SYSTEM PUBLIC
 qt5_wrap_cpp(
   PLUGINS_headers_MOC
   include/tesseract_qt_ros/plugins/studio_environment_monitor_dock_widget.h)
-#qt5_wrap_ui(
-#  PLUGINS_headers_UI )
 
 add_library(
   ${PROJECT_NAME}_studio_plugins
   ${PLUGINS_headers_MOC}
-#  ${PLUGINS_headers_UI}
   src/plugins/studio_environment_monitor_dock_widget.cpp
   src/plugins/studio_ros_plugin_factories.cpp)
 
@@ -76,7 +73,8 @@ target_link_libraries(
          ${PROJECT_NAME}_widgets)
 target_include_directories(
   ${PROJECT_NAME}_studio_plugins PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/studio>" "$<INSTALL_INTERFACE:include>")
+                                        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/studio>"
+                                        "$<INSTALL_INTERFACE:include>")
 
 add_executable(${PROJECT_NAME}_studio src/studio_app.cpp)
 target_link_libraries(

@@ -25,7 +25,7 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <actionlib/server/simple_action_server.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_ros/buffer.h>
@@ -123,9 +123,9 @@ struct TesseractPlanningServer::Implementation
   /** @brief TF listener to lookup TCP transforms */
   tf2_ros::TransformListener tf_listener;
 
-  Implementation(const std::string& robot_description, std::string name)
+  Implementation(const std::string& robot_description_, std::string name_)
     : nh("~")
-    , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(robot_description, name))
+    , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(robot_description_, name_))
     , environment_cache(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor->getEnvironment()))
     , profiles(std::make_shared<tesseract_planning::ProfileDictionary>())
     , planning_server(std::make_unique<tesseract_planning::TaskComposerServer>())
@@ -139,9 +139,9 @@ struct TesseractPlanningServer::Implementation
     ctor();
   }
 
-  Implementation(std::unique_ptr<tesseract_environment::Environment> env, std::string name)
+  Implementation(std::unique_ptr<tesseract_environment::Environment> env_, std::string name_)
     : nh("~")
-    , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env), name))
+    , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env_), name_))
     , environment_cache(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor->getEnvironment()))
     , profiles(std::make_shared<tesseract_planning::ProfileDictionary>())
     , planning_server(std::make_unique<tesseract_planning::TaskComposerServer>())

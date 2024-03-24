@@ -23,8 +23,10 @@
 #ifndef TESSERACT_QT_ROS_MONITOR_H
 #define TESSERACT_QT_ROS_MONITOR_H
 
+#ifndef Q_MOC_RUN
 #include <memory>
 #include <QThread>
+#endif
 
 namespace ros
 {

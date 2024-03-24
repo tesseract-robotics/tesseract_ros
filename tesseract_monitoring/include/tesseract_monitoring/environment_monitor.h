@@ -44,7 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/constants.h>
 #include <tesseract_environment/environment_monitor.h>
-#include <tesseract_environment/fwd.h>
 
 namespace tesseract_monitoring
 {
@@ -123,7 +122,6 @@ public:
 
 private:
   struct Implementation;
-  friend struct Implementation;
   std::unique_ptr<Implementation> impl_;
 };
 

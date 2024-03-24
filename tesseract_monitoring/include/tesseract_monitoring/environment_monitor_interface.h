@@ -30,14 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <ros/message_forward.h>
-namespace tesseract_msgs
-{
-ROS_DECLARE_MESSAGE(EnvironmentCommand)
-}
-
 #include <tesseract_environment/environment_monitor_interface.h>
-#include <tesseract_environment/fwd.h>
 
 namespace tesseract_monitoring
 {
@@ -101,10 +94,8 @@ public:
   std::unique_ptr<tesseract_environment::Environment>
   getEnvironment(const std::string& monitor_namespace) const override final;
 
-protected:
+private:
   std::vector<std::string> ns_;
-
-  bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const;
 };
 }  // namespace tesseract_monitoring
 #endif  // TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H

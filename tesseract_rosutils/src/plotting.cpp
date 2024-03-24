@@ -28,20 +28,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <future>
 #include <thread>
 #include <ros/console.h>
-#include <Eigen/Geometry>
-#include <ros/ros.h>
 #include <ros/publisher.h>
+#include <ros/node_handle.h>
+#include <Eigen/Geometry>
 #include <geometry_msgs/PoseArray.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <tesseract_msgs/Trajectory.h>
+#include <tesseract_msgs/JointTrajectory.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/conversions.h>
-
-#include <tesseract_msgs/Trajectory.h>
-#include <tesseract_msgs/JointTrajectory.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
 
 #include <tesseract_common/joint_state.h>
 #include <tesseract_scene_graph/link.h>
