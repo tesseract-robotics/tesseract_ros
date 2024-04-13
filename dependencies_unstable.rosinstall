@@ -17,7 +17,7 @@
 - git:
     local-name: tesseract_qt
     uri: https://github.com/tesseract-robotics/tesseract_qt.git
-    version: main
+    version: master
 - git:
     local-name: descartes_light
     uri: https://github.com/swri-robotics/descartes_light.git
