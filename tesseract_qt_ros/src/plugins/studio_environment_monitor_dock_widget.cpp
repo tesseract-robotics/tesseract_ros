@@ -34,6 +34,8 @@
 #include <QAction>
 #include <QStatusBar>
 
+#include <yaml-cpp/yaml.h>
+
 namespace tesseract_gui
 {
 struct StudioEnvironmentMonitorDockWidget::Implementation

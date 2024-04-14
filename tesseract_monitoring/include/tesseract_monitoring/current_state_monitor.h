@@ -39,18 +39,27 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <mutex>
-#include <condition_variable>
 #include <memory>
 #include <functional>
+#include <vector>
 #include <unordered_map>
-#include <map>
-#include <tf2_ros/transform_broadcaster.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/environment.h>
+#include <tesseract_environment/fwd.h>
+#include <tesseract_scene_graph/fwd.h>
+
+namespace ros
+{
+class NodeHandle;
+class Duration;
+class Time;
+}  // namespace ros
+
+#include <ros/message_forward.h>
+namespace sensor_msgs
+{
+ROS_DECLARE_MESSAGE(JointState)
+}
 
 namespace tesseract_monitoring
 {
@@ -71,14 +80,14 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf A pointer to the tf transformer to use
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env);
+  CurrentStateMonitor(const std::shared_ptr<const tesseract_environment::Environment>& env);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
    *  @param tf A pointer to the tf transformer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const ros::NodeHandle& nh);
+  CurrentStateMonitor(const std::shared_ptr<const tesseract_environment::Environment>& env, const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
   CurrentStateMonitor(const CurrentStateMonitor&) = delete;
@@ -159,7 +168,8 @@ public:
   bool waitForCompleteState(const std::string& manip, double wait_time) const;
 
   /** @brief Get the time point when the monitor was started */
-  const ros::Time& getMonitorStartTime() const { return monitor_start_time_; }
+  const ros::Time& getMonitorStartTime() const;
+
   /** @brief Add a function that will be called whenever the joint state is updated*/
   void addUpdateCallback(const JointStateUpdateCallback& fn);
 
@@ -170,39 +180,22 @@ public:
    *  if the difference is less than a specified value (labeled the "allowed bounds error").
    *  This value can be set using this function.
    *  @param error The specified value for the "allowed bounds error". The default is machine precision. */
-  void setBoundsError(double error) { error_ = (error > 0) ? error : -error; }
+  void setBoundsError(double error);
+
   /** @brief When a joint value is received to be out of bounds, it is changed slightly to fit within bounds,
    *  if the difference is less than a specified value (labeled the "allowed bounds error").
    *  @return The stored value for the "allowed bounds error"
    */
-  double getBoundsError() const { return error_; }
+  double getBoundsError() const;
+
   /** @brief Allow the joint_state arrays velocity and effort to be copied into the robot state
    *  this is useful in some but not all applications
    */
-  void enableCopyDynamics(bool enabled) { copy_dynamics_ = enabled; }
+  void enableCopyDynamics(bool enabled);
 
 private:
-  void jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
-  bool isPassiveOrMimicDOF(const std::string& dof) const;
-
-  ros::NodeHandle nh_;
-  tesseract_environment::Environment::ConstPtr env_;
-  tesseract_scene_graph::SceneState env_state_;
-  int last_environment_revision_;
-  std::map<std::string, ros::Time> joint_time_;
-  bool state_monitor_started_;
-  bool copy_dynamics_;  // Copy velocity and effort from joint_state
-  ros::Time monitor_start_time_;
-  double error_;
-  ros::Subscriber joint_state_subscriber_;
-  tf2_ros::TransformBroadcaster tf_broadcaster_;
-  ros::Time current_state_time_;
-  ros::Time last_tf_update_;
-  bool publish_tf_;
-
-  mutable std::mutex state_update_lock_;
-  mutable std::condition_variable state_update_condition_;
-  std::vector<JointStateUpdateCallback> update_callbacks_;
+  struct Implementation;
+  std::unique_ptr<Implementation> impl_;
 };
 
 }  // namespace tesseract_monitoring

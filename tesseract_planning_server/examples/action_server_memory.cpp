@@ -1,6 +1,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <memory>
 #include <actionlib/server/simple_action_server.h>
 #include <tesseract_msgs/GetMotionPlanAction.h>

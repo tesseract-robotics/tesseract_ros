@@ -29,6 +29,7 @@ protected:
   void onEnable() override;
   void onDisable() override;
 
+private:
   struct Implementation;
   std::unique_ptr<Implementation> data_;
 };

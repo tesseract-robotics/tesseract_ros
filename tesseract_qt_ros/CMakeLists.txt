@@ -1,42 +1,23 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 # Extract package name and version
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
 extract_package_metadata(pkg)
 project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tesseract_msgs
-  tesseract_rosutils
-  tesseract_monitoring
-)
+find_package(catkin REQUIRED COMPONENTS roscpp tesseract_msgs)
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED thread date_time system filesystem)
+find_package(Boost REQUIRED COMPONENTS thread date_time system filesystem)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_qt REQUIRED)
+find_package(tesseract_rosutils REQUIRED)
+find_package(tesseract_monitoring REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
-
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES
-      ${PROJECT_NAME}_widgets
-    CATKIN_DEPENDS
-      roscpp
-      tesseract_msgs
-      tesseract_rosutils
-      tesseract_monitoring
-    DEPENDS
-      tesseract_common
-      tesseract_environment
-      tesseract_qt
-      QT
-)
 
 qt5_wrap_cpp(
   WIDGETS_headers_MOC
@@ -62,6 +43,8 @@ target_link_libraries(
          Qt5::Widgets
          ${catkin_LIBRARIES}
          tesseract::tesseract_environment
+         tesseract::tesseract_rosutils
+         tesseract::tesseract_monitoring_environment
          tesseract::tesseract_qt_common
          tesseract::tesseract_qt_studio_plugin_factory)
 target_include_directories(
@@ -73,13 +56,10 @@ target_include_directories(${PROJECT_NAME}_widgets SYSTEM PUBLIC
 qt5_wrap_cpp(
   PLUGINS_headers_MOC
   include/tesseract_qt_ros/plugins/studio_environment_monitor_dock_widget.h)
-#qt5_wrap_ui(
-#  PLUGINS_headers_UI )
 
 add_library(
   ${PROJECT_NAME}_studio_plugins
   ${PLUGINS_headers_MOC}
-#  ${PLUGINS_headers_UI}
   src/plugins/studio_environment_monitor_dock_widget.cpp
   src/plugins/studio_ros_plugin_factories.cpp)
 
@@ -93,7 +73,8 @@ target_link_libraries(
          ${PROJECT_NAME}_widgets)
 target_include_directories(
   ${PROJECT_NAME}_studio_plugins PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/studio>" "$<INSTALL_INTERFACE:include>")
+                                        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/studio>"
+                                        "$<INSTALL_INTERFACE:include>")
 
 add_executable(${PROJECT_NAME}_studio src/studio_app.cpp)
 target_link_libraries(
@@ -109,23 +90,39 @@ target_include_directories(${PROJECT_NAME}_studio SYSTEM PRIVATE ${catkin_INCLUD
 # Demos
 add_subdirectory(demo)
 
-# Mark executables and/or libraries for installation
-install(TARGETS
+catkin_package(
+  SKIP_CMAKE_CONFIG_GENERATION
+  SKIP_PKG_CONFIG_GENERATION
+)
+
+# Configure Package
+configure_package(
+  NAMESPACE tesseract
+  TARGETS
     ${PROJECT_NAME}_studio
     ${PROJECT_NAME}_widgets
     ${PROJECT_NAME}_studio_plugins
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DEPENDENCIES
+    "Boost COMPONENTS thread date_time system filesystem"
+    "Qt5 COMPONENTS Core Gui Widgets"
+    tesseract_common
+    tesseract_environment
+    tesseract_qt
+    tesseract_rosutils
+    tesseract_monitoring
+    "catkin REQUIRED COMPONENTS roscpp tesseract_msgs"
 )
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE)
 
-install(DIRECTORY config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+if(NOT ${CATKIN_INSTALL_INTO_PREFIX_ROOT})
+  foreach(dir config)
+    install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
+  endforeach()
+endif()

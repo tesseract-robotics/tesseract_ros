@@ -30,19 +30,18 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <tesseract_msgs/ComputeContactResultVector.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/EnvironmentState.h>
-#include <mutex>
-#include <condition_variable>
+#include <memory>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/constants.h>
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/environment_monitor.h>
+#include <tesseract_collision/core/fwd.h>
+#include <tesseract_environment/fwd.h>
+
+namespace ros
+{
+class NodeHandle;
+}
 
 namespace tesseract_monitoring
 {
@@ -50,7 +49,7 @@ class ContactMonitor
 {
 public:
   ContactMonitor(std::string monitor_namespace,
-                 tesseract_environment::Environment::UPtr env,
+                 std::unique_ptr<tesseract_environment::Environment> env,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  std::vector<std::string> monitored_link_names,
@@ -96,36 +95,9 @@ public:
    */
   void computeCollisionReportThread();
 
-  void callbackJointState(boost::shared_ptr<sensor_msgs::JointState> msg);
-
-  bool callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironment::Request& request,
-                                  tesseract_msgs::ModifyEnvironment::Response& response);
-
-  bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVector::Request& request,
-                                          tesseract_msgs::ComputeContactResultVector::Response& response);
-
-  void callbackTesseractEnvDiff(const tesseract_msgs::EnvironmentStatePtr& state);
-
 private:
-  std::string monitor_namespace_;
-  std::string monitored_namespace_;
-  int env_revision_{ 0 };
-  tesseract_environment::EnvironmentMonitor::UPtr monitor_;
-  ros::NodeHandle& nh_;
-  ros::NodeHandle& pnh_;
-  std::vector<std::string> monitored_link_names_;
-  std::vector<std::string> disabled_link_names_;
-  tesseract_collision::ContactTestType type_;
-  double contact_distance_;
-  tesseract_collision::DiscreteContactManager::UPtr manager_;
-  bool publish_contact_markers_{ false };
-  ros::Subscriber joint_states_sub_;
-  ros::Publisher contact_results_pub_;
-  ros::Publisher contact_marker_pub_;
-  ros::ServiceServer compute_contact_results_;
-  std::mutex modify_mutex_;
-  boost::shared_ptr<sensor_msgs::JointState> current_joint_states_;
-  std::condition_variable current_joint_states_evt_;
+  struct Implementation;
+  std::unique_ptr<Implementation> impl_;
 };
 
 }  // namespace tesseract_monitoring

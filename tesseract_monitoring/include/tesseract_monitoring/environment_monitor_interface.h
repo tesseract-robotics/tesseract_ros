@@ -27,13 +27,9 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
 #include <vector>
-#include <tesseract_msgs/GetEnvironmentInformation.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/commands.h>
-#include <tesseract_environment/environment.h>
 #include <tesseract_environment/environment_monitor_interface.h>
 
 namespace tesseract_monitoring
@@ -63,14 +59,16 @@ public:
   void removeNamespace(const std::string& monitor_namespace) override final;
 
   std::vector<std::string> applyCommand(const tesseract_environment::Command& command) const override final;
-  std::vector<std::string> applyCommands(const tesseract_environment::Commands& commands) const override final;
+  std::vector<std::string> applyCommands(
+      const std::vector<std::shared_ptr<const tesseract_environment::Command>>& commands) const override final;
   std::vector<std::string>
   applyCommands(const std::vector<tesseract_environment::Command>& commands) const override final;
 
   bool applyCommand(const std::string& monitor_namespace,
                     const tesseract_environment::Command& command) const override final;
-  bool applyCommands(const std::string& monitor_namespace,
-                     const tesseract_environment::Commands& commands) const override final;
+  bool applyCommands(
+      const std::string& monitor_namespace,
+      const std::vector<std::shared_ptr<const tesseract_environment::Command>>& commands) const override final;
   bool applyCommands(const std::string& monitor_namespace,
                      const std::vector<tesseract_environment::Command>& commands) const override final;
 
@@ -93,13 +91,11 @@ public:
   setEnvironmentState(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
 
-  tesseract_environment::Environment::UPtr getEnvironment(const std::string& monitor_namespace) const override final;
+  std::unique_ptr<tesseract_environment::Environment>
+  getEnvironment(const std::string& monitor_namespace) const override final;
 
-protected:
-  ros::NodeHandle nh_;
+private:
   std::vector<std::string> ns_;
-
-  bool sendCommands(const std::string& ns, const std::vector<tesseract_msgs::EnvironmentCommand>& commands) const;
 };
 }  // namespace tesseract_monitoring
 #endif  // TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
