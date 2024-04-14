@@ -90,6 +90,11 @@ target_include_directories(${PROJECT_NAME}_studio SYSTEM PRIVATE ${catkin_INCLUD
 # Demos
 add_subdirectory(demo)
 
+catkin_package(
+  SKIP_CMAKE_CONFIG_GENERATION
+  SKIP_PKG_CONFIG_GENERATION
+)
+
 # Configure Package
 configure_package(
   NAMESPACE tesseract
@@ -116,6 +121,8 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-foreach(dir config)
-  install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
-endforeach()
+if(NOT ${CATKIN_INSTALL_INTO_PREFIX_ROOT})
+  foreach(dir config)
+    install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
+  endforeach()
+endif()

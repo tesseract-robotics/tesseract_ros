@@ -87,6 +87,11 @@ target_include_directories(${PROJECT_NAME}_raster_example PUBLIC
 target_include_directories(${PROJECT_NAME}_raster_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
+catkin_package(
+  SKIP_CMAKE_CONFIG_GENERATION
+  SKIP_PKG_CONFIG_GENERATION
+)
+
 # Configure Package
 configure_package(
   NAMESPACE tesseract
@@ -114,6 +119,9 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-foreach(dir launch)
-  install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
-endforeach()
+
+if(NOT ${CATKIN_INSTALL_INTO_PREFIX_ROOT})
+  foreach(dir launch)
+    install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
+  endforeach()
+endif()

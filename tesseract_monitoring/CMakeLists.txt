@@ -73,6 +73,11 @@ target_cxx_version(demo_scene PRIVATE VERSION 17)
 target_include_directories(demo_scene PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(demo_scene SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
+catkin_package(
+  SKIP_CMAKE_CONFIG_GENERATION
+  SKIP_PKG_CONFIG_GENERATION
+)
+
 configure_package(
   NAMESPACE tesseract
   TARGETS
@@ -99,6 +104,9 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-foreach(dir launch)
-  install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
-endforeach()
+if(NOT ${CATKIN_INSTALL_INTO_PREFIX_ROOT})
+  foreach(dir launch)
+    install(DIRECTORY ${dir}/ DESTINATION share/${PROJECT_NAME}/${dir})
+  endforeach()
+endif()
+

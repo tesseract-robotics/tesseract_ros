@@ -67,6 +67,11 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
+catkin_package(
+  SKIP_CMAKE_CONFIG_GENERATION
+  SKIP_PKG_CONFIG_GENERATION
+)
+
 configure_package(
   NAMESPACE tesseract
   TARGETS ${PROJECT_NAME}
