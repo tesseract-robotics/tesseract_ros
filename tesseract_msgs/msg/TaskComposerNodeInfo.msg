@@ -21,8 +21,11 @@ string[] output_keys
 # Value returned from the Task on completion
 int32 return_value
 
-# Debug message
-string message
+# Status code
+int32 status_code
+
+# Status message
+string status_message
 
 # Time elapsed
 float64 elapsed_time
