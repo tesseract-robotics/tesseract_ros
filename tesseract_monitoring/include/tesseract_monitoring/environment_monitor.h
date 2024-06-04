@@ -60,7 +60,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/environment_monitor.h>
 #include <tesseract_monitoring/current_state_monitor.h>
-#include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_monitoring/constants.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_scene_graph/graph.h>
