@@ -52,10 +52,9 @@ int WorkbenchDisplay::Implementation::workbench_display_counter = -1;  // NOLINT
 
 WorkbenchDisplay::WorkbenchDisplay() : data_(std::make_unique<Implementation>())
 {
-  auto* monitor_property =
-      new rviz::Property("Environment Properties", "", "Tesseract environment properties", this, nullptr, this);
-  auto* joint_trajectory_property = new rviz::Property(
-      "Joint Trajectory Properties", "", "Tesseract joint trajectory properties", this, nullptr, this);
+  auto* monitor_property = new rviz::Property("Environment Properties", "", "Tesseract environment properties", this);
+  auto* joint_trajectory_property =
+      new rviz::Property("Joint Trajectory Properties", "", "Tesseract joint trajectory properties", this);
 
   data_->monitor_properties =
       std::make_unique<EnvironmentMonitorProperties>(this, data_->workbench_display_ns, monitor_property);
