@@ -13,10 +13,10 @@ string[] inbound_edges
 string[] outbound_edges
 
 # Input keys
-string[] input_keys
+TaskComposerKey[] input_keys
 
 # Output keys
-string[] output_keys
+TaskComposerKey[] output_keys
 
 # Value returned from the Task on completion
 int32 return_value
