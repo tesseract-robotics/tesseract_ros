@@ -68,6 +68,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/PlannerProfileRemapping.h>
 #include <tesseract_msgs/PluginInfo.h>
+#include <tesseract_msgs/TaskComposerKey.h>
 #include <tesseract_msgs/TaskComposerNodeInfo.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <geometry_msgs/Pose.h>
@@ -2306,8 +2307,41 @@ bool toMsg(tesseract_msgs::TaskComposerNodeInfo& node_info_msg, tesseract_planni
   node_info_msg.outbound_edges.reserve(node_info.outbound_edges.size());
   for (const auto& edge : node_info.outbound_edges)
     node_info_msg.outbound_edges.push_back(boost::uuids::to_string(edge));
-  node_info_msg.input_keys = node_info.input_keys;
-  node_info_msg.output_keys = node_info.output_keys;
+
+  for (const auto& pair : node_info.input_keys.data())
+  {
+    tesseract_msgs::TaskComposerKey key_msg;
+    key_msg.port = pair.first;
+    if (pair.second.index() == 0)
+    {
+      key_msg.keys.push_back(std::get<std::string>(pair.second));
+    }
+    else
+    {
+      for (const auto& key : std::get<std::vector<std::string>>(pair.second))
+        key_msg.keys.push_back(key);
+    }
+    node_info_msg.input_keys.push_back(key_msg);
+  }
+
+  for (const auto& pair : node_info.output_keys.data())
+  {
+    tesseract_msgs::TaskComposerKey key_msg;
+    key_msg.port = pair.first;
+    if (pair.second.index() == 0)
+    {
+      key_msg.type_index = 0;
+      key_msg.keys.push_back(std::get<std::string>(pair.second));
+    }
+    else
+    {
+      key_msg.type_index = 1;
+      for (const auto& key : std::get<std::vector<std::string>>(pair.second))
+        key_msg.keys.push_back(key);
+    }
+    node_info_msg.output_keys.push_back(key_msg);
+  }
+
   node_info_msg.return_value = node_info.return_value;
   node_info_msg.status_code = node_info.status_code;
   node_info_msg.status_message = node_info.status_message;
@@ -2329,8 +2363,23 @@ fromMsg(const tesseract_msgs::TaskComposerNodeInfo& node_info_msg)
   node_info->outbound_edges.reserve(node_info_msg.outbound_edges.size());
   for (const auto& edge : node_info_msg.outbound_edges)
     node_info->outbound_edges.push_back(boost::lexical_cast<boost::uuids::uuid>(edge));
-  node_info->input_keys = node_info_msg.input_keys;
-  node_info->output_keys = node_info_msg.output_keys;
+
+  for (const auto& key_msg : node_info_msg.input_keys)
+  {
+    if (key_msg.type_index == 0)
+      node_info->input_keys.add(key_msg.port, key_msg.keys.front());
+    else
+      node_info->input_keys.add(key_msg.port, key_msg.keys);
+  }
+
+  for (const auto& key_msg : node_info_msg.output_keys)
+  {
+    if (key_msg.type_index == 0)
+      node_info->output_keys.add(key_msg.port, key_msg.keys.front());
+    else
+      node_info->output_keys.add(key_msg.port, key_msg.keys);
+  }
+
   node_info->return_value = node_info_msg.return_value;
   node_info->status_code = node_info_msg.status_code;
   node_info->status_message = node_info_msg.status_message;

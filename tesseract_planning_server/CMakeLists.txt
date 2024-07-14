@@ -29,7 +29,6 @@ set(LIB_SOURCE_LINK_LIBRARIES
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_motion_planners_simple
   tesseract::tesseract_task_composer
-  tesseract::tesseract_task_composer_planning
   tesseract::tesseract_rosutils
   tesseract::tesseract_monitoring_environment
 )
