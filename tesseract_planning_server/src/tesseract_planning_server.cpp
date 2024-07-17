@@ -290,6 +290,10 @@ struct TesseractPlanningServer::Implementation
     env->applyCommands(tesseract_rosutils::fromMsg(goal->request.commands));
     env->setState(env_state.joints);
 
+    // Store the initial state in the response for publishing trajectories
+    tesseract_scene_graph::SceneState initial_state = env->getState();
+    tesseract_rosutils::toMsg(result.response.initial_state, initial_state.joints);
+
     // Create solve data storage
     auto data = std::make_unique<TaskComposerDataStorage>();
     data->setData("planning_input", std::move(planning_input));
@@ -302,10 +306,6 @@ struct TesseractPlanningServer::Implementation
     auto composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
     if (!composite_profile_remapping.empty())
       data->setData("composite_profile_remapping", composite_profile_remapping);
-
-    // Store the initial state in the response for publishing trajectories
-    tesseract_scene_graph::SceneState initial_state = env->getState();
-    tesseract_rosutils::toMsg(result.response.initial_state, initial_state.joints);
 
     // Solve
     tesseract_common::Timer timer;
