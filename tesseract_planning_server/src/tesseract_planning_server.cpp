@@ -337,7 +337,7 @@ struct TesseractPlanningServer::Implementation
     try
     {
       const tesseract_planning::TaskComposerNode& task = planning_server->getTask(plan_future->context->name);
-      tesseract_common::AnyPoly results = plan_future->context->data_storage->getData(task.getOutputKeys().get("proble"
+      tesseract_common::AnyPoly results = plan_future->context->data_storage->getData(task.getOutputKeys().get("progra"
                                                                                                                "m"));
       result.response.results = Serialization::toArchiveStringXML<tesseract_planning::InstructionPoly>(
           results.as<tesseract_planning::CompositeInstruction>());
