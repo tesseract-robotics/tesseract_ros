@@ -77,7 +77,7 @@ struct CurrentStateMonitor::Implementation
   tf2_ros::TransformBroadcaster tf_broadcaster;
   ros::Time current_state_time;
   ros::Time last_tf_update;
-  bool publish_tf;
+  bool publish_tf{ false };
 
   mutable std::mutex state_update_lock;
   mutable std::condition_variable state_update_condition;
@@ -118,9 +118,9 @@ struct CurrentStateMonitor::Implementation
     return env_state.joints;
   }
 
-  void startStateMonitor(const std::string& joint_states_topic, bool publish_tf)
+  void startStateMonitor(const std::string& joint_states_topic, bool enable_publish_tf)
   {
-    publish_tf = publish_tf;
+    publish_tf = enable_publish_tf;
     if (!state_monitor_started && env)
     {
       joint_time.clear();
