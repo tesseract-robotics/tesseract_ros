@@ -2,8 +2,8 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.0 (2024-07-25)
+-------------------
 * Fix current state monitor publish tf bug
 * Contributors: Levi Armstrong
 

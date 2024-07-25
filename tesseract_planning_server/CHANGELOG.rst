@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.0 (2024-07-25)
+-------------------
 * Add environment as const to data storage
 * Fix use-after-move (`#240 <https://github.com/tesseract-robotics/tesseract_ros/issues/240>`_)
 * Fix output key name

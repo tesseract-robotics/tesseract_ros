@@ -2,8 +2,8 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.23.0 (2024-07-25)
+-------------------
 * Update because TaskComposerProblem was removed
 * Contributors: Levi Armstrong
 

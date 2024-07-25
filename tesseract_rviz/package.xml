@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_rviz</name>
-  <version>0.22.0</version>
+  <version>0.23.0</version>
   <description>The tesseract_rviz package</description>
   <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
   <license>BSD</license>
