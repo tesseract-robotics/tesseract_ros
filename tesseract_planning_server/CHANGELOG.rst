@@ -2,6 +2,14 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add environment as const to data storage
+* Fix use-after-move (`#240 <https://github.com/tesseract-robotics/tesseract_ros/issues/240>`_)
+* Fix output key name
+* Update because TaskComposerProblem was removed
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.22.0 (2024-06-11)
 -------------------
 * Leverage forward declarations (`#233 <https://github.com/tesseract-robotics/tesseract_ros/issues/233>`_)

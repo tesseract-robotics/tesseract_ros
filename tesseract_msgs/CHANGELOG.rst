@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update because TaskComposerProblem was removed
+* Contributors: Levi Armstrong
+
 0.22.0 (2024-06-11)
 -------------------
 * Update to change in task composer node info
