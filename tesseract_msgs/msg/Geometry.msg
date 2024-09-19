@@ -10,6 +10,7 @@ uint8 MESH=6
 uint8 CONVEX_MESH=7
 uint8 SDF_MESH=8
 uint8 OCTREE=9
+uint8 COMPOUND_MESH=11
 
 # The type of the geometry
 uint8 type
@@ -38,3 +39,7 @@ tesseract_msgs/Mesh mesh
 # OCTREE
 octomap_msgs/Octomap octomap
 tesseract_msgs/OctreeSubType octomap_sub_type
+
+# COMPOUND_MESH (MESH, CONVEX_MESH, SDF_MESH)
+tesseract_msgs/Mesh[] compound_mesh
+uint8 compound_mesh_type #(MESH, CONVEX_MESH, SDF_MESH)
