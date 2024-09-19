@@ -92,6 +92,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_geometry/utils.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_task_composer/core/task_composer_node_info.h>
@@ -145,152 +146,6 @@ bool isMsgEmpty(const sensor_msgs::JointState& msg)
   return msg.name.empty() && msg.position.empty() && msg.velocity.empty() && msg.effort.empty();
 }
 
-bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2)
-{
-  if (shape1.getType() != shape2.getType())
-    return false;
-
-  switch (shape1.getType())
-  {
-    case tesseract_geometry::GeometryType::BOX:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Box&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Box&>(shape2);
-
-      if (std::abs(s1.getX() - s2.getX()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      if (std::abs(s1.getY() - s2.getY()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      if (std::abs(s1.getZ() - s2.getZ()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::SPHERE:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Sphere&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Sphere&>(shape2);
-
-      if (std::abs(s1.getRadius() - s2.getRadius()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::CYLINDER:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Cylinder&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Cylinder&>(shape2);
-
-      if (std::abs(s1.getRadius() - s2.getRadius()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      if (std::abs(s1.getLength() - s2.getLength()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::CONE:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Cone&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Cone&>(shape2);
-
-      if (std::abs(s1.getRadius() - s2.getRadius()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      if (std::abs(s1.getLength() - s2.getLength()) > std::numeric_limits<double>::epsilon())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::MESH:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Mesh&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Mesh&>(shape2);
-
-      if (s1.getVertexCount() != s2.getVertexCount())
-        return false;
-
-      if (s1.getFaceCount() != s2.getFaceCount())
-        return false;
-
-      if (s1.getFaces() != s2.getFaces())
-        return false;
-
-      if (s1.getVertices() != s2.getVertices())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::CONVEX_MESH:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::ConvexMesh&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::ConvexMesh&>(shape2);
-
-      if (s1.getVertexCount() != s2.getVertexCount())
-        return false;
-
-      if (s1.getFaceCount() != s2.getFaceCount())
-        return false;
-
-      if (s1.getFaces() != s2.getFaces())
-        return false;
-
-      if (s1.getVertices() != s2.getVertices())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::SDF_MESH:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Mesh&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Mesh&>(shape2);
-
-      if (s1.getVertexCount() != s2.getVertexCount())
-        return false;
-
-      if (s1.getFaceCount() != s2.getFaceCount())
-        return false;
-
-      if (s1.getFaces() != s2.getFaces())
-        return false;
-
-      if (s1.getVertices() != s2.getVertices())
-        return false;
-
-      break;
-    }
-    case tesseract_geometry::GeometryType::OCTREE:
-    {
-      const auto& s1 = static_cast<const tesseract_geometry::Octree&>(shape1);
-      const auto& s2 = static_cast<const tesseract_geometry::Octree&>(shape2);
-
-      if (s1.getOctree()->getTreeType() != s2.getOctree()->getTreeType())
-        return false;
-
-      if (s1.getOctree()->size() != s2.getOctree()->size())
-        return false;
-
-      if (s1.getOctree()->getTreeDepth() != s2.getOctree()->getTreeDepth())
-        return false;
-
-      if (s1.getOctree()->memoryUsage() != s2.getOctree()->memoryUsage())
-        return false;
-
-      if (s1.getOctree()->memoryFullGrid() != s2.getOctree()->memoryFullGrid())
-        return false;
-
-      break;
-    }
-    default:
-      ROS_ERROR("This geometric shape type (%d) is not supported", static_cast<int>(shape1.getType()));
-      return false;
-  }
-
-  return true;
-}
-
 bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/, const tesseract_scene_graph::Visual& /*visual2*/)
 {
   assert(false);
@@ -340,6 +195,134 @@ bool fromMsg(Eigen::Isometry3d& pose, const geometry_msgs::Pose& pose_msg)
 bool toMsg(geometry_msgs::Pose& pose_msg, const Eigen::Isometry3d& pose)
 {
   tf::poseEigenToMsg(pose, pose_msg);
+  return true;
+}
+
+inline bool toMsg(tesseract_msgs::Mesh& mesh_msgs, const tesseract_geometry::Geometry& geometry)
+{
+  switch (geometry.getType())
+  {
+    case tesseract_geometry::GeometryType::MESH:
+    {
+      const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geometry);
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
+      mesh_msgs.vertices.resize(vertices.size());
+      for (size_t i = 0; i < vertices.size(); ++i)
+      {
+        mesh_msgs.vertices[i].x = vertices[i](0);
+        mesh_msgs.vertices[i].y = vertices[i](1);
+        mesh_msgs.vertices[i].z = vertices[i](2);
+      }
+
+      const Eigen::VectorXi& faces = *(mesh.getFaces());
+      mesh_msgs.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        mesh_msgs.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
+
+      if (mesh.getResource() && mesh.getResource()->isFile())
+      {
+        mesh_msgs.file_path = mesh.getResource()->getFilePath();
+      }
+      if (mesh_msgs.file_path.empty())
+      {
+        mesh_msgs.scale[0] = 1;
+        mesh_msgs.scale[1] = 1;
+        mesh_msgs.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
+        mesh_msgs.scale[0] = scale.x();
+        mesh_msgs.scale[1] = scale.y();
+        mesh_msgs.scale[2] = scale.z();
+      }
+
+      break;
+    }
+    case tesseract_geometry::GeometryType::CONVEX_MESH:
+    {
+      const auto& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geometry);
+
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
+      mesh_msgs.vertices.resize(vertices.size());
+      for (size_t i = 0; i < vertices.size(); ++i)
+      {
+        mesh_msgs.vertices[i].x = vertices[i](0);
+        mesh_msgs.vertices[i].y = vertices[i](1);
+        mesh_msgs.vertices[i].z = vertices[i](2);
+      }
+
+      const Eigen::VectorXi& faces = *(mesh.getFaces());
+      mesh_msgs.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        mesh_msgs.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
+
+      if (mesh.getResource() && mesh.getResource()->isFile())
+      {
+        mesh_msgs.file_path = mesh.getResource()->getFilePath();
+      }
+      if (mesh_msgs.file_path.empty())
+      {
+        mesh_msgs.scale[0] = 1;
+        mesh_msgs.scale[1] = 1;
+        mesh_msgs.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
+        mesh_msgs.scale[0] = scale.x();
+        mesh_msgs.scale[1] = scale.y();
+        mesh_msgs.scale[2] = scale.z();
+      }
+
+      break;
+    }
+    case tesseract_geometry::GeometryType::SDF_MESH:
+    {
+      const auto& mesh = static_cast<const tesseract_geometry::SDFMesh&>(geometry);
+
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
+      mesh_msgs.vertices.resize(vertices.size());
+      for (size_t i = 0; i < vertices.size(); ++i)
+      {
+        mesh_msgs.vertices[i].x = vertices[i](0);
+        mesh_msgs.vertices[i].y = vertices[i](1);
+        mesh_msgs.vertices[i].z = vertices[i](2);
+      }
+
+      const Eigen::VectorXi& faces = *(mesh.getFaces());
+      mesh_msgs.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        mesh_msgs.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
+
+      if (mesh.getResource() && mesh.getResource()->isFile())
+      {
+        mesh_msgs.file_path = mesh.getResource()->getFilePath();
+      }
+      if (mesh_msgs.file_path.empty())
+      {
+        mesh_msgs.scale[0] = 1;
+        mesh_msgs.scale[1] = 1;
+        mesh_msgs.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
+        mesh_msgs.scale[0] = scale.x();
+        mesh_msgs.scale[1] = scale.y();
+        mesh_msgs.scale[2] = scale.z();
+      }
+
+      break;
+    }
+    default:
+    {
+      ROS_ERROR("Unable to construct primitive shape message for shape of type %d",
+                static_cast<int>(geometry.getType()));
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -415,121 +398,42 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
     }
     case tesseract_geometry::GeometryType::MESH:
     {
-      const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geometry);
-
       geometry_msgs.type = tesseract_msgs::Geometry::MESH;
-
-      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
-      geometry_msgs.mesh.vertices.resize(vertices.size());
-      for (size_t i = 0; i < vertices.size(); ++i)
-      {
-        geometry_msgs.mesh.vertices[i].x = vertices[i](0);
-        geometry_msgs.mesh.vertices[i].y = vertices[i](1);
-        geometry_msgs.mesh.vertices[i].z = vertices[i](2);
-      }
-
-      const Eigen::VectorXi& faces = *(mesh.getFaces());
-      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
-      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
-        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
-
-      if (mesh.getResource() && mesh.getResource()->isFile())
-      {
-        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
-      }
-      if (geometry_msgs.mesh.file_path.empty())
-      {
-        geometry_msgs.mesh.scale[0] = 1;
-        geometry_msgs.mesh.scale[1] = 1;
-        geometry_msgs.mesh.scale[2] = 1;
-      }
-      else
-      {
-        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
-        geometry_msgs.mesh.scale[0] = scale.x();
-        geometry_msgs.mesh.scale[1] = scale.y();
-        geometry_msgs.mesh.scale[2] = scale.z();
-      }
-
+      toMsg(geometry_msgs.mesh, geometry);
       break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
-      const auto& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geometry);
-
       geometry_msgs.type = tesseract_msgs::Geometry::CONVEX_MESH;
-
-      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
-      geometry_msgs.mesh.vertices.resize(vertices.size());
-      for (size_t i = 0; i < vertices.size(); ++i)
-      {
-        geometry_msgs.mesh.vertices[i].x = vertices[i](0);
-        geometry_msgs.mesh.vertices[i].y = vertices[i](1);
-        geometry_msgs.mesh.vertices[i].z = vertices[i](2);
-      }
-
-      const Eigen::VectorXi& faces = *(mesh.getFaces());
-      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
-      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
-        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
-
-      if (mesh.getResource() && mesh.getResource()->isFile())
-      {
-        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
-      }
-      if (geometry_msgs.mesh.file_path.empty())
-      {
-        geometry_msgs.mesh.scale[0] = 1;
-        geometry_msgs.mesh.scale[1] = 1;
-        geometry_msgs.mesh.scale[2] = 1;
-      }
-      else
-      {
-        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
-        geometry_msgs.mesh.scale[0] = scale.x();
-        geometry_msgs.mesh.scale[1] = scale.y();
-        geometry_msgs.mesh.scale[2] = scale.z();
-      }
-
+      toMsg(geometry_msgs.mesh, geometry);
       break;
     }
     case tesseract_geometry::GeometryType::SDF_MESH:
     {
-      const auto& mesh = static_cast<const tesseract_geometry::SDFMesh&>(geometry);
-
       geometry_msgs.type = tesseract_msgs::Geometry::SDF_MESH;
-
-      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
-      geometry_msgs.mesh.vertices.resize(vertices.size());
-      for (size_t i = 0; i < vertices.size(); ++i)
+      toMsg(geometry_msgs.mesh, geometry);
+      break;
+    }
+    case tesseract_geometry::GeometryType::COMPOUND_MESH:
+    {
+      geometry_msgs.type = tesseract_msgs::Geometry::COMPOUND_MESH;
+      const auto& compound_mesh = static_cast<const tesseract_geometry::CompoundMesh&>(geometry);
+      for (const auto& mesh : compound_mesh.getMeshes())
       {
-        geometry_msgs.mesh.vertices[i].x = vertices[i](0);
-        geometry_msgs.mesh.vertices[i].y = vertices[i](1);
-        geometry_msgs.mesh.vertices[i].z = vertices[i](2);
+        tesseract_msgs::Mesh mesh_msg;
+        toMsg(mesh_msg, *mesh);
+        geometry_msgs.compound_mesh.push_back(mesh_msg);
       }
 
-      const Eigen::VectorXi& faces = *(mesh.getFaces());
-      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
-      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
-        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
-
-      if (mesh.getResource() && mesh.getResource()->isFile())
-      {
-        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
-      }
-      if (geometry_msgs.mesh.file_path.empty())
-      {
-        geometry_msgs.mesh.scale[0] = 1;
-        geometry_msgs.mesh.scale[1] = 1;
-        geometry_msgs.mesh.scale[2] = 1;
-      }
+      const auto compound_mesh_type = compound_mesh.getMeshes().front()->getType();
+      if (compound_mesh_type == tesseract_geometry::GeometryType::MESH)
+        geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::MESH;
+      else if (compound_mesh_type == tesseract_geometry::GeometryType::CONVEX_MESH)
+        geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::CONVEX_MESH;
+      else if (compound_mesh_type == tesseract_geometry::GeometryType::SDF_MESH)
+        geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::SDF_MESH;
       else
-      {
-        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
-        geometry_msgs.mesh.scale[0] = scale.x();
-        geometry_msgs.mesh.scale[1] = scale.y();
-        geometry_msgs.mesh.scale[2] = scale.z();
-      }
+        throw std::runtime_error("Invalid compound mesh type!");
 
       break;
     }
@@ -542,6 +446,74 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Ge
   }
 
   return true;
+}
+
+inline std::shared_ptr<tesseract_geometry::PolygonMesh> fromMsg(uint8_t type, const tesseract_msgs::Mesh& mesh_msg)
+{
+  if (type == tesseract_msgs::Geometry::MESH)
+  {
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(mesh_msg.vertices.size());
+    auto faces = std::make_shared<Eigen::VectorXi>(mesh_msg.faces.size());
+
+    for (unsigned int i = 0; i < mesh_msg.vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(mesh_msg.vertices[i].x, mesh_msg.vertices[i].y, mesh_msg.vertices[i].z);
+
+    for (unsigned int i = 0; i < mesh_msg.faces.size(); ++i)
+      (*faces)[static_cast<int>(i)] = static_cast<int>(mesh_msg.faces[i]);
+
+    if (!mesh_msg.file_path.empty())
+      return std::make_shared<tesseract_geometry::Mesh>(
+          vertices,
+          faces,
+          std::make_shared<tesseract_common::SimpleLocatedResource>(mesh_msg.file_path, mesh_msg.file_path),
+          Eigen::Vector3f(mesh_msg.scale[0], mesh_msg.scale[1], mesh_msg.scale[2]).cast<double>());
+
+    return std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
+  }
+
+  if (type == tesseract_msgs::Geometry::CONVEX_MESH)
+  {
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(mesh_msg.vertices.size());
+    auto faces = std::make_shared<Eigen::VectorXi>(mesh_msg.faces.size());
+
+    for (unsigned int i = 0; i < mesh_msg.vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(mesh_msg.vertices[i].x, mesh_msg.vertices[i].y, mesh_msg.vertices[i].z);
+
+    for (unsigned int i = 0; i < mesh_msg.faces.size(); ++i)
+      (*faces)[static_cast<int>(i)] = static_cast<int>(mesh_msg.faces[i]);
+
+    if (!mesh_msg.file_path.empty())
+      return std::make_shared<tesseract_geometry::ConvexMesh>(
+          vertices,
+          faces,
+          std::make_shared<tesseract_common::SimpleLocatedResource>(mesh_msg.file_path, mesh_msg.file_path),
+          Eigen::Vector3f(mesh_msg.scale[0], mesh_msg.scale[1], mesh_msg.scale[2]).cast<double>());
+
+    return std::make_shared<tesseract_geometry::ConvexMesh>(vertices, faces);
+  }
+
+  if (type == tesseract_msgs::Geometry::SDF_MESH)
+  {
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(mesh_msg.vertices.size());
+    auto faces = std::make_shared<Eigen::VectorXi>(mesh_msg.faces.size());
+
+    for (unsigned int i = 0; i < mesh_msg.vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(mesh_msg.vertices[i].x, mesh_msg.vertices[i].y, mesh_msg.vertices[i].z);
+
+    for (unsigned int i = 0; i < mesh_msg.faces.size(); ++i)
+      (*faces)[static_cast<int>(i)] = static_cast<int>(mesh_msg.faces[i]);
+
+    if (!mesh_msg.file_path.empty())
+      return std::make_shared<tesseract_geometry::SDFMesh>(
+          vertices,
+          faces,
+          std::make_shared<tesseract_common::SimpleLocatedResource>(mesh_msg.file_path, mesh_msg.file_path),
+          Eigen::Vector3f(mesh_msg.scale[0], mesh_msg.scale[1], mesh_msg.scale[2]).cast<double>());
+
+    return std::make_shared<tesseract_geometry::SDFMesh>(vertices, faces);
+  }
+
+  return nullptr;
 }
 
 bool fromMsg(std::shared_ptr<tesseract_geometry::Geometry>& geometry, const tesseract_msgs::Geometry& geometry_msg)
@@ -578,80 +550,26 @@ bool fromMsg(std::shared_ptr<tesseract_geometry::Geometry>& geometry, const tess
                                                            geometry_msg.plane_coeff[2],
                                                            geometry_msg.plane_coeff[3]);
   }
-  else if (geometry_msg.type == tesseract_msgs::Geometry::MESH)
+  else if (geometry_msg.type == tesseract_msgs::Geometry::MESH ||
+           geometry_msg.type == tesseract_msgs::Geometry::CONVEX_MESH ||
+           geometry_msg.type == tesseract_msgs::Geometry::SDF_MESH)
   {
-    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(geometry_msg.mesh.vertices.size());
-    auto faces = std::make_shared<Eigen::VectorXi>(geometry_msg.mesh.faces.size());
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
-      (*vertices)[i] = Eigen::Vector3d(
-          geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
-
-    if (!geometry_msg.mesh.file_path.empty())
-      geometry = std::make_shared<tesseract_geometry::Mesh>(
-          vertices,
-          faces,
-          std::make_shared<tesseract_common::SimpleLocatedResource>(geometry_msg.mesh.file_path,
-                                                                    geometry_msg.mesh.file_path),
-          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
-              .cast<double>());
-    else
-      geometry = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
-  }
-  else if (geometry_msg.type == tesseract_msgs::Geometry::CONVEX_MESH)
-  {
-    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(geometry_msg.mesh.vertices.size());
-    auto faces = std::make_shared<Eigen::VectorXi>(geometry_msg.mesh.faces.size());
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
-      (*vertices)[i] = Eigen::Vector3d(
-          geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
-
-    if (!geometry_msg.mesh.file_path.empty())
-      geometry = std::make_shared<tesseract_geometry::ConvexMesh>(
-          vertices,
-          faces,
-          std::make_shared<tesseract_common::SimpleLocatedResource>(geometry_msg.mesh.file_path,
-                                                                    geometry_msg.mesh.file_path),
-          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
-              .cast<double>());
-    else
-      geometry = std::make_shared<tesseract_geometry::ConvexMesh>(vertices, faces);
-  }
-  else if (geometry_msg.type == tesseract_msgs::Geometry::SDF_MESH)
-  {
-    auto vertices = std::make_shared<tesseract_common::VectorVector3d>(geometry_msg.mesh.vertices.size());
-    auto faces = std::make_shared<Eigen::VectorXi>(geometry_msg.mesh.faces.size());
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
-      (*vertices)[i] = Eigen::Vector3d(
-          geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
-
-    for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
-
-    if (!geometry_msg.mesh.file_path.empty())
-      geometry = std::make_shared<tesseract_geometry::SDFMesh>(
-          vertices,
-          faces,
-          std::make_shared<tesseract_common::SimpleLocatedResource>(geometry_msg.mesh.file_path,
-                                                                    geometry_msg.mesh.file_path),
-          Eigen::Vector3f(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])
-              .cast<double>());
-    else
-      geometry = std::make_shared<tesseract_geometry::SDFMesh>(vertices, faces);
+    geometry = fromMsg(geometry_msg.type, geometry_msg.mesh);
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::OCTREE)
   {
     std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(geometry_msg.octomap)));
     auto sub_type = static_cast<tesseract_geometry::OctreeSubType>(geometry_msg.octomap_sub_type.type);
     geometry = std::make_shared<tesseract_geometry::Octree>(om, sub_type);
+  }
+  else if (geometry_msg.type == tesseract_msgs::Geometry::COMPOUND_MESH)
+  {
+    std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh>> meshes;
+    meshes.reserve(geometry_msg.compound_mesh.size());
+    for (const auto& mesh : geometry_msg.compound_mesh)
+      meshes.push_back(fromMsg(geometry_msg.compound_mesh_type, mesh));
+
+    geometry = std::make_shared<tesseract_geometry::CompoundMesh>(meshes);
   }
 
   if (geometry == nullptr)
