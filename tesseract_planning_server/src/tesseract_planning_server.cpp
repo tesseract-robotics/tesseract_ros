@@ -72,7 +72,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/serialization.h>
 #include <tesseract_common/any_poly.h>
-#include <tesseract_common/timer.h>
+#include <tesseract_common/stopwatch.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/environment_cache.h>
 #include <tesseract_environment/environment_monitor.h>
@@ -308,12 +308,12 @@ struct TesseractPlanningServer::Implementation
       data->setData("composite_profile_remapping", composite_profile_remapping);
 
     // Solve
-    tesseract_common::Timer timer;
-    timer.start();
+    tesseract_common::Stopwatch stopwatch;
+    stopwatch.start();
     tesseract_planning::TaskComposerFuture::UPtr plan_future =
         planning_server->run(goal->request.name, std::move(data), goal->request.dotgraph, executor_name);
     plan_future->wait();  // Wait for results
-    timer.stop();
+    stopwatch.stop();
 
     // Generate DOT Graph if requested
     if (goal->request.dotgraph)
@@ -355,7 +355,7 @@ struct TesseractPlanningServer::Implementation
     result.response.successful = plan_future->context->isSuccessful();
     plan_future->clear();
 
-    ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", timer.elapsedSeconds());
+    ROS_INFO("Tesseract Planning Server Finished Request in %f seconds!", stopwatch.elapsedSeconds());
     motion_plan_server.setSucceeded(result);
   }
 };
