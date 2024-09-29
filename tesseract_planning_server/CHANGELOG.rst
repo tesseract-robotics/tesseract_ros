@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.25.0 (2024-09-29)
+-------------------
 * Update to use Stopwatch instead of Timer
 * Contributors: Levi Armstrong
 
