@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to support Geometry Type CompoundMesh
+* Contributors: Levi Armstrong
+
 0.24.0 (2024-08-15)
 -------------------
 
