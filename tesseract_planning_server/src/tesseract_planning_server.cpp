@@ -317,22 +317,8 @@ struct TesseractPlanningServer::Implementation
 
     // Generate DOT Graph if requested
     if (goal->request.dotgraph)
-    {
-      try
-      {
-        // Save dot graph
-        const tesseract_planning::TaskComposerNode& task = planning_server->getTask(plan_future->context->name);
-        std::stringstream dotgraph;
-        task.dump(dotgraph, nullptr, plan_future->context->task_infos.getInfoMap());
-        result.response.dotgraph = dotgraph.str();
-      }
-      catch (const std::exception& e)
-      {
-        std::ostringstream oss;
-        oss << "Failed to generated DOT Graph: '" << e.what() << "'!" << std::endl;
-        ROS_ERROR_STREAM(oss.str());
-      }
-    }
+      result.response.dotgraph = planning_server->getTask(plan_future->context->name)
+                                     .getDotgraph(plan_future->context->task_infos.getInfoMap());
 
     try
     {
