@@ -1,15 +1,14 @@
 find_gtest()
-find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_rosutils_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main Eigen3::Eigen tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main Eigen3::Eigen tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 17)
 add_gtest_discover_tests(${PROJECT_NAME}_unit)
 
 add_executable(${PROJECT_NAME}_geometry_msg_conversions tesseract_rosutils_geometry_msg_conversions.cpp)
-target_link_libraries(${PROJECT_NAME}_geometry_msg_conversions GTest::GTest GTest::Main Eigen3::Eigen tesseract::tesseract_support tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_geometry_msg_conversions GTest::GTest GTest::Main Eigen3::Eigen tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_motion_planners_core ${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME}_geometry_msg_conversions PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_geometry_msg_conversions ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_geometry_msg_conversions PUBLIC VERSION 17)
