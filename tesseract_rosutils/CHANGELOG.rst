@@ -2,6 +2,11 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to latest tesseract
+* Contributors: Levi Armstrong
+
 0.25.0 (2024-09-29)
 -------------------
 * Update to support Geometry Type CompoundMesh
