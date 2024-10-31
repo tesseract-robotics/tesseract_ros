@@ -1626,6 +1626,8 @@ void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract
 
 void toMsg(tesseract_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj)
 {
+  traj_msg.uuid = boost::uuids::to_string(traj.uuid);
+  traj_msg.description = traj.description;
   for (const auto& js : traj)
   {
     assert(js.joint_names.size() == static_cast<unsigned>(js.position.size()));
@@ -1653,6 +1655,8 @@ void toMsg(tesseract_msgs::JointTrajectory& traj_msg, const tesseract_common::Jo
 tesseract_common::JointTrajectory fromMsg(const tesseract_msgs::JointTrajectory& traj_msg)
 {
   tesseract_common::JointTrajectory trajectory;
+  trajectory.uuid = boost::lexical_cast<boost::uuids::uuid>(traj_msg.uuid);
+  trajectory.description = traj_msg.description;
   for (const auto& js_msg : traj_msg.states)
   {
     assert(js_msg.joint_names.size() == static_cast<unsigned>(js_msg.position.size()));

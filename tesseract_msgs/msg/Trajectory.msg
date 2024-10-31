@@ -25,4 +25,6 @@ tesseract_msgs/StringDoublePair[] initial_state
 string instructions
 
 # If instructions are provided this will be ignored
+string joint_trajectories_uuid
+string joint_trajectories_description
 tesseract_msgs/JointTrajectory[] joint_trajectories
