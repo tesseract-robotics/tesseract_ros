@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
 #include <Eigen/Geometry>
+#include <boost/uuid/uuid_io.hpp>
 #include <geometry_msgs/PoseArray.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -43,6 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/conversions.h>
 
 #include <tesseract_common/joint_state.h>
+#include <tesseract_common/serialization.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_environment/environment.h>
@@ -318,9 +320,11 @@ void ROSPlotting::plotTrajectory(const tesseract_msgs::Trajectory& traj, std::st
 
 void ROSPlotting::plotTrajectory(const tesseract_common::JointTrajectory& traj,
                                  const tesseract_scene_graph::StateSolver& /*state_solver*/,
-                                 std::string /*ns*/)
+                                 std::string ns)
 {
   tesseract_msgs::Trajectory msg;
+  msg.ns = ns;
+  msg.joint_trajectories_uuid = boost::uuids::to_string(traj.uuid);
 
   // Set the initial state
   for (std::size_t i = 0; i < traj[0].joint_names.size(); ++i)
@@ -361,12 +365,7 @@ void ROSPlotting::plotTrajectory(const tesseract_environment::Environment& env,
   // Convert to joint trajectory
   assert(instruction.isCompositeInstruction());
   const auto& ci = instruction.as<tesseract_planning::CompositeInstruction>();
-  tesseract_common::JointTrajectory traj = tesseract_planning::toJointTrajectory(ci);
-
-  // Set the joint trajectory message
-  tesseract_msgs::JointTrajectory traj_msg;
-  toMsg(traj_msg, traj);
-  msg.joint_trajectories.push_back(traj_msg);
+  msg.instructions = tesseract_common::Serialization::toArchiveStringXML<tesseract_planning::CompositeInstruction>(ci);
 
   plotTrajectory(msg);
 }
