@@ -2,6 +2,11 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updates to support visualizing online planning example
+* Contributors: Levi Armstrong
+
 0.26.0 (2024-10-27)
 -------------------
 * Update to latest tesseract
