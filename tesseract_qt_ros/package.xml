@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_qt_ros</name>
-  <version>0.26.0</version>
+  <version>0.27.0</version>
   <description>The tesseract_qt_ros package</description>
   <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
   <license>LGPL3.0</license>
