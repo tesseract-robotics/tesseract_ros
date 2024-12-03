@@ -95,6 +95,10 @@ catkin_package(
   SKIP_PKG_CONFIG_GENERATION
 )
 
+# Override the default installation directory for executables
+set(CMAKE_INSTALL_BINDIR ${CATKIN_PACKAGE_BIN_DESTINATION})
+set(CMAKE_INSTALL_LIBDIR ${CATKIN_PACKAGE_LIB_DESTINATION})
+
 # Configure Package
 configure_package(
   NAMESPACE tesseract
