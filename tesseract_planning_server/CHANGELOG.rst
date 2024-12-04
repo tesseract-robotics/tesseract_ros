@@ -2,8 +2,8 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.27.1 (2024-12-04)
+-------------------
 * Update so binaries are installed in lib so rosrun will find them
 * Contributors: Levi Armstrong
 
