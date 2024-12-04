@@ -2,6 +2,11 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update so binaries are installed in lib so rosrun will find them
+* Contributors: Levi Armstrong
+
 0.27.0 (2024-12-01)
 -------------------
 

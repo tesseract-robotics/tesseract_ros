@@ -2,6 +2,9 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.27.0 (2024-12-01)
 -------------------
 * Updates to support visualizing online planning example
