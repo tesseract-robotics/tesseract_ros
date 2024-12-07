@@ -163,53 +163,45 @@ struct TesseractPlanningServer::Implementation
   void loadDefaultPlannerProfiles()
   {
     // Add Simple Default Profiles
-    profiles->addProfile<tesseract_planning::SimplePlannerPlanProfile>(
-        SIMPLE_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
+    profiles->addProfile(SIMPLE_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
 
     // Add TrajOpt Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT
-    profiles->addProfile<tesseract_planning::TrajOptPlanProfile>(
-        TRAJOPT_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>());
-    profiles->addProfile<tesseract_planning::TrajOptCompositeProfile>(
-        TRAJOPT_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>());
-    profiles->addProfile<tesseract_planning::TrajOptSolverProfile>(
-        TRAJOPT_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>());
+    profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>());
+    profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>());
+    profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>());
 #endif
 
     // Add TrajOpt IFOPT Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT
-    profiles->addProfile<tesseract_planning::TrajOptIfoptPlanProfile>(
-        TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>());
-    profiles->addProfile<tesseract_planning::TrajOptIfoptCompositeProfile>(
-        TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>());
+    profiles->addProfile(TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>());
+    profiles->addProfile(TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>());
 #endif
 
     // Add Descartes Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_DESCARTES
-    profiles->addProfile<tesseract_planning::DescartesPlanProfile<double>>(
-        DESCARTES_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>());
+    profiles->addProfile(DESCARTES_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>());
 #endif
 
     // Add OMPL Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_OMPL
-    profiles->addProfile<tesseract_planning::OMPLPlanProfile>(
-        OMPL_DEFAULT_NAMESPACE,
-        tesseract_planning::DEFAULT_PROFILE_KEY,
-        std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
+    profiles->addProfile(OMPL_DEFAULT_NAMESPACE,
+                         tesseract_planning::DEFAULT_PROFILE_KEY,
+                         std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
 #endif
   }
 
