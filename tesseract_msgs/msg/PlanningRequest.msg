@@ -7,6 +7,3 @@ string input # This should an xml string of tesseract_common::AnyPoly
 bool dotgraph # Enable if DOT Graph should be generated and returned
 bool debug # Enable debug content
 bool save_io # Enable saving of input and output for task infos
-
-tesseract_msgs/PlannerProfileRemapping move_profile_remapping
-tesseract_msgs/PlannerProfileRemapping composite_profile_remapping

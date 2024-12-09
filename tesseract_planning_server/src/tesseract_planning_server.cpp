@@ -291,13 +291,6 @@ struct TesseractPlanningServer::Implementation
     data->setData("planning_input", std::move(planning_input));
     data->setData("environment", std::shared_ptr<const tesseract_environment::Environment>(std::move(env)));
     data->setData("profiles", profiles);
-    auto move_profile_remapping = tesseract_rosutils::fromMsg(goal->request.move_profile_remapping);
-    if (!move_profile_remapping.empty())
-      data->setData("move_profile_remapping", move_profile_remapping);
-
-    auto composite_profile_remapping = tesseract_rosutils::fromMsg(goal->request.composite_profile_remapping);
-    if (!composite_profile_remapping.empty())
-      data->setData("composite_profile_remapping", composite_profile_remapping);
 
     // Solve
     tesseract_common::Stopwatch stopwatch;
