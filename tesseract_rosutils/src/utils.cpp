@@ -66,7 +66,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
-#include <tesseract_msgs/PlannerProfileRemapping.h>
 #include <tesseract_msgs/PluginInfo.h>
 #include <tesseract_msgs/TaskComposerKey.h>
 #include <tesseract_msgs/TaskComposerNodeInfo.h>
@@ -990,42 +989,6 @@ tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
   fromMsg(joint.mimic, joint_msg.mimic);
 
   return joint;
-}
-
-std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
-fromMsg(const tesseract_msgs::PlannerProfileRemapping& profile_remapping_msg)
-{
-  tesseract_planning::PlannerProfileRemapping profile_remapping;
-  for (std::size_t i = 0; i < profile_remapping_msg.planner.size(); ++i)
-  {
-    std::unordered_map<std::string, std::string> mapping;
-    for (const auto& pair : profile_remapping_msg.mapping[i].pairs)
-      mapping.emplace(pair.first, pair.second);
-
-    profile_remapping[profile_remapping_msg.planner[i]] = mapping;
-  }
-
-  return profile_remapping;
-}
-
-tesseract_msgs::PlannerProfileRemapping
-toMsg(const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& profile_remapping)
-{
-  tesseract_msgs::PlannerProfileRemapping profile_remapping_msg;
-  for (const auto& planner_remapping : profile_remapping)
-  {
-    profile_remapping_msg.planner.push_back(planner_remapping.first);
-    tesseract_msgs::ProfileMap mapping;
-    for (const auto& planner_pair : planner_remapping.second)
-    {
-      tesseract_msgs::StringPair p;
-      p.first = planner_pair.first;
-      p.second = planner_pair.second;
-      mapping.pairs.push_back(p);
-    }
-    profile_remapping_msg.mapping.push_back(mapping);
-  }
-  return profile_remapping_msg;
 }
 
 tesseract_common::PairsCollisionMarginData

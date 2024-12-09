@@ -89,7 +89,6 @@ ROS_DECLARE_MESSAGE(Trajectory)
 ROS_DECLARE_MESSAGE(TransformMap)
 ROS_DECLARE_MESSAGE(VisualGeometry)
 ROS_DECLARE_MESSAGE(JointTrajectory)
-ROS_DECLARE_MESSAGE(PlannerProfileRemapping)
 ROS_DECLARE_MESSAGE(PluginInfo)
 ROS_DECLARE_MESSAGE(KinematicsPluginInfo)
 ROS_DECLARE_MESSAGE(StringPluginInfoPair)
@@ -203,11 +202,6 @@ bool fromMsg(std::shared_ptr<tesseract_scene_graph::JointSafety>& joint_safety,
              const tesseract_msgs::JointSafety& joint_safety_msg);
 
 bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene_graph::Joint& joint);
-
-std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
-fromMsg(const tesseract_msgs::PlannerProfileRemapping& profile_remapping_msg);
-tesseract_msgs::PlannerProfileRemapping
-toMsg(const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& profile_remapping);
 
 tesseract_common::PairsCollisionMarginData
 fromMsg(const std::vector<tesseract_msgs::ContactMarginPair>& contact_margin_pairs_msg);

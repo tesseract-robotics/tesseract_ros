@@ -73,7 +73,6 @@ add_message_files(
     Mesh.msg
     ObjectColor.msg
     OctreeSubType.msg
-    PlannerProfileRemapping.msg
     PlanningRequest.msg
     PlanningResponse.msg
     PluginInfo.msg
