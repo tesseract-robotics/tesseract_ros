@@ -7,6 +7,8 @@
     <arg name="box_x" default="0.15"/>
     <arg name="box_y" default="0.4"/>
     <arg name="rviz" default="true"/>
+    <arg name="ifopt" default="false"/>
+    <arg name="debug" default="false"/>
     <arg name="testing" default="false"/>
 
     <!-- Load Robot Model    -->
@@ -26,6 +28,8 @@
           <param name="plotting" value="$(arg plotting)"/>
           <param name="file_write_cb" value="$(arg file_write_cb)" />
           <param name="rviz" type="bool" value="$(arg rviz)"/>
+          <param name="ifopt" type="bool" value="$(arg ifopt)"/>
+          <param name="debug" type="bool" value="$(arg debug)"/>
       </node>
 
       <!-- Launch visualization -->

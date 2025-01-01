@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_task_composer/core/task_composer_server.h>
 #include <tesseract_task_composer/core/task_composer_context.h>
@@ -49,7 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_osqp_solver_profile.h>
 #endif
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT
@@ -60,7 +61,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_OMPL
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
-#include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_real_vector_plan_profile.h>
 #endif
 
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
@@ -177,7 +178,7 @@ struct TesseractPlanningServer::Implementation
                          std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>());
     profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::TrajOptDefaultSolverProfile>());
+                         std::make_shared<tesseract_planning::TrajOptOSQPSolverProfile>());
 #endif
 
     // Add TrajOpt IFOPT Default Profiles
@@ -201,7 +202,7 @@ struct TesseractPlanningServer::Implementation
 #ifdef TESSERACT_PLANNING_SERVER_HAS_OMPL
     profiles->addProfile(OMPL_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::OMPLDefaultPlanProfile>());
+                         std::make_shared<tesseract_planning::OMPLRealVectorPlanProfile>());
 #endif
   }
 
