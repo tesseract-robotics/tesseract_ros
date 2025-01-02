@@ -290,7 +290,7 @@ struct CurrentStateMonitor::Implementation
     std::vector<std::string> missing_joints;
     if (!haveCompleteState(missing_joints))
     {
-      tesseract_kinematics::JointGroup::UPtr jmg = env->getJointGroup(manip);
+      tesseract_kinematics::JointGroup::ConstPtr jmg = env->getJointGroup(manip);
       if (jmg)
       {
         std::set<std::string> mj;
