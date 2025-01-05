@@ -29,6 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/environment_cache.h>
 #include <tesseract_environment/environment_monitor.h>
@@ -83,8 +84,9 @@ int main(int argc, char** argv)
 
   if (!task_composer_config.empty())
   {
+    tesseract_common::GeneralResourceLocator locator;
     tesseract_common::fs::path config(task_composer_config);
-    planning_server->getTaskComposerServer().loadConfig(config);
+    planning_server->getTaskComposerServer().loadConfig(config, locator);
   }
 
   ros::Timer update_cache = nh.createTimer(ros::Duration(cache_refresh_rate), updateCacheCallback);
