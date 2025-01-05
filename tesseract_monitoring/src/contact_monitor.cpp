@@ -44,6 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_monitoring/constants.h>
 
+#include <tesseract_common/contact_allowed_validator.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_environment/environment.h>
@@ -140,7 +141,7 @@ struct ContactMonitor::Implementation
           // Create a new manager
           std::vector<std::string> active;
           tesseract_collision::CollisionMarginData contact_margin_data;
-          tesseract_collision::IsContactAllowedFn fn;
+          tesseract_common::ContactAllowedValidator::ConstPtr fn;
 
           {
             auto lock_read = monitor->environment().lockRead();
@@ -148,13 +149,13 @@ struct ContactMonitor::Implementation
             env_revision = monitor->environment().getRevision();
             active = manager->getActiveCollisionObjects();
             contact_margin_data = manager->getCollisionMarginData();
-            fn = manager->getIsContactAllowedFn();
+            fn = manager->getContactAllowedValidator();
             manager = monitor->environment().getDiscreteContactManager();
           }
 
           manager->setActiveCollisionObjects(active);
           manager->setCollisionMarginData(contact_margin_data);
-          manager->setIsContactAllowedFn(fn);
+          manager->setContactAllowedValidator(fn);
           for (const auto& disabled_link_name : disabled_link_names)
             manager->disableCollisionObject(disabled_link_name);
         }
@@ -237,19 +238,19 @@ struct ContactMonitor::Implementation
     // Create a new manager
     std::vector<std::string> active;
     tesseract_collision::CollisionMarginData contact_margin_data;
-    tesseract_collision::IsContactAllowedFn fn;
+    tesseract_common::ContactAllowedValidator::ConstPtr fn;
 
     {
       auto lock_read = monitor->environment().lockRead();
       active = manager->getActiveCollisionObjects();
       contact_margin_data = manager->getCollisionMarginData();
-      fn = manager->getIsContactAllowedFn();
+      fn = manager->getContactAllowedValidator();
       manager = monitor->environment().getDiscreteContactManager();
     }
 
     manager->setActiveCollisionObjects(active);
     manager->setCollisionMarginData(contact_margin_data);
-    manager->setIsContactAllowedFn(fn);
+    manager->setContactAllowedValidator(fn);
     for (const auto& disabled_link_name : disabled_link_names)
       manager->disableCollisionObject(disabled_link_name);
 
