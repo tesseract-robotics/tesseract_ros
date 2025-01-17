@@ -2,8 +2,8 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.0 (2025-01-16)
+-------------------
 * Update due to changes in tesseract and tesseract_planning repos
 * Update environment changes returning shared pointer for getKinematicGroup and getJointGroup
 * Contributors: Levi Armstrong
