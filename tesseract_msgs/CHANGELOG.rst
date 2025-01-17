@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update due to changes with profile overrides
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-04)
 -------------------
 

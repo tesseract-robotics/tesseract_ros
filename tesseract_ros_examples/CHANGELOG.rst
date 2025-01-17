@@ -2,6 +2,11 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update examples based on new profiles
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-04)
 -------------------
 

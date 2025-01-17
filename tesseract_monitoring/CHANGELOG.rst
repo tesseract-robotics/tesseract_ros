@@ -2,6 +2,12 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update due to changes in tesseract and tesseract_planning repos
+* Update environment changes returning shared pointer for getKinematicGroup and getJointGroup
+* Contributors: Levi Armstrong
+
 0.27.1 (2024-12-04)
 -------------------
 * Update so binaries are installed in lib so rosrun will find them

@@ -2,6 +2,9 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.27.1 (2024-12-04)
 -------------------
 * Update so binaries are installed in lib so rosrun will find them
