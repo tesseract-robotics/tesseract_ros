@@ -265,13 +265,15 @@ void EnvironmentMonitorWidget::snapshotCallback(const tesseract_msgs::Environmen
 
   tesseract_environment::Commands commands = tesseract_rosutils::fromMsg(msg->command_history);
   std::unordered_map<std::string, double> jv;
+  tesseract_common::TransformMap fjv;
   tesseract_rosutils::fromMsg(jv, msg->joint_states);
+  tesseract_rosutils::fromMsg(fjv, msg->floating_joint_states);
   auto env = std::make_shared<tesseract_environment::Environment>();
   auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   env->setResourceLocator(locator);
   if (env->init(commands))
   {
-    env->setState(jv);
+    env->setState(jv, fjv);
 
     if (data_->monitor != nullptr)
       data_->monitor->shutdown();
