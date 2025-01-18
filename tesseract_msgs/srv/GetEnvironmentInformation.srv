@@ -39,3 +39,4 @@ tesseract_msgs/TransformMap joint_transforms
 tesseract_msgs/AllowedCollisionEntry[] allowed_collision_matrix
 tesseract_msgs/KinematicsInformation kinematics_information
 sensor_msgs/JointState joint_states
+tesseract_msgs/TransformMap floating_joint_states

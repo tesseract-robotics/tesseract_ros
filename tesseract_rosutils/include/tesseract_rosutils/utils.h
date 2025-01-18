@@ -46,6 +46,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/fwd.h>
 #include <tesseract_motion_planners/core/fwd.h>
 #include <tesseract_task_composer/core/fwd.h>
+#include <tesseract_msgs/TransformMap.h>
 
 #include <ros/message_forward.h>
 namespace tesseract_msgs
@@ -86,7 +87,6 @@ ROS_DECLARE_MESSAGE(StringPair)
 ROS_DECLARE_MESSAGE(Environment)
 ROS_DECLARE_MESSAGE(EnvironmentState)
 ROS_DECLARE_MESSAGE(Trajectory)
-ROS_DECLARE_MESSAGE(TransformMap)
 ROS_DECLARE_MESSAGE(VisualGeometry)
 ROS_DECLARE_MESSAGE(JointTrajectory)
 ROS_DECLARE_MESSAGE(PluginInfo)
@@ -135,6 +135,7 @@ private:
 };
 
 bool isMsgEmpty(const sensor_msgs::JointState& msg);
+bool isMsgEmpty(const tesseract_msgs::TransformMap& msg);
 
 bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2);
 
@@ -263,7 +264,9 @@ void toMsg(tesseract_msgs::JointTrajectory& traj_msg, const tesseract_common::Jo
  */
 tesseract_common::JointTrajectory fromMsg(const tesseract_msgs::JointTrajectory& traj_msg);
 
-bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg);
+bool processMsg(tesseract_environment::Environment& env,
+                const sensor_msgs::JointState& joint_state_msg,
+                const tesseract_msgs::TransformMap& floating_joint_state_msg = {});
 
 /**
  * @brief Apply the provided commands to the environment

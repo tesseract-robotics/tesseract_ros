@@ -64,7 +64,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Environment.h>
 #include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract_msgs/TransformMap.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/PluginInfo.h>
 #include <tesseract_msgs/TaskComposerKey.h>
@@ -144,6 +143,8 @@ bool isMsgEmpty(const sensor_msgs::JointState& msg)
 {
   return msg.name.empty() && msg.position.empty() && msg.velocity.empty() && msg.effort.empty();
 }
+
+bool isMsgEmpty(const tesseract_msgs::TransformMap& msg) { return (msg.names.empty() || msg.transforms.empty()); }
 
 bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/, const tesseract_scene_graph::Visual& /*visual2*/)
 {
@@ -1579,7 +1580,11 @@ void toMsg(tesseract_msgs::EnvironmentState& state_msg,
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
 
   if (include_joint_states)
-    toMsg(state_msg.joint_state, env.getState().joints);
+  {
+    tesseract_scene_graph::SceneState env_state = env.getState();
+    toMsg(state_msg.joint_state, env_state.joints);
+    toMsg(state_msg.floating_joint_states, env_state.floating_joints);
+  }
 }
 
 void toMsg(const tesseract_msgs::EnvironmentStatePtr& state_msg, const tesseract_environment::Environment& env)
@@ -1645,19 +1650,31 @@ tesseract_common::JointTrajectory fromMsg(const tesseract_msgs::JointTrajectory&
   return trajectory;
 }
 
-bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)
+bool processMsg(tesseract_environment::Environment& env,
+                const sensor_msgs::JointState& joint_state_msg,
+                const tesseract_msgs::TransformMap& floating_joint_state_msg)
 {
-  if (!isMsgEmpty(joint_state_msg))
+  const bool joint_state_msg_empty = isMsgEmpty(joint_state_msg);
+  const bool floating_joint_state_msg_empty = isMsgEmpty(floating_joint_state_msg);
+
+  if (joint_state_msg_empty && floating_joint_state_msg_empty)
+    return false;
+
+  tesseract_common::TransformMap floating_joints;
+  if (!floating_joint_state_msg_empty)
+    fromMsg(floating_joints, floating_joint_state_msg);
+
+  if (!joint_state_msg_empty)
   {
     std::unordered_map<std::string, double> joints;
     for (auto i = 0u; i < joint_state_msg.name.size(); ++i)
-    {
       joints[joint_state_msg.name[i]] = joint_state_msg.position[i];
-    }
-    env.setState(joints);
+    env.setState(joints, floating_joints);
     return true;
   }
-  return false;
+
+  env.setState(floating_joints);
+  return true;
 }
 
 bool processMsg(tesseract_environment::Environment& env,
@@ -2125,14 +2142,13 @@ bool toMsg(tesseract_msgs::Environment& environment_msg,
            bool include_joint_states)
 {
   if (include_joint_states)
-    toMsg(environment_msg.joint_states, env.getState().joints);
-
-  if (!tesseract_rosutils::toMsg(environment_msg.command_history, env.getCommandHistory(), 0))
   {
-    return false;
+    tesseract_scene_graph::SceneState env_state = env.getState();
+    toMsg(environment_msg.joint_states, env_state.joints);
+    toMsg(environment_msg.floating_joint_states, env_state.floating_joints);
   }
 
-  if (!tesseract_rosutils::toMsg(environment_msg.joint_states, env.getState().joints))
+  if (!tesseract_rosutils::toMsg(environment_msg.command_history, env.getCommandHistory(), 0))
   {
     return false;
   }
@@ -2176,7 +2192,12 @@ std::unique_ptr<tesseract_environment::Environment> fromMsg(const tesseract_msgs
     ROS_ERROR_STREAM("fromMsg(Environment): Failed to get joint states");
     return nullptr;
   }
-  env->setState(env_state->joints);
+  if (!tesseract_rosutils::fromMsg(env_state->floating_joints, environment_msg.floating_joint_states))
+  {
+    ROS_ERROR_STREAM("fromMsg(Environment): Failed to get floating joint states");
+    return nullptr;
+  }
+  env->setState(env_state->joints, env_state->floating_joints);
 
   return env;
 }

@@ -72,6 +72,7 @@ string remove_allowed_collision_link
 
 # UPDATE_JOINT_STATE
 sensor_msgs/JointState joint_state
+tesseract_msgs/TransformMap floating_joint_states
 
 # ADD_SCENE_GRAPH Command
 tesseract_msgs/SceneGraph scene_graph

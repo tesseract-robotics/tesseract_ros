@@ -690,11 +690,12 @@ struct ROSEnvironmentMonitor::Implementation
       }
     }
 
-    if (!tesseract_rosutils::isMsgEmpty(env_msg->joint_state))
+    if (!tesseract_rosutils::isMsgEmpty(env_msg->joint_state) ||
+        !tesseract_rosutils::isMsgEmpty(env_msg->floating_joint_states))
     {
       if (last_robot_motion_time != env_msg->joint_state.header.stamp)
       {
-        tesseract_rosutils::processMsg(*parent->env_, env_msg->joint_state);
+        tesseract_rosutils::processMsg(*parent->env_, env_msg->joint_state, env_msg->floating_joint_states);
         last_robot_motion_time = env_msg->joint_state.header.stamp;
       }
     }
@@ -875,6 +876,12 @@ struct ROSEnvironmentMonitor::Implementation
         res.success = false;
         return false;
       }
+
+      if (!tesseract_rosutils::toMsg(res.floating_joint_states, state.floating_joints))
+      {
+        res.success = false;
+        return false;
+      }
     }
 
     res.success = true;
@@ -922,7 +929,6 @@ struct ROSEnvironmentMonitor::Implementation
         filtered_commands.push_back(cmd);
     }
 
-    std::string old_scene_name;
     if (!filtered_commands.empty())
       result = tesseract_rosutils::processMsg(env, filtered_commands);
 
@@ -930,7 +936,7 @@ struct ROSEnvironmentMonitor::Implementation
     {
       for (const auto& cmd : update_joint_state_commands)
       {
-        if (tesseract_rosutils::processMsg(env, cmd.joint_state))
+        if (tesseract_rosutils::processMsg(env, cmd.joint_state, cmd.floating_joint_states))
         {
           last_robot_motion_time = ros::Time::now();
         }

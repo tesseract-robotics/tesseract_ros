@@ -75,21 +75,33 @@ public:
   tesseract_scene_graph::SceneState getEnvironmentState(const std::string& monitor_namespace) const override final;
 
   bool setEnvironmentState(const std::string& monitor_namespace,
-                           const std::unordered_map<std::string, double>& joints) const override final;
+                           const std::unordered_map<std::string, double>& joints,
+                           const tesseract_common::TransformMap& floating_joints = {}) const override final;
   bool setEnvironmentState(const std::string& monitor_namespace,
                            const std::vector<std::string>& joint_names,
-                           const std::vector<double>& joint_values) const override final;
+                           const std::vector<double>& joint_values,
+                           const tesseract_common::TransformMap& floating_joints = {}) const override final;
   bool setEnvironmentState(const std::string& monitor_namespace,
                            const std::vector<std::string>& joint_names,
-                           const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                           const tesseract_common::TransformMap& floating_joints = {}) const override final;
+  bool setEnvironmentState(const std::string& monitor_namespace,
+                           const tesseract_common::TransformMap& floating_joints = {}) const override final;
 
   std::vector<std::string>
-  setEnvironmentState(const std::unordered_map<std::string, double>& joints) const override final;
-  std::vector<std::string> setEnvironmentState(const std::vector<std::string>& joint_names,
-                                               const std::vector<double>& joint_values) const override final;
+  setEnvironmentState(const std::unordered_map<std::string, double>& joints,
+                      const tesseract_common::TransformMap& floating_joints = {}) const override final;
   std::vector<std::string>
   setEnvironmentState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override final;
+                      const std::vector<double>& joint_values,
+                      const tesseract_common::TransformMap& floating_joints = {}) const override final;
+  std::vector<std::string>
+  setEnvironmentState(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                      const tesseract_common::TransformMap& floating_joints = {}) const override final;
+
+  std::vector<std::string>
+  setEnvironmentState(const tesseract_common::TransformMap& floating_joints = {}) const override final;
 
   std::unique_ptr<tesseract_environment::Environment>
   getEnvironment(const std::string& monitor_namespace) const override final;
