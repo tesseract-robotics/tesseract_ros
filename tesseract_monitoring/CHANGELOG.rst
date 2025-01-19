@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing floating joint components
+* Contributors: Levi Armstrong
+
 0.28.0 (2025-01-16)
 -------------------
 * Update due to changes in tesseract and tesseract_planning repos
