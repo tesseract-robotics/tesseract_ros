@@ -2,8 +2,8 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.28.1 (2025-01-18)
+-------------------
 * Add missing floating joint components
 * Contributors: Levi Armstrong
 
