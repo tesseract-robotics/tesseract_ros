@@ -380,27 +380,10 @@ struct CurrentStateMonitor::Implementation
 
   bool isPassiveOrMimicDOF(const std::string& /*dof*/) const
   {
-    // TODO: Levi Need to implement
+    const auto& active_joints = env_->getActiveJointNames();
+    auto passive = (std::find(active_joints.begin(), active_joints.end(), dof) == active_joints.end());
+    auto mimic = env_->getJoint(dof)->mimic != nullptr;
 
-    //  if (robot_model_->hasJointModel(dof))
-    //  {
-    //    if (robot_model_->getJointModel(dof)->isPassive() ||
-    //    robot_model_->getJointModel(dof)->getMimic())
-    //      return true;
-    //  }
-    //  else
-    //  {
-    //    // check if this DOF is part of a multi-dof passive joint
-    //    std::size_t slash = dof.find_last_of("/");
-    //    if (slash != std::string::npos)
-    //    {
-    //      std::string joint_name = dof.substr(0, slash);
-    //      if (robot_model_->hasJointModel(joint_name))
-    //        if (robot_model_->getJointModel(joint_name)->isPassive() ||
-    //        robot_model_->getJointModel(joint_name)->getMimic())
-    //          return true;
-    //    }
-    //  }
     return false;
   }
 };
