@@ -2,6 +2,11 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage std::filesystem
+* Contributors: Levi Armstrong
+
 0.28.1 (2025-01-18)
 -------------------
 

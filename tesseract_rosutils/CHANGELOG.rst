@@ -2,6 +2,11 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Leverage std::filesystem
+* Contributors: Levi Armstrong
+
 0.28.1 (2025-01-18)
 -------------------
 * Add missing floating joint components

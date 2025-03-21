@@ -2,6 +2,11 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Implement the isPassiveOrMimicDOF function (`#267 <https://github.com/tesseract-robotics/tesseract_ros/issues/267>`_)
+* Contributors: Roelof Oomen
+
 0.28.1 (2025-01-18)
 -------------------
 * Add missing floating joint components
