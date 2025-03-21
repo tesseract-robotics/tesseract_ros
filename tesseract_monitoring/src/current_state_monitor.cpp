@@ -378,7 +378,7 @@ struct CurrentStateMonitor::Implementation
     state_update_condition.notify_all();
   }
 
-  bool isPassiveOrMimicDOF(const std::string& /*dof*/) const
+  bool isPassiveOrMimicDOF(const std::string& dof) const
   {
     const auto active_joints = env->getActiveJointNames();
     auto passive = (std::find(active_joints.begin(), active_joints.end(), dof) == active_joints.end());
