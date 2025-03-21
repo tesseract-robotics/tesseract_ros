@@ -57,6 +57,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_monitoring/current_state_monitor.h>
 
 #include <tesseract_kinematics/core/joint_group.h>
+#include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_environment/environment.h>
 
@@ -378,29 +379,12 @@ struct CurrentStateMonitor::Implementation
     state_update_condition.notify_all();
   }
 
-  bool isPassiveOrMimicDOF(const std::string& /*dof*/) const
+  bool isPassiveOrMimicDOF(const std::string& dof) const
   {
-    // TODO: Levi Need to implement
+    const auto active_joints = env->getActiveJointNames();
+    auto passive = (std::find(active_joints.begin(), active_joints.end(), dof) == active_joints.end());
+    auto mimic = env->getJoint(dof)->mimic != nullptr;
 
-    //  if (robot_model_->hasJointModel(dof))
-    //  {
-    //    if (robot_model_->getJointModel(dof)->isPassive() ||
-    //    robot_model_->getJointModel(dof)->getMimic())
-    //      return true;
-    //  }
-    //  else
-    //  {
-    //    // check if this DOF is part of a multi-dof passive joint
-    //    std::size_t slash = dof.find_last_of("/");
-    //    if (slash != std::string::npos)
-    //    {
-    //      std::string joint_name = dof.substr(0, slash);
-    //      if (robot_model_->hasJointModel(joint_name))
-    //        if (robot_model_->getJointModel(joint_name)->isPassive() ||
-    //        robot_model_->getJointModel(joint_name)->getMimic())
-    //          return true;
-    //    }
-    //  }
     return false;
   }
 };
