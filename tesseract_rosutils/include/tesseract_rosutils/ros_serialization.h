@@ -4,6 +4,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/serialization.h>
+#include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rosutils
