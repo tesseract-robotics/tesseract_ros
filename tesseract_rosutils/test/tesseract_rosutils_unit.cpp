@@ -40,9 +40,9 @@ protected:
   {
     auto locator = std::make_shared<ROSResourceLocator>();
     env_ = std::make_shared<Environment>();
-    boost::filesystem::path urdf_path(
+    std::filesystem::path urdf_path(
         locator->locateResource("package://tesseract_support/urdf/abb_irb2400.urdf")->getFilePath());
-    boost::filesystem::path srdf_path(
+    std::filesystem::path srdf_path(
         locator->locateResource("package://tesseract_support/urdf/abb_irb2400.srdf")->getFilePath());
     EXPECT_TRUE(env_->init(urdf_path, srdf_path, locator));
   }

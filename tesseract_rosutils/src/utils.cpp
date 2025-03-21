@@ -27,6 +27,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
+#include <filesystem>
 
 #include <tesseract_msgs/AllowedCollisionEntry.h>
 #include <tesseract_msgs/ChainGroup.h>
@@ -126,7 +127,8 @@ std::shared_ptr<tesseract_common::Resource> ROSResourceLocator::locateResource(c
       return nullptr;
   }
 
-  if (!tesseract_common::fs::path(mod_url).is_complete())
+  std::filesystem::path mod_url_path(mod_url);
+  if (!(mod_url_path.is_absolute() && mod_url_path.has_root_directory()))
     return nullptr;
 
   return std::make_shared<tesseract_common::SimpleLocatedResource>(

@@ -85,7 +85,7 @@ int main(int argc, char** argv)
   if (!task_composer_config.empty())
   {
     tesseract_common::GeneralResourceLocator locator;
-    tesseract_common::fs::path config(task_composer_config);
+    std::filesystem::path config(task_composer_config);
     planning_server->getTaskComposerServer().loadConfig(config, locator);
   }
 
