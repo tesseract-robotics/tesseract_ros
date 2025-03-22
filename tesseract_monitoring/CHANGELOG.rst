@@ -2,6 +2,9 @@
 Changelog for package tesseract_monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.29.0 (2025-03-21)
 -------------------
 * Implement the isPassiveOrMimicDOF function (`#267 <https://github.com/tesseract-robotics/tesseract_ros/issues/267>`_)
