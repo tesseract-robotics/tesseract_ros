@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ChainGroup.h>
 #include <tesseract_msgs/CollisionGeometry.h>
 #include <tesseract_msgs/CollisionMarginData.h>
-#include <tesseract_msgs/CollisionMarginOverrideType.h>
+#include <tesseract_msgs/CollisionMarginPairOverrideType.h>
 #include <tesseract_msgs/ContactMarginPair.h>
 #include <tesseract_msgs/ContactResultVector.h>
 #include <tesseract_msgs/ContactManagersPluginInfo.h>
@@ -1028,15 +1028,15 @@ toMsg(const tesseract_common::PairsCollisionMarginData& contact_margin_pairs)
 
 tesseract_common::CollisionMarginData fromMsg(const tesseract_msgs::CollisionMarginData& contact_margin_data_msg)
 {
-  tesseract_common::PairsCollisionMarginData contact_margin_pairs = fromMsg(contact_margin_data_msg.margin_pairs);
-  return tesseract_common::CollisionMarginData(contact_margin_data_msg.default_margin, contact_margin_pairs);
+  tesseract_common::CollisionMarginPairData pair_data(fromMsg(contact_margin_data_msg.margin_pairs));
+  return tesseract_common::CollisionMarginData(contact_margin_data_msg.default_margin, pair_data);
 }
 
 tesseract_msgs::CollisionMarginData toMsg(const tesseract_common::CollisionMarginData& contact_margin_data)
 {
   tesseract_msgs::CollisionMarginData contact_margin_data_msg;
   contact_margin_data_msg.default_margin = contact_margin_data.getDefaultCollisionMargin();
-  for (const auto& pair : contact_margin_data.getPairCollisionMargins())
+  for (const auto& pair : contact_margin_data.getCollisionMarginPairData().getCollisionMargins())
   {
     tesseract_msgs::ContactMarginPair cmp;
     cmp.first.first = pair.first.first;
@@ -1047,80 +1047,53 @@ tesseract_msgs::CollisionMarginData toMsg(const tesseract_common::CollisionMargi
   return contact_margin_data_msg;
 }
 
-tesseract_common::CollisionMarginOverrideType
-fromMsg(const tesseract_msgs::CollisionMarginOverrideType& contact_margin_override_type_msg)
+tesseract_common::CollisionMarginPairOverrideType
+fromMsg(const tesseract_msgs::CollisionMarginPairOverrideType& contact_margin_pair_override_type_msg)
 {
-  switch (contact_margin_override_type_msg.type)
+  switch (contact_margin_pair_override_type_msg.type)
   {
-    case tesseract_msgs::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN:
+    case tesseract_msgs::CollisionMarginPairOverrideType::MODIFY:
     {
-      return tesseract_common::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+      return tesseract_common::CollisionMarginPairOverrideType::MODIFY;
     }
-    case tesseract_msgs::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN:
+    case tesseract_msgs::CollisionMarginPairOverrideType::REPLACE:
     {
-      return tesseract_common::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN;
+      return tesseract_common::CollisionMarginPairOverrideType::REPLACE;
     }
-    case tesseract_msgs::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN:
+    case tesseract_msgs::CollisionMarginPairOverrideType::NONE:
     {
-      return tesseract_common::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
-    }
-    case tesseract_msgs::CollisionMarginOverrideType::MODIFY:
-    {
-      return tesseract_common::CollisionMarginOverrideType::MODIFY;
-    }
-    case tesseract_msgs::CollisionMarginOverrideType::REPLACE:
-    {
-      return tesseract_common::CollisionMarginOverrideType::REPLACE;
-    }
-    case tesseract_msgs::CollisionMarginOverrideType::NONE:
-    {
-      return tesseract_common::CollisionMarginOverrideType::NONE;
+      return tesseract_common::CollisionMarginPairOverrideType::NONE;
     }
     default:
     {
-      throw std::runtime_error("fromMsg: Invalid CollisionMarginOverrideType!");
+      throw std::runtime_error("fromMsg: Invalid CollisionMarginPairOverrideType!");
     }
   }
 }
 
-tesseract_msgs::CollisionMarginOverrideType
-toMsg(const tesseract_common::CollisionMarginOverrideType& contact_margin_override_type)
+tesseract_msgs::CollisionMarginPairOverrideType
+toMsg(const tesseract_common::CollisionMarginPairOverrideType& contact_margin_pair_override_type)
 {
-  tesseract_msgs::CollisionMarginOverrideType contact_margin_override_type_msg;
-  switch (static_cast<int>(contact_margin_override_type))
+  tesseract_msgs::CollisionMarginPairOverrideType contact_margin_pair_override_type_msg;
+  switch (static_cast<int>(contact_margin_pair_override_type))
   {
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN):
+    case static_cast<int>(tesseract_collision::CollisionMarginPairOverrideType::MODIFY):
     {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::OVERRIDE_DEFAULT_MARGIN;
+      contact_margin_pair_override_type_msg.type = tesseract_msgs::CollisionMarginPairOverrideType::MODIFY;
       break;
     }
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN):
+    case static_cast<int>(tesseract_collision::CollisionMarginPairOverrideType::REPLACE):
     {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::OVERRIDE_PAIR_MARGIN;
+      contact_margin_pair_override_type_msg.type = tesseract_msgs::CollisionMarginPairOverrideType::REPLACE;
       break;
     }
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN):
+    case static_cast<int>(tesseract_collision::CollisionMarginPairOverrideType::NONE):
     {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::MODIFY_PAIR_MARGIN;
-      break;
-    }
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::MODIFY):
-    {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::MODIFY;
-      break;
-    }
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::REPLACE):
-    {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::REPLACE;
-      break;
-    }
-    case static_cast<int>(tesseract_collision::CollisionMarginOverrideType::NONE):
-    {
-      contact_margin_override_type_msg.type = tesseract_msgs::CollisionMarginOverrideType::NONE;
+      contact_margin_pair_override_type_msg.type = tesseract_msgs::CollisionMarginPairOverrideType::NONE;
       break;
     }
   }
-  return contact_margin_override_type_msg;
+  return contact_margin_pair_override_type_msg;
 }
 
 bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
@@ -1350,8 +1323,14 @@ bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_envi
     {
       command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_COLLISION_MARGINS;
       const auto& cmd = static_cast<const tesseract_environment::ChangeCollisionMarginsCommand&>(command);
-      command_msg.collision_margin_data = toMsg(cmd.getCollisionMarginData());
-      command_msg.collision_margin_override_type = toMsg(cmd.getCollisionMarginOverrideType());
+
+      std::optional<double> default_margin = cmd.getDefaultCollisionMargin();
+      command_msg.has_collision_default_margin = default_margin.has_value();
+      if (default_margin.has_value())
+        command_msg.collision_default_margin = default_margin.value();
+
+      command_msg.collision_margin_pair_data = toMsg(cmd.getCollisionMarginPairData().getCollisionMargins());
+      command_msg.collision_margin_pair_override_type = toMsg(cmd.getCollisionMarginPairOverrideType());
       return true;
     }
     case tesseract_environment::CommandType::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
@@ -1538,10 +1517,18 @@ std::shared_ptr<tesseract_environment::Command> fromMsg(const tesseract_msgs::En
     }
     case tesseract_msgs::EnvironmentCommand::CHANGE_COLLISION_MARGINS:
     {
-      tesseract_common::CollisionMarginData collision_margin_data = fromMsg(command_msg.collision_margin_data);
-      tesseract_common::CollisionMarginOverrideType override_type = fromMsg(command_msg.collision_margin_override_type);
-      return std::make_shared<tesseract_environment::ChangeCollisionMarginsCommand>(collision_margin_data,
-                                                                                    override_type);
+      tesseract_common::CollisionMarginPairData pair_margin_data(fromMsg(command_msg.collision_margin_pair_data));
+      tesseract_common::CollisionMarginPairOverrideType pair_override_type =
+          fromMsg(command_msg.collision_margin_pair_override_type);
+
+      if (command_msg.has_collision_default_margin)
+      {
+        return std::make_shared<tesseract_environment::ChangeCollisionMarginsCommand>(
+            command_msg.collision_default_margin, pair_margin_data, pair_override_type);
+      }
+
+      return std::make_shared<tesseract_environment::ChangeCollisionMarginsCommand>(pair_margin_data,
+                                                                                    pair_override_type);
     }
     case tesseract_msgs::EnvironmentCommand::ADD_CONTACT_MANAGERS_PLUGIN_INFO:
     {

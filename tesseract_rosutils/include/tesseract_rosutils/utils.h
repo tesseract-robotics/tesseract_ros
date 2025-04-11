@@ -56,7 +56,7 @@ ROS_DECLARE_MESSAGE(ChainGroup)
 ROS_DECLARE_MESSAGE(CollisionGeometry)
 ROS_DECLARE_MESSAGE(ContactMarginPair)
 ROS_DECLARE_MESSAGE(CollisionMarginData)
-ROS_DECLARE_MESSAGE(CollisionMarginOverrideType)
+ROS_DECLARE_MESSAGE(CollisionMarginPairOverrideType)
 ROS_DECLARE_MESSAGE(ContactResult)
 ROS_DECLARE_MESSAGE(ContactResultVector)
 ROS_DECLARE_MESSAGE(ContactManagersPluginInfo)
@@ -212,10 +212,10 @@ toMsg(const tesseract_common::PairsCollisionMarginData& contact_margin_pairs);
 tesseract_common::CollisionMarginData fromMsg(const tesseract_msgs::CollisionMarginData& contact_margin_data_msg);
 tesseract_msgs::CollisionMarginData toMsg(const tesseract_common::CollisionMarginData& contact_margin_data);
 
-tesseract_common::CollisionMarginOverrideType
-fromMsg(const tesseract_msgs::CollisionMarginOverrideType& contact_margin_override_type_msg);
-tesseract_msgs::CollisionMarginOverrideType
-toMsg(const tesseract_common::CollisionMarginOverrideType& contact_margin_override_type);
+tesseract_common::CollisionMarginPairOverrideType
+fromMsg(const tesseract_msgs::CollisionMarginPairOverrideType& contact_margin_pair_override_type_msg);
+tesseract_msgs::CollisionMarginPairOverrideType
+toMsg(const tesseract_common::CollisionMarginPairOverrideType& contact_margin_pair_override_type);
 
 tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg);
 
