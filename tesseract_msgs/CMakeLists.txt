@@ -41,7 +41,7 @@ add_message_files(
     ChainGroup.msg
     CollisionGeometry.msg
     CollisionMarginData.msg
-    CollisionMarginOverrideType.msg
+    CollisionMarginPairOverrideType.msg
     ContactManagersPluginInfo.msg
     ContactMarginPair.msg
     ContactResult.msg
