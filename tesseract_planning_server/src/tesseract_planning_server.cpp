@@ -43,34 +43,35 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_DESCARTES
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_default_move_profile.h>
 #endif
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_move_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_osqp_solver_profile.h>
 #endif
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_profile.h>
 #include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_composite_profile.h>
-#include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt_ifopt/profile/trajopt_ifopt_default_move_profile.h>
 #endif
 
 #ifdef TESSERACT_PLANNING_SERVER_HAS_OMPL
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
-#include <tesseract_motion_planners/ompl/profile/ompl_real_vector_plan_profile.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_real_vector_move_profile.h>
 #endif
 
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_lvs_no_ik_move_profile.h>
 
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_msgs/GetMotionPlanAction.h>
 
+#include <tesseract_common/profile_dictionary.h>
 #include <tesseract_common/serialization.h>
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/stopwatch.h>
@@ -79,7 +80,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment_monitor.h>
 #include <tesseract_command_language/poly/instruction_poly.h>
 #include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_command_language/profile_dictionary.h>
 #include <tesseract_command_language/constants.h>
 
 using tesseract_common::Serialization;
@@ -108,7 +108,7 @@ struct TesseractPlanningServer::Implementation
   tesseract_environment::EnvironmentCache::Ptr environment_cache;
 
   /** @brief The task profiles */
-  tesseract_planning::ProfileDictionary::Ptr profiles;
+  tesseract_common::ProfileDictionary::Ptr profiles;
 
   /** @brief The task planning server */
   tesseract_planning::TaskComposerServer::UPtr planning_server;
@@ -126,7 +126,7 @@ struct TesseractPlanningServer::Implementation
     : nh("~")
     , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(robot_description_, name_))
     , environment_cache(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor->getEnvironment()))
-    , profiles(std::make_shared<tesseract_planning::ProfileDictionary>())
+    , profiles(std::make_shared<tesseract_common::ProfileDictionary>())
     , planning_server(std::make_unique<tesseract_planning::TaskComposerServer>())
     , motion_plan_server(nh,
                          DEFAULT_GET_MOTION_PLAN_ACTION,
@@ -142,7 +142,7 @@ struct TesseractPlanningServer::Implementation
     : nh("~")
     , monitor(std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(std::move(env_), name_))
     , environment_cache(std::make_shared<tesseract_environment::DefaultEnvironmentCache>(monitor->getEnvironment()))
-    , profiles(std::make_shared<tesseract_planning::ProfileDictionary>())
+    , profiles(std::make_shared<tesseract_common::ProfileDictionary>())
     , planning_server(std::make_unique<tesseract_planning::TaskComposerServer>())
     , motion_plan_server(nh,
                          DEFAULT_GET_MOTION_PLAN_ACTION,
@@ -166,13 +166,13 @@ struct TesseractPlanningServer::Implementation
     // Add Simple Default Profiles
     profiles->addProfile(SIMPLE_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::SimplePlannerLVSNoIKPlanProfile>());
+                         std::make_shared<tesseract_planning::SimplePlannerLVSNoIKMoveProfile>());
 
     // Add TrajOpt Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT
     profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>());
+                         std::make_shared<tesseract_planning::TrajOptDefaultMoveProfile>());
     profiles->addProfile(TRAJOPT_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
                          std::make_shared<tesseract_planning::TrajOptDefaultCompositeProfile>());
@@ -185,7 +185,7 @@ struct TesseractPlanningServer::Implementation
 #ifdef TESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT
     profiles->addProfile(TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::TrajOptIfoptDefaultPlanProfile>());
+                         std::make_shared<tesseract_planning::TrajOptIfoptDefaultMoveProfile>());
     profiles->addProfile(TRAJOPT_IFOPT_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
                          std::make_shared<tesseract_planning::TrajOptIfoptDefaultCompositeProfile>());
@@ -195,14 +195,14 @@ struct TesseractPlanningServer::Implementation
 #ifdef TESSERACT_PLANNING_SERVER_HAS_DESCARTES
     profiles->addProfile(DESCARTES_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<double>>());
+                         std::make_shared<tesseract_planning::DescartesDefaultMoveProfile<double>>());
 #endif
 
     // Add OMPL Default Profiles
 #ifdef TESSERACT_PLANNING_SERVER_HAS_OMPL
     profiles->addProfile(OMPL_DEFAULT_NAMESPACE,
                          tesseract_planning::DEFAULT_PROFILE_KEY,
-                         std::make_shared<tesseract_planning::OMPLRealVectorPlanProfile>());
+                         std::make_shared<tesseract_planning::OMPLRealVectorMoveProfile>());
 #endif
   }
 
@@ -368,8 +368,8 @@ const tesseract_environment::EnvironmentCache& TesseractPlanningServer::getEnvir
   return *impl_->environment_cache;
 }
 
-tesseract_planning::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() { return *impl_->profiles; }
-const tesseract_planning::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() const
+tesseract_common::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() { return *impl_->profiles; }
+const tesseract_common::ProfileDictionary& TesseractPlanningServer::getProfileDictionary() const
 {
   return *impl_->profiles;
 }
