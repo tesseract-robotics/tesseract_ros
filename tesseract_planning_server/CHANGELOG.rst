@@ -2,6 +2,11 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update profile dictionary move to tesseract_common
+* Contributors: Levi Armstrong
+
 0.29.2 (2025-03-26)
 -------------------
 

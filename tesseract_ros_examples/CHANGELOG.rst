@@ -2,6 +2,9 @@
 Changelog for package tesseract_ros_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.29.2 (2025-03-26)
 -------------------
 

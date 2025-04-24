@@ -2,6 +2,11 @@
 Changelog for package tesseract_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update because of changes with collision margin data
+* Contributors: Levi Armstrong
+
 0.29.2 (2025-03-26)
 -------------------
 
