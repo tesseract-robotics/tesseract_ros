@@ -2,8 +2,8 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.30.0 (2025-04-23)
+-------------------
 * Update because of changes with collision margin data
 * Contributors: Levi Armstrong
 
