@@ -125,19 +125,19 @@ void ROSSceneGraphRenderManager::render()
 
   for (const auto& event : events_)
   {
-    if (event->type() == tesseract_gui::events::SceneGraphClear::kType)
+    if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_CLEAR)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphClear&>(*event);
       data_->clear(e.getComponentInfo());
     }
-    else if (event->type() == tesseract_gui::events::SceneGraphSet::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_SET)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphSet&>(*event);
       data_->clear(e.getComponentInfo());
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
       loadSceneGraph(*data_->scene_manager, *data_->scene_node, *entity_manager, *e.getSceneGraph(), "");
     }
-    else if (event->type() == tesseract_gui::events::SceneGraphAddLink::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_ADD_LINK)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphAddLink&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -145,7 +145,7 @@ void ROSSceneGraphRenderManager::render()
       Ogre::SceneNode* sn = loadLink(*data_->scene_manager, *entity_container, *e.getLink());
       data_->scene_node->addChild(sn);
     }
-    else if (event->type() == tesseract_gui::events::SceneGraphRemoveLink::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_REMOVE_LINK)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphRemoveLink&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -157,7 +157,7 @@ void ROSSceneGraphRenderManager::render()
         entity_manager->removeEntityContainer(e.getLinkName());
       }
     }
-    else if (event->type() == tesseract_gui::events::SceneGraphModifyLinkVisibility::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_MODIFY_LINK_VISIBILITY)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphModifyLinkVisibility&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -254,7 +254,7 @@ void ROSSceneGraphRenderManager::render()
         }
       }
     }
-    else if (event->type() == tesseract_gui::events::SceneGraphModifyLinkVisibilityALL::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_MODIFY_LINK_VISIBILITY_ALL)
     {
       auto& e = static_cast<tesseract_gui::events::SceneGraphModifyLinkVisibilityALL&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -322,7 +322,7 @@ void ROSSceneGraphRenderManager::render()
         }
       }
     }
-    else if (event->type() == tesseract_gui::events::SceneStateChanged::kType)
+    else if (event->type() == tesseract_gui::events::EventType::SCENE_GRAPH_STATE_CHANGED)
     {
       auto& e = static_cast<tesseract_gui::events::SceneStateChanged&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());

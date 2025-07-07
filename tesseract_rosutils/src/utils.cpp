@@ -138,7 +138,8 @@ std::shared_ptr<tesseract_common::Resource> ROSResourceLocator::locateResource(c
 template <class Archive>
 void ROSResourceLocator::serialize(Archive& ar, const unsigned int /*version*/)
 {
-  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(tesseract_common::ResourceLocator);
+  ar& boost::serialization::make_nvp("ResourceLocator",
+                                     boost::serialization::base_object<tesseract_common::ResourceLocator>(*this));
 }
 
 bool isMsgEmpty(const sensor_msgs::JointState& msg)
