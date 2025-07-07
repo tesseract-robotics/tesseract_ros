@@ -49,7 +49,7 @@ struct ROSContactResultsRenderManager::Implementation
     // Destroy Resources
     for (const auto& ns : container.getUntrackedEntities())
     {
-      if (ns.first == container.RESOURCE_NS)
+      if (ns.first == tesseract_gui::EntityContainer::RESOURCE_NS)
       {
         for (const auto& entity : ns.second)
           scene_manager->destroyEntity(entity.unique_name);
@@ -59,7 +59,7 @@ struct ROSContactResultsRenderManager::Implementation
     // Destroy Scene Nodes
     for (const auto& ns : container.getUntrackedEntities())
     {
-      if (ns.first != container.RESOURCE_NS)
+      if (ns.first != tesseract_gui::EntityContainer::RESOURCE_NS)
       {
         for (const auto& entity : ns.second)
           scene_manager->destroySceneNode(entity.unique_name);
@@ -68,7 +68,7 @@ struct ROSContactResultsRenderManager::Implementation
 
     for (const auto& ns : container.getTrackedEntities())
     {
-      if (ns.first != container.RESOURCE_NS)
+      if (ns.first != tesseract_gui::EntityContainer::RESOURCE_NS)
       {
         for (const auto& entity : ns.second)
           scene_manager->destroySceneNode(entity.second.unique_name);
@@ -123,13 +123,13 @@ void ROSContactResultsRenderManager::render()
 
   for (const auto& event : events_)
   {
-    if (event->type() == tesseract_gui::events::ContactResultsClear::kType)
+    if (event->type() == tesseract_gui::events::EventType::CONTACT_RESULTS_CLEAR)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsClear&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
       data_->clear(*entity_manager);
     }
-    else if (event->type() == tesseract_gui::events::ContactResultsRemove::kType)
+    else if (event->type() == tesseract_gui::events::EventType::CONTACT_RESULTS_REMOVE)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsRemove&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -145,7 +145,7 @@ void ROSContactResultsRenderManager::render()
         ROS_ERROR("ROSContactResultsRenderManager, removing child elements is currently not supported");
       }
     }
-    else if (event->type() == tesseract_gui::events::ContactResultsSet::kType)
+    else if (event->type() == tesseract_gui::events::EventType::CONTACT_RESULTS_SET)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsSet&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -231,7 +231,7 @@ void ROSContactResultsRenderManager::render()
         }
       }
     }
-    else if (event->type() == tesseract_gui::events::ContactResultsVisbility::kType)
+    else if (event->type() == tesseract_gui::events::EventType::CONTACT_RESULTS_VISIBILITY)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsVisbility&>(*event);
       tesseract_gui::EntityManager::Ptr entity_manager = getEntityManager(e.getComponentInfo());
@@ -270,7 +270,7 @@ void ROSContactResultsRenderManager::render()
         }
       }
     }
-    else if (event->type() == tesseract_gui::events::ContactResultsVisbilityAll::kType)
+    else if (event->type() == tesseract_gui::events::EventType::CONTACT_RESULTS_VISIBILITY_ALL)
     {
       auto& e = static_cast<tesseract_gui::events::ContactResultsVisbilityAll&>(*event);
       const bool visibility = e.getVisibility();
