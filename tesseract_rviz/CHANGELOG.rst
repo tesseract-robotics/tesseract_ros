@@ -2,8 +2,8 @@
 Changelog for package tesseract_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.31.0 (2025-07-28)
+-------------------
 * Update to Tesseract version 0.31.0 (`#275 <https://github.com/tesseract-robotics/tesseract_ros/issues/275>`_)
 * Contributors: Levi Armstrong
 
