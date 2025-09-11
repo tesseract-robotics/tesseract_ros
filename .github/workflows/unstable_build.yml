@@ -22,7 +22,7 @@ jobs:
       UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
       ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow gz-rendering7 gz-common5 gz-math7"
       ADDITIONAL_DEBS: "libgz-rendering7-dev libgz-common5-dev libgz-math7-dev"
-      DOCKER_IMAGE: "ubuntu:focal"
+      DOCKER_IMAGE: "ros:noetic"
       NOT_TEST_BUILD: true
       BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Unstable-Build/.ccache"
