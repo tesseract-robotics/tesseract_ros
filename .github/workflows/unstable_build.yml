@@ -26,8 +26,8 @@ jobs:
       NOT_TEST_BUILD: true
       BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Unstable-Build/.ccache"
-      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
+      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     steps:
       - uses: actions/checkout@v1
 
