@@ -25,8 +25,8 @@ jobs:
       DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Clang-Tidy/.ccache"
       NOT_TEST_BUILD: true
-      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug"
-      TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
+      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+      TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     steps:
       - uses: actions/checkout@v1
 
