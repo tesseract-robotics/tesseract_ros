@@ -20,14 +20,14 @@ jobs:
       ROS_REPO: main
       BEFORE_INIT: './.add-gazebo-ppa'
       UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
-      ROSDEP_SKIP_KEYS: "bullet bullet-extras ros_industrial_cmake_boilerplate fcl iwyu taskflow gz-rendering7 gz-common5 gz-math7"
-      ADDITIONAL_DEBS: "libgz-rendering7-dev libgz-common5-dev libgz-math7-dev"
-      DOCKER_IMAGE: "rosindustrial/tesseract:noetic"
+      ROSDEP_SKIP_KEYS: "gz-rendering7 gz-common5 gz-math7"
+      ADDITIONAL_DEBS: "wget libgz-rendering7-dev libgz-common5-dev libgz-math7-dev"
+      DOCKER_IMAGE: "ros:noetic"
       NOT_TEST_BUILD: true
       BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash"
       CCACHE_DIR: "/home/runner/work/tesseract_ros/tesseract_ros/Unstable-Build/.ccache"
-      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
-      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
+      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     steps:
       - uses: actions/checkout@v1
 
