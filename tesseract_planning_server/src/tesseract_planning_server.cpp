@@ -304,7 +304,7 @@ struct TesseractPlanningServer::Implementation
     // Generate DOT Graph if requested
     if (goal->request.dotgraph)
       result.response.dotgraph = planning_server->getTask(plan_future->context->name)
-                                     .getDotgraph(plan_future->context->task_infos.getInfoMap());
+                                     .getDotgraph(plan_future->context->task_infos->getInfoMap());
 
     try
     {
