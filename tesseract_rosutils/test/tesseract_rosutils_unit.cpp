@@ -139,8 +139,8 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   gts["sander"] = p;
   kin_info.group_tcps["manipulator1"] = gts;
 
-  kin_info.kinematics_plugin_info.search_paths.insert("/usr/local/lib");
-  kin_info.kinematics_plugin_info.search_libraries.insert("tesseract_kdl_factories");
+  kin_info.kinematics_plugin_info.search_paths.emplace_back("/usr/local/lib");
+  kin_info.kinematics_plugin_info.search_libraries.emplace_back("tesseract_kdl_factories");
 
   {
     tesseract_common::PluginInfo info;
