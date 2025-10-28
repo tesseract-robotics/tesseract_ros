@@ -2,6 +2,11 @@
 Changelog for package tesseract_rosutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update to tesseract version 0.33.X (`#279 <https://github.com/tesseract-robotics/tesseract_ros/issues/279>`_)
+* Contributors: Levi Armstrong
+
 0.32.0 (2025-09-24)
 -------------------
 
