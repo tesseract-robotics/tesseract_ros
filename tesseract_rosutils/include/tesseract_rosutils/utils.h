@@ -28,8 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -118,22 +116,6 @@ class Time;
 
 namespace tesseract_rosutils
 {
-std::string locateResource(const std::string& url);
-
-class ROSResourceLocator : public tesseract_common::ResourceLocator
-{
-public:
-  using Ptr = std::shared_ptr<ROSResourceLocator>;
-  using ConstPtr = std::shared_ptr<const ROSResourceLocator>;
-
-  std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final;
-
-private:
-  friend class boost::serialization::access;
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);  // NOLINT
-};
-
 bool isMsgEmpty(const sensor_msgs::JointState& msg);
 bool isMsgEmpty(const tesseract_msgs::TransformMap& msg);
 
@@ -521,7 +503,5 @@ trajectory_msgs::JointTrajectory toMsg(const tesseract_common::JointTrajectory& 
 tesseract_common::JointTrajectory fromMsg(const trajectory_msgs::JointTrajectory& joint_trajectory_msg);
 
 }  // namespace tesseract_rosutils
-
-BOOST_CLASS_EXPORT_KEY2(tesseract_rosutils::ROSResourceLocator, "ROSResourceLocator")
 
 #endif

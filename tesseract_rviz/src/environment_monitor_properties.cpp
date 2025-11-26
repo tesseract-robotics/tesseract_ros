@@ -11,6 +11,7 @@
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
 
+#include <tesseract_common/resource_locator.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/command.h>
 
@@ -203,7 +204,7 @@ void EnvironmentMonitorProperties::onURDFDescriptionChanged()
   data_->nh.getParam(data_->urdf_description_string_property->getStdString() + "_semantic", srdf_xml_string);
 
   auto env = std::make_shared<tesseract_environment::Environment>();
-  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
   if (env->init(urdf_xml_string, srdf_xml_string, locator))
   {
     if (data_->monitor != nullptr)
@@ -293,7 +294,7 @@ void EnvironmentMonitorProperties::snapshotCallback(const tesseract_msgs::Enviro
   tesseract_rosutils::fromMsg(jv, msg->joint_states);
   tesseract_rosutils::fromMsg(fjv, msg->floating_joint_states);
   auto env = std::make_shared<tesseract_environment::Environment>();
-  auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
   env->setResourceLocator(locator);
   if (env->init(commands))
   {
