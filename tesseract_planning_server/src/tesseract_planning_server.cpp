@@ -72,7 +72,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/GetMotionPlanAction.h>
 
 #include <tesseract_common/profile_dictionary.h>
-#include <tesseract_common/serialization.h>
 #include <tesseract_common/any_poly.h>
 #include <tesseract_common/stopwatch.h>
 #include <tesseract_environment/environment.h>
@@ -81,6 +80,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/poly/instruction_poly.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/constants.h>
+
+#include <tesseract_common/cereal_serialization.h>
+#include <tesseract_command_language/cereal_serialization.h>
+#include <tesseract_common/serialization.h>
 
 using tesseract_common::Serialization;
 using tesseract_planning::InstructionPoly;

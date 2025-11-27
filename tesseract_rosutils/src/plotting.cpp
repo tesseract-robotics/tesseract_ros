@@ -44,13 +44,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/conversions.h>
 
 #include <tesseract_common/joint_state.h>
-#include <tesseract_common/serialization.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/scene_state.h>
 #include <tesseract_environment/environment.h>
 
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils.h>
+
+#include <tesseract_command_language/cereal_serialization.h>
+#include <tesseract_common/serialization.h>
 
 #include <tesseract_motion_planners/core/utils.h>
 

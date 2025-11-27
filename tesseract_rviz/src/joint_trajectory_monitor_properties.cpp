@@ -12,11 +12,13 @@
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_rosutils/utils.h>
 
-#include <tesseract_common/serialization.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/command.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils.h>
+
+#include <tesseract_command_language/cereal_serialization.h>
+#include <tesseract_common/serialization.h>
 
 #include <rviz/display.h>
 #include <rviz/properties/ros_topic_property.h>

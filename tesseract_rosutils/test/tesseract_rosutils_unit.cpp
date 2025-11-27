@@ -38,7 +38,7 @@ protected:
 
   void SetUp() override
   {
-    auto locator = std::make_shared<ROSResourceLocator>();
+    auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
     env_ = std::make_shared<Environment>();
     std::filesystem::path urdf_path(
         locator->locateResource("package://tesseract_support/urdf/abb_irb2400.urdf")->getFilePath());
