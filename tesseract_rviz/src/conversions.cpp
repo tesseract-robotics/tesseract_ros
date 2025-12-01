@@ -272,9 +272,13 @@ Ogre::SceneNode* loadLink(Ogre::SceneManager& scene,
   visuals_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(true));
   scene_node->addChild(visuals_scene_node);
 
-  Ogre::SceneNode* collisions_scene_node =
-      loadLinkCollisions(scene, entity_container, link, collision_material_override);
+  // Skip loading collision geometries into RViz. Collision geometries are only needed for collision checking in the
+  // planning backend, not for visualization in RViz. Create an empty scene node to maintain the expected structure.
+  std::string collision_name = link.getName() + "::Collisions";
+  auto collision_entity = entity_container.addTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, collision_name);
+  Ogre::SceneNode* collisions_scene_node = scene.createSceneNode(collision_entity.unique_name);
   collisions_scene_node->getUserObjectBindings().setUserAny(USER_VISIBILITY, Ogre::Any(false));
+  collisions_scene_node->setVisible(false, true);
   scene_node->addChild(collisions_scene_node);
 
   if (!link.visual.empty() || !link.collision.empty())
