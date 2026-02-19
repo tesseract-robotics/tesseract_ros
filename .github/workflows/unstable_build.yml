@@ -20,7 +20,7 @@ jobs:
       ROS_REPO: main
       BEFORE_INIT: './.add-gazebo-ppa'
       UPSTREAM_WORKSPACE: 'dependencies_unstable.rosinstall'
-      ROSDEP_SKIP_KEYS: "gz-rendering7 gz-common5 gz-math7"
+      ROSDEP_SKIP_KEYS: "osqp-eigen gz-rendering7 gz-common5 gz-math7"
       ADDITIONAL_DEBS: "wget libgz-rendering7-dev libgz-common5-dev libgz-math7-dev"
       DOCKER_IMAGE: "ros:noetic"
       NOT_TEST_BUILD: true
