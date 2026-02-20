@@ -2,6 +2,11 @@
 Changelog for package tesseract_planning_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Switch to Cereal for serialization (`#281 <https://github.com/tesseract-robotics/tesseract_ros/issues/281>`_)
+* Contributors: Levi Armstrong
+
 0.33.0 (2025-10-28)
 -------------------
 * Update to tesseract version 0.33.X (`#279 <https://github.com/tesseract-robotics/tesseract_ros/issues/279>`_)
