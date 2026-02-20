@@ -2,8 +2,8 @@
 Changelog for package tesseract_qt_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.34.0 (2026-02-20)
+-------------------
 * Switch to Cereal for serialization (`#281 <https://github.com/tesseract-robotics/tesseract_ros/issues/281>`_)
 * Contributors: Levi Armstrong
 
