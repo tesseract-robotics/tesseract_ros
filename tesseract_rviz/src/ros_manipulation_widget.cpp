@@ -21,12 +21,12 @@ struct ROSManipulationWidgetPrivate
 {
   ROSManipulationWidgetPrivate()
     : entity_managers(
-          { std::make_shared<tesseract_gui::EntityManager>(), std::make_shared<tesseract_gui::EntityManager>() }){};
+          { std::make_shared<tesseract::gui::EntityManager>(), std::make_shared<tesseract::gui::EntityManager>() }){};
 
   rviz::DisplayContext* context;
   Ogre::SceneNode* scene_node;
 
-  std::array<tesseract_gui::EntityManager::Ptr, 2> entity_managers;
+  std::array<tesseract::gui::EntityManager::Ptr, 2> entity_managers;
 
   /** @brief The current render group */
   QString render_group;
@@ -129,7 +129,7 @@ void ROSManipulationWidget::clear()
   }
 }
 
-void ROSManipulationWidget::clearContainer(const tesseract_gui::EntityContainer& container)
+void ROSManipulationWidget::clearContainer(const tesseract::gui::EntityContainer& container)
 {
   // Destroy Resources
   for (const auto& ns : container.getUntrackedEntities())
@@ -478,7 +478,7 @@ void ROSManipulationWidget::onRender(float dt)
                                            data_->render_states_collision_material[i]);
             data_->scene_node->addChild(sn);
             if (i == 0)
-              link_vis_props[link_name] = tesseract_gui::LinkVisibilityProperties();
+              link_vis_props[link_name] = tesseract::gui::LinkVisibilityProperties();
           }
         }
       }
@@ -503,7 +503,7 @@ void ROSManipulationWidget::onRender(float dt)
             Ogre::Quaternion orientation;
             toOgre(position, orientation, pair.second);
 
-            auto entity = container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, pair.first);
+            auto entity = container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, pair.first);
             Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
             sn->setPosition(position);
             sn->setOrientation(orientation);
@@ -555,9 +555,9 @@ void ROSManipulationWidget::onRender(float dt)
             auto entity_container = entity_manager->getEntityContainer(l);
 
             {  // Link Property
-              if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l))
+              if (entity_container->hasTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, l))
               {
-                auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, l);
+                auto entity = entity_container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, l);
                 Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link, true);
               }
@@ -565,9 +565,10 @@ void ROSManipulationWidget::onRender(float dt)
 
             {  // Link Visual Property
               std::string visual_key = l + "::Visuals";
-              if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+              if (entity_container->hasTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key))
               {
-                auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+                auto entity =
+                    entity_container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key);
                 Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.visual, true);
               }
@@ -575,9 +576,10 @@ void ROSManipulationWidget::onRender(float dt)
 
             {  // Link Collision Property
               std::string visual_key = l + "::Collisions";
-              if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+              if (entity_container->hasTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key))
               {
-                auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+                auto entity =
+                    entity_container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key);
                 Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.collision, true);
               }
@@ -585,9 +587,10 @@ void ROSManipulationWidget::onRender(float dt)
 
             {  // Link WireBox Property
               std::string visual_key = l + "::WireBox";
-              if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+              if (entity_container->hasTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key))
               {
-                auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+                auto entity =
+                    entity_container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key);
                 Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.wirebox, true);
               }
@@ -595,9 +598,10 @@ void ROSManipulationWidget::onRender(float dt)
 
             {  // Link Axis Property
               std::string visual_key = l + "::Axis";
-              if (entity_container->hasTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key))
+              if (entity_container->hasTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key))
               {
-                auto entity = entity_container->getTrackedEntity(tesseract_gui::EntityContainer::VISUAL_NS, visual_key);
+                auto entity =
+                    entity_container->getTrackedEntity(tesseract::gui::EntityContainer::VISUAL_NS, visual_key);
                 Ogre::SceneNode* sn = data_->context->getSceneManager()->getSceneNode(entity.unique_name);
                 sn->setVisible(link_visibility_property.link && link_visibility_property.axis, true);
               }

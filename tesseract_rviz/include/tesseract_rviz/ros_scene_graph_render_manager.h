@@ -12,18 +12,18 @@ class SceneManager;
 class SceneNode;
 }  // namespace Ogre
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class EntityManager;
 struct ComponentInfo;
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 namespace tesseract_rviz
 {
-class ROSSceneGraphRenderManager : public tesseract_gui::SceneGraphRenderManager
+class ROSSceneGraphRenderManager : public tesseract::gui::SceneGraphRenderManager
 {
 public:
-  ROSSceneGraphRenderManager(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info,
+  ROSSceneGraphRenderManager(std::shared_ptr<const tesseract::gui::ComponentInfo> component_info,
                              Ogre::SceneManager* scene_manager,
                              Ogre::SceneNode* scene_node);
   ~ROSSceneGraphRenderManager();

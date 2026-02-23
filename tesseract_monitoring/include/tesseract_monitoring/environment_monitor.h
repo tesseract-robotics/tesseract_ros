@@ -52,7 +52,7 @@ class CurrentStateMonitor;
 /**
  * @brief TesseractMonitor
  * Subscribes to the topic \e tesseract_environment */
-class ROSEnvironmentMonitor : public tesseract_environment::EnvironmentMonitor
+class ROSEnvironmentMonitor : public tesseract::environment::EnvironmentMonitor
 {
 public:
   using Ptr = std::shared_ptr<ROSEnvironmentMonitor>;
@@ -72,7 +72,7 @@ public:
    * @param env The environment
    * @param monitor_namespace A name identifying this monitor, must be unique
    */
-  ROSEnvironmentMonitor(std::shared_ptr<tesseract_environment::Environment> env, std::string monitor_namespace);
+  ROSEnvironmentMonitor(std::shared_ptr<tesseract::environment::Environment> env, std::string monitor_namespace);
 
   ~ROSEnvironmentMonitor() override;
   ROSEnvironmentMonitor(const ROSEnvironmentMonitor&) = delete;
@@ -106,8 +106,8 @@ public:
   void updateEnvironmentWithCurrentState() override final;
 
   void startMonitoringEnvironment(const std::string& monitored_namespace,
-                                  tesseract_environment::MonitoredEnvironmentMode mode =
-                                      tesseract_environment::MonitoredEnvironmentMode::DEFAULT) override final;
+                                  tesseract::environment::MonitoredEnvironmentMode mode =
+                                      tesseract::environment::MonitoredEnvironmentMode::DEFAULT) override final;
 
   void stopMonitoringEnvironment() override final;
 

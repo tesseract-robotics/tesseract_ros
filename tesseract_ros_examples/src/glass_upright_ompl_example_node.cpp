@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 
-using namespace tesseract_examples;
+using namespace tesseract::examples;
 using namespace tesseract_rosutils;
 
 /** @brief Default ROS parameter for robot description */

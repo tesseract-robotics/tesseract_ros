@@ -46,24 +46,24 @@ public:
   static const std::string DEFAULT_GET_MOTION_PLAN_ACTION;  // "/tesseract_get_motion_plan"
 
   TesseractPlanningServer(const std::string& robot_description, std::string name);
-  TesseractPlanningServer(std::unique_ptr<tesseract_environment::Environment> env, std::string name);
+  TesseractPlanningServer(std::unique_ptr<tesseract::environment::Environment> env, std::string name);
   ~TesseractPlanningServer();
   TesseractPlanningServer(const TesseractPlanningServer&) = delete;
   TesseractPlanningServer& operator=(const TesseractPlanningServer&) = delete;
   TesseractPlanningServer(TesseractPlanningServer&&) = delete;
   TesseractPlanningServer& operator=(TesseractPlanningServer&&) = delete;
 
-  tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor();
-  const tesseract_environment::EnvironmentMonitor& getEnvironmentMonitor() const;
+  tesseract::environment::EnvironmentMonitor& getEnvironmentMonitor();
+  const tesseract::environment::EnvironmentMonitor& getEnvironmentMonitor() const;
 
-  tesseract_planning::TaskComposerServer& getTaskComposerServer();
-  const tesseract_planning::TaskComposerServer& getTaskComposerServer() const;
+  tesseract::task_composer::TaskComposerServer& getTaskComposerServer();
+  const tesseract::task_composer::TaskComposerServer& getTaskComposerServer() const;
 
-  tesseract_environment::EnvironmentCache& getEnvironmentCache();
-  const tesseract_environment::EnvironmentCache& getEnvironmentCache() const;
+  tesseract::environment::EnvironmentCache& getEnvironmentCache();
+  const tesseract::environment::EnvironmentCache& getEnvironmentCache() const;
 
-  tesseract_common::ProfileDictionary& getProfileDictionary();
-  const tesseract_common::ProfileDictionary& getProfileDictionary() const;
+  tesseract::common::ProfileDictionary& getProfileDictionary();
+  const tesseract::common::ProfileDictionary& getProfileDictionary() const;
 
 private:
   struct Implementation;

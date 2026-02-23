@@ -33,6 +33,6 @@ int main(int argc, char** argv)
 
   Q_INIT_RESOURCE(tesseract_qt_resources);
 
-  tesseract_gui::EnvironmentMonitorWidget widget;
+  tesseract::gui::EnvironmentMonitorWidget widget;
   widget.show();
 }

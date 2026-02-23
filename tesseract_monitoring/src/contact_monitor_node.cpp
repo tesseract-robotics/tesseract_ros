@@ -50,8 +50,8 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
 
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph;
-  tesseract_srdf::SRDFModel::Ptr srdf_model;
+  tesseract::scene_graph::SceneGraph::Ptr scene_graph;
+  tesseract::srdf::SRDFModel::Ptr srdf_model;
   std::string robot_description;
   std::string joint_state_topic;
   std::string monitor_namespace;
@@ -88,8 +88,8 @@ int main(int argc, char** argv)
   nh.getParam(robot_description, urdf_xml_string);
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
-  auto env = std::make_unique<tesseract_environment::Environment>();
-  auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
+  auto env = std::make_unique<tesseract::environment::Environment>();
+  auto locator = std::make_shared<tesseract::common::GeneralResourceLocator>();
   if (!env->init(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     ROS_WARN("Request type must be 0, 1, 2 or 3. Setting to 2(ALL)!");
     contact_test_type = 2;
   }
-  tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
+  tesseract::collision::ContactTestType type = static_cast<tesseract::collision::ContactTestType>(contact_test_type);
 
   tesseract_monitoring::ContactMonitor cm(monitor_namespace,
                                           std::move(env),

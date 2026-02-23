@@ -58,14 +58,14 @@ struct ContactMonitor::Implementation
   std::string monitor_namespace;
   std::string monitored_namespace;
   int env_revision{ 0 };
-  tesseract_environment::EnvironmentMonitor::UPtr monitor;
+  tesseract::environment::EnvironmentMonitor::UPtr monitor;
   ros::NodeHandle& nh;
   ros::NodeHandle& pnh;
   std::vector<std::string> monitored_link_names;
   std::vector<std::string> disabled_link_names;
-  tesseract_collision::ContactTestType type;
+  tesseract::collision::ContactTestType type;
   double contact_distance;
-  tesseract_collision::DiscreteContactManager::UPtr manager;
+  tesseract::collision::DiscreteContactManager::UPtr manager;
   bool publish_contact_markers{ false };
   ros::Subscriber joint_states_sub;
   ros::Publisher contact_results_pub;
@@ -76,12 +76,12 @@ struct ContactMonitor::Implementation
   std::condition_variable current_joint_states_evt;
 
   Implementation(std::string monitor_namespace_,
-                 tesseract_environment::Environment::UPtr env_,
+                 tesseract::environment::Environment::UPtr env_,
                  ros::NodeHandle& nh_,
                  ros::NodeHandle& pnh_,
                  std::vector<std::string> monitored_link_names_,
                  std::vector<std::string> disabled_link_names_,
-                 tesseract_collision::ContactTestType type_,
+                 tesseract::collision::ContactTestType type_,
                  double contact_distance_,
                  const std::string& joint_state_topic)
     : monitor_namespace(std::move(monitor_namespace_))
@@ -128,8 +128,8 @@ struct ContactMonitor::Implementation
     while (!ros::isShuttingDown())
     {
       boost::shared_ptr<sensor_msgs::JointState> msg = nullptr;
-      tesseract_collision::ContactResultMap contacts;
-      tesseract_collision::ContactResultVector contacts_vector;
+      tesseract::collision::ContactResultMap contacts;
+      tesseract::collision::ContactResultVector contacts_vector;
       tesseract_msgs::ContactResultVector contacts_msg;
       std::string root_link;
       // Limit the lock
@@ -140,8 +140,8 @@ struct ContactMonitor::Implementation
         {
           // Create a new manager
           std::vector<std::string> active;
-          tesseract_collision::CollisionMarginData contact_margin_data;
-          tesseract_common::ContactAllowedValidator::ConstPtr fn;
+          tesseract::collision::CollisionMarginData contact_margin_data;
+          tesseract::common::ContactAllowedValidator::ConstPtr fn;
 
           {
             auto lock_read = monitor->environment().lockRead();
@@ -177,7 +177,7 @@ struct ContactMonitor::Implementation
 
         monitor->environment().setState(msg->name,
                                         Eigen::Map<Eigen::VectorXd>(msg->position.data(), msg->position.size()));
-        tesseract_scene_graph::SceneState state = monitor->environment().getState();
+        tesseract::scene_graph::SceneState state = monitor->environment().getState();
 
         manager->setCollisionObjectsTransform(state.link_transforms);
         manager->contactTest(contacts, type);
@@ -199,7 +199,7 @@ struct ContactMonitor::Implementation
         if (publish_contact_markers)
         {
           int id_counter = 0;
-          tesseract_visualization::ContactResultsMarker marker(
+          tesseract::visualization::ContactResultsMarker marker(
               monitored_link_names, contacts_vector, manager->getCollisionMarginData());
           visualization_msgs::MarkerArray marker_msg = tesseract_rosutils::getContactResultsMarkerArrayMsg(
               id_counter, root_link, "contact_monitor", msg->header.stamp, marker);
@@ -237,8 +237,8 @@ struct ContactMonitor::Implementation
 
     // Create a new manager
     std::vector<std::string> active;
-    tesseract_collision::CollisionMarginData contact_margin_data;
-    tesseract_common::ContactAllowedValidator::ConstPtr fn;
+    tesseract::collision::CollisionMarginData contact_margin_data;
+    tesseract::common::ContactAllowedValidator::ConstPtr fn;
 
     {
       auto lock_read = monitor->environment().lockRead();
@@ -260,15 +260,15 @@ struct ContactMonitor::Implementation
   bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVectorRequest& request,
                                           tesseract_msgs::ComputeContactResultVectorResponse& response)
   {
-    thread_local tesseract_collision::ContactResultMap contact_results;
-    thread_local tesseract_collision::ContactResultVector contacts_vector;
+    thread_local tesseract::collision::ContactResultMap contact_results;
+    thread_local tesseract::collision::ContactResultVector contacts_vector;
     contact_results.clear();
     contacts_vector.clear();
 
     monitor->environment().setState(
         request.joint_states.name,
         Eigen::Map<Eigen::VectorXd>(request.joint_states.position.data(), request.joint_states.position.size()));
-    tesseract_scene_graph::SceneState state = monitor->environment().getState();
+    tesseract::scene_graph::SceneState state = monitor->environment().getState();
 
     // Limit the lock
     {
@@ -292,12 +292,12 @@ struct ContactMonitor::Implementation
 };
 
 ContactMonitor::ContactMonitor(std::string monitor_namespace,
-                               std::unique_ptr<tesseract_environment::Environment> env,
+                               std::unique_ptr<tesseract::environment::Environment> env,
                                ros::NodeHandle& nh,
                                ros::NodeHandle& pnh,
                                std::vector<std::string> monitored_link_names,
                                std::vector<std::string> disabled_link_names,
-                               tesseract_collision::ContactTestType type,
+                               tesseract::collision::ContactTestType type,
                                double contact_distance,
                                const std::string& joint_state_topic)
   : impl_(std::make_unique<Implementation>(std::move(monitor_namespace),

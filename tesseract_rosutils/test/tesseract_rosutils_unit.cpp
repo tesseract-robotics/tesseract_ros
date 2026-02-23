@@ -27,8 +27,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
-using namespace tesseract_environment;
-using namespace tesseract_scene_graph;
+using namespace tesseract::environment;
+using namespace tesseract::scene_graph;
 using namespace tesseract_rosutils;
 
 class TesseractROSUtilsUnit : public ::testing::Test
@@ -38,7 +38,7 @@ protected:
 
   void SetUp() override
   {
-    auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
+    auto locator = std::make_shared<tesseract::common::GeneralResourceLocator>();
     env_ = std::make_shared<Environment>();
     std::filesystem::path urdf_path(
         locator->locateResource("package://tesseract_support/urdf/abb_irb2400.urdf")->getFilePath());
@@ -122,19 +122,19 @@ TEST_F(TesseractROSUtilsUnit, toFromFile)  // NOLINT
 
 TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
 {
-  tesseract_srdf::KinematicsInformation kin_info;
+  tesseract::srdf::KinematicsInformation kin_info;
   kin_info.group_names = { "manipulator1", "manipulator2", "manipulator3" };
   kin_info.chain_groups["manipulator1"] = { std::make_pair("base_link", "tip_link") };
   kin_info.joint_groups["manipulator2"] = { "joint_1", "joint_2", "joint_3" };
   kin_info.link_groups["manipulator3"] = { "base_link", "link_1", "link_2" };
-  tesseract_srdf::GroupsJointState js;
+  tesseract::srdf::GroupsJointState js;
   js["joint_0"] = 1.1;
   js["joint_1"] = 2.1;
-  tesseract_srdf::GroupsJointStates jss;
+  tesseract::srdf::GroupsJointStates jss;
   jss["home"] = js;
   kin_info.group_states["manipulator1"] = jss;
 
-  tesseract_srdf::GroupsTCPs gts;
+  tesseract::srdf::GroupsTCPs gts;
   Eigen::Isometry3d p = Eigen::Isometry3d::Identity();
   gts["sander"] = p;
   kin_info.group_tcps["manipulator1"] = gts;
@@ -143,7 +143,7 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   kin_info.kinematics_plugin_info.search_libraries.emplace_back("tesseract_kdl_factories");
 
   {
-    tesseract_common::PluginInfo info;
+    tesseract::common::PluginInfo info;
     info.class_name = "KDLFwdKinChainFactory";
     info.config["base_link"] = "base_link";
     info.config["tip_link"] = "tool0";
@@ -152,7 +152,7 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   }
 
   {
-    tesseract_common::PluginInfo info;
+    tesseract::common::PluginInfo info;
     info.class_name = "KDLInvKinChainLMAFactory";
     info.config["base_link"] = "base_link";
     info.config["tip_link"] = "tool0";
@@ -161,7 +161,7 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   }
 
   {
-    tesseract_common::PluginInfo info;
+    tesseract::common::PluginInfo info;
     info.class_name = "KDLInvKinChainNRFactory";
     info.config["base_link"] = "base_link";
     info.config["tip_link"] = "tool0";
@@ -236,7 +236,7 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
   EXPECT_FALSE(
       kin_info_msg.kinematics_plugin_info.group_inv_plugins[0].plugin_container.plugins[1].second.config.empty());
 
-  tesseract_srdf::KinematicsInformation kin_info2;
+  tesseract::srdf::KinematicsInformation kin_info2;
   tesseract_rosutils::fromMsg(kin_info2, kin_info_msg);
 
   EXPECT_EQ(kin_info2.group_names.size(), kin_info_msg.group_names.size());
@@ -304,14 +304,14 @@ TEST_F(TesseractROSUtilsUnit, KinematicsInformation)  // NOLINT
 TEST_F(TesseractROSUtilsUnit, toRosJointTrajectory)  // NOLINT
 {
   std::vector<std::string> joint_names{ "joint1", "joint2", "joint3", "joint4" };
-  std::vector<tesseract_common::JointState> tesseract_joint_trajectory;
-  tesseract_common::JointState tesseract_joint_state;
+  std::vector<tesseract::common::JointState> tesseract_joint_trajectory;
+  tesseract::common::JointState tesseract_joint_state;
 
   trajectory_msgs::JointTrajectory ros_joint_trajectory;
   trajectory_msgs::JointTrajectoryPoint ros_joint_state;
   ros_joint_trajectory.joint_names = joint_names;
 
-  tesseract_scene_graph::SceneState env_state;
+  tesseract::scene_graph::SceneState env_state;
   env_state.joints[joint_names[0]] = 0;
   env_state.joints[joint_names[1]] = 0;
   env_state.joints[joint_names[2]] = 1;

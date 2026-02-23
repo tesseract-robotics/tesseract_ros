@@ -33,7 +33,7 @@ namespace ros
 class AsyncSpinner;
 }
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 /** @brief This thread monitors this nodes connection to ros core */
 class ROSStatusThread : public QThread
@@ -83,6 +83,6 @@ private:
   static void initSingleton();
 };
 
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 #endif  // TESSERACT_QT_ROS_MONITOR_H

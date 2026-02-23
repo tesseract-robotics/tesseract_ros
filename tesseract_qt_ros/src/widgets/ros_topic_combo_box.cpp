@@ -32,7 +32,7 @@
 
 #include <QApplication>
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 ROSTopicComboBox::ROSTopicComboBox(QWidget* parent) : QComboBox(parent) { setEditable(true); }
 
@@ -73,4 +73,4 @@ void ROSTopicComboBox::fillTopicList()
   QApplication::restoreOverrideCursor();
   blockSignals(false);
 }
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui

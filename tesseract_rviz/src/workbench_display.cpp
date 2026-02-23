@@ -34,7 +34,7 @@ struct WorkbenchDisplay::Implementation
 
   std::shared_ptr<SetThemeTool> theme_tool;
 
-  tesseract_gui::WorkbenchWidget* widget{ nullptr };
+  tesseract::gui::WorkbenchWidget* widget{ nullptr };
 
   std::unique_ptr<EnvironmentMonitorProperties> monitor_properties{ nullptr };
   std::unique_ptr<JointTrajectoryMonitorProperties> joint_trajectory_properties{ nullptr };
@@ -72,15 +72,15 @@ void WorkbenchDisplay::onInitialize()
 {
   Display::onInitialize();
 
-  setIcon(tesseract_gui::icons::getTesseractIcon());
+  setIcon(tesseract::gui::icons::getTesseractIcon());
   // NOLINTNEXTLINE
-  data_->widget = new tesseract_gui::WorkbenchWidget(data_->monitor_properties->getComponentInfo());
+  data_->widget = new tesseract::gui::WorkbenchWidget(data_->monitor_properties->getComponentInfo());
 
   setAssociatedWidget(data_->widget);
 
   getAssociatedWidget()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
   getAssociatedWidget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  getAssociatedWidgetPanel()->setIcon(tesseract_gui::icons::getTesseractIcon());
+  getAssociatedWidgetPanel()->setIcon(tesseract::gui::icons::getTesseractIcon());
   getAssociatedWidgetPanel()->layout()->setSizeConstraint(QLayout::SetNoConstraint);
   getAssociatedWidgetPanel()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -88,9 +88,9 @@ void WorkbenchDisplay::onInitialize()
       getAssociatedWidgetPanel(), SIGNAL(visibilityChanged(bool)), this, SLOT(associatedPanelVisibilityChange(bool)));
 
   connect(data_->monitor_properties.get(),
-          SIGNAL(componentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)),
+          SIGNAL(componentInfoChanged(std::shared_ptr<const tesseract::gui::ComponentInfo>)),
           this,
-          SLOT(onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo>)));
+          SLOT(onComponentInfoChanged(std::shared_ptr<const tesseract::gui::ComponentInfo>)));
 
   data_->monitor_properties->onInitialize(scene_manager_, scene_node_);
   data_->joint_trajectory_properties->onInitialize();
@@ -116,7 +116,7 @@ void WorkbenchDisplay::update(float wall_dt, float ros_dt)
 
   if (data_->widget != nullptr)
   {
-    tesseract_gui::events::PreRender event(data_->widget->getComponentInfo()->getSceneName());
+    tesseract::gui::events::PreRender event(data_->widget->getComponentInfo()->getSceneName());
     QApplication::sendEvent(qApp, &event);
   }
 }
@@ -179,7 +179,7 @@ void WorkbenchDisplay::onEnableChanged()
   QApplication::restoreOverrideCursor();
 }
 
-void WorkbenchDisplay::onComponentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info)
+void WorkbenchDisplay::onComponentInfoChanged(std::shared_ptr<const tesseract::gui::ComponentInfo> component_info)
 {
   data_->widget->setComponentInfo(std::move(component_info));
   data_->joint_trajectory_properties->setComponentInfo(data_->widget->getJointTrajectoryWidget().getComponentInfo());

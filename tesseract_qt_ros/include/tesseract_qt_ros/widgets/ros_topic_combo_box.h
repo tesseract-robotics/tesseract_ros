@@ -35,7 +35,7 @@
 #include <ros/builtin_message_traits.h>
 #endif
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class ROSTopicComboBox : public QComboBox
 {
@@ -58,6 +58,6 @@ public Q_SLOTS:
 protected:
   QString message_type_;
 };
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 #endif  // TESSERACT_QT_ROS_ROS_TOPIC_COMBO_BOX_H

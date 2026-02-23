@@ -62,7 +62,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="tesseract_gui::ROSTopicComboBox" name="joint_state_topic_combo_box"/>
+    <widget class="tesseract::gui::ROSTopicComboBox" name="joint_state_topic_combo_box"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="monitor_topic_label">
@@ -72,7 +72,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="tesseract_gui::ROSTopicComboBox" name="monitor_topic_combo_box"/>
+    <widget class="tesseract::gui::ROSTopicComboBox" name="monitor_topic_combo_box"/>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="snapshot_topic_label">
@@ -82,13 +82,13 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="tesseract_gui::ROSTopicComboBox" name="snapshot_topic_combo_box"/>
+    <widget class="tesseract::gui::ROSTopicComboBox" name="snapshot_topic_combo_box"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>tesseract_gui::ROSTopicComboBox</class>
+   <class>tesseract::gui::ROSTopicComboBox</class>
    <extends>QComboBox</extends>
    <header>tesseract_qt_ros/widgets/ros_topic_combo_box.h</header>
   </customwidget>
