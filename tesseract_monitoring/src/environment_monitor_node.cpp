@@ -7,7 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
 #include <tesseract_monitoring/environment_monitor.h>
 
-using namespace tesseract_environment;
+using namespace tesseract::environment;
 using namespace tesseract_monitoring;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */

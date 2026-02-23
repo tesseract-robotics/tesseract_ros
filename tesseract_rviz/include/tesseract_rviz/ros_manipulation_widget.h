@@ -11,16 +11,16 @@ namespace rviz
 {
 class DisplayContext;
 }
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class EntityContainer;
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 namespace tesseract_rviz
 {
 struct ROSManipulationWidgetPrivate;
 
-class ROSManipulationWidget : public tesseract_gui::ManipulationWidget
+class ROSManipulationWidget : public tesseract::gui::ManipulationWidget
 {
   Q_OBJECT
 public:
@@ -51,7 +51,7 @@ private:
   std::unique_ptr<ROSManipulationWidgetPrivate> data_;
 
   void clear();
-  void clearContainer(const tesseract_gui::EntityContainer& container);
+  void clearContainer(const tesseract::gui::EntityContainer& container);
   void addInteractiveMarker();
 };
 }  // namespace tesseract_rviz

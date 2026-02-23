@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
   Q_INIT_RESOURCE(qdarkstyle_light);
 
   // setup stylesheet
-  app.setStyleSheet(tesseract_gui::themes::getDarkTheme());
+  app.setStyleSheet(tesseract::gui::themes::getDarkTheme());
 
   // Instantiating ROS node object
   ros::init(argc, argv, "tesseract_studio", ros::InitOption::NoSigintHandler);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     return 0;
 
   // Show main window
-  tesseract_gui::Studio widget;
+  tesseract::gui::Studio widget;
   if (!widget.init(argc, argv))
     return 0;
 

@@ -19,7 +19,7 @@ class SceneManager;
 class SceneNode;
 }  // namespace Ogre
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class EnvironmentWidget;
 }
@@ -41,13 +41,13 @@ public:
    * @brief Return the component info based on the settings of the object
    * @return The component info
    */
-  std::shared_ptr<const tesseract_gui::ComponentInfo> getComponentInfo() const;
+  std::shared_ptr<const tesseract::gui::ComponentInfo> getComponentInfo() const;
 
   void load(const rviz::Config& config);
   void save(rviz::Config config) const;
 
 Q_SIGNALS:
-  void componentInfoChanged(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info);
+  void componentInfoChanged(std::shared_ptr<const tesseract::gui::ComponentInfo> component_info);
 
 public Q_SLOTS:
   void onDisplayModeChanged();

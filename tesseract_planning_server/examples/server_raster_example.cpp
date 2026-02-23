@@ -7,8 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/environment.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 
-using namespace tesseract_environment;
-using namespace tesseract_planning;
+using namespace tesseract::environment;
 
 int main(int argc, char** argv)
 {

@@ -11,11 +11,11 @@ class Config;
 class Property;
 }  // namespace rviz
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class JointTrajectoryWidget;
 struct ComponentInfo;
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 namespace tesseract_rviz
 {
@@ -33,8 +33,8 @@ public:
 
   void onInitialize();
 
-  void setComponentInfo(std::shared_ptr<const tesseract_gui::ComponentInfo> component_info);
-  std::shared_ptr<const tesseract_gui::ComponentInfo> getComponentInfo() const;
+  void setComponentInfo(std::shared_ptr<const tesseract::gui::ComponentInfo> component_info);
+  std::shared_ptr<const tesseract::gui::ComponentInfo> getComponentInfo() const;
 
   void load(const rviz::Config& config);
   void save(rviz::Config config) const;

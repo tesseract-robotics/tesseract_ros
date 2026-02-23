@@ -23,11 +23,11 @@
 #include <tesseract_qt/studio/studio_dock_widget_factory.h>
 #include <tesseract_qt_ros/plugins/studio_environment_monitor_dock_widget.h>
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 using StudioEnvironmentMonitorDockWidgetFactory = StudioDockWidgetFactoryImpl<StudioEnvironmentMonitorDockWidget>;
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_STUDIO_PLUGIN(tesseract_gui::StudioEnvironmentMonitorDockWidgetFactory,
+TESSERACT_ADD_STUDIO_PLUGIN(tesseract::gui::StudioEnvironmentMonitorDockWidgetFactory,
                             StudioEnvironmentMonitorDockWidgetFactory)

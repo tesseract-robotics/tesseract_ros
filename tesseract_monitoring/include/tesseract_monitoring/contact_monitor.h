@@ -49,12 +49,12 @@ class ContactMonitor
 {
 public:
   ContactMonitor(std::string monitor_namespace,
-                 std::unique_ptr<tesseract_environment::Environment> env,
+                 std::unique_ptr<tesseract::environment::Environment> env,
                  ros::NodeHandle& nh,
                  ros::NodeHandle& pnh,
                  std::vector<std::string> monitored_link_names,
                  std::vector<std::string> disabled_link_names,
-                 tesseract_collision::ContactTestType type,
+                 tesseract::collision::ContactTestType type,
                  double contact_distance = 0.1,
                  const std::string& joint_state_topic = DEFAULT_JOINT_STATES_TOPIC);
   ~ContactMonitor();

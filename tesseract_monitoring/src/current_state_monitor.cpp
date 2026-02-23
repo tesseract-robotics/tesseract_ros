@@ -66,8 +66,8 @@ namespace tesseract_monitoring
 struct CurrentStateMonitor::Implementation
 {
   ros::NodeHandle nh;
-  tesseract_environment::Environment::ConstPtr env;
-  tesseract_scene_graph::SceneState env_state;
+  tesseract::environment::Environment::ConstPtr env;
+  tesseract::scene_graph::SceneState env_state;
   int last_environment_revision;
   std::map<std::string, ros::Time> joint_time;
   bool state_monitor_started;
@@ -84,7 +84,7 @@ struct CurrentStateMonitor::Implementation
   mutable std::condition_variable state_update_condition;
   std::vector<JointStateUpdateCallback> update_callbacks;
 
-  Implementation(const tesseract_environment::Environment::ConstPtr& env_, const ros::NodeHandle& nh_)
+  Implementation(const tesseract::environment::Environment::ConstPtr& env_, const ros::NodeHandle& nh_)
     : nh(nh_)
     , env(env_)
     , env_state(env_->getState())
@@ -95,7 +95,7 @@ struct CurrentStateMonitor::Implementation
   {
   }
 
-  tesseract_scene_graph::SceneState getCurrentState() const
+  tesseract::scene_graph::SceneState getCurrentState() const
   {
     std::scoped_lock slock(state_update_lock);
     return env_state;
@@ -107,7 +107,7 @@ struct CurrentStateMonitor::Implementation
     return current_state_time;
   }
 
-  std::pair<tesseract_scene_graph::SceneState, ros::Time> getCurrentStateAndTime() const
+  std::pair<tesseract::scene_graph::SceneState, ros::Time> getCurrentStateAndTime() const
   {
     std::scoped_lock slock(state_update_lock);
     return std::make_pair(env_state, current_state_time);
@@ -291,7 +291,7 @@ struct CurrentStateMonitor::Implementation
     std::vector<std::string> missing_joints;
     if (!haveCompleteState(missing_joints))
     {
-      tesseract_kinematics::JointGroup::ConstPtr jmg = env->getJointGroup(manip);
+      tesseract::kinematics::JointGroup::ConstPtr jmg = env->getJointGroup(manip);
       if (jmg)
       {
         std::set<std::string> mj;
@@ -389,29 +389,29 @@ struct CurrentStateMonitor::Implementation
   }
 };
 
-CurrentStateMonitor::CurrentStateMonitor(const std::shared_ptr<const tesseract_environment::Environment>& env)
+CurrentStateMonitor::CurrentStateMonitor(const std::shared_ptr<const tesseract::environment::Environment>& env)
   : CurrentStateMonitor(env, ros::NodeHandle())
 {
 }
 
-CurrentStateMonitor::CurrentStateMonitor(const std::shared_ptr<const tesseract_environment::Environment>& env,
+CurrentStateMonitor::CurrentStateMonitor(const std::shared_ptr<const tesseract::environment::Environment>& env,
                                          const ros::NodeHandle& nh)
   : impl_(std::make_unique<Implementation>(env, nh))
 {
 }
 
-const tesseract_environment::Environment& CurrentStateMonitor::getEnvironment() const
+const tesseract::environment::Environment& CurrentStateMonitor::getEnvironment() const
 {
   return *std::as_const(*impl_).env;
 }
 
 CurrentStateMonitor::~CurrentStateMonitor() { stopStateMonitor(); }
-tesseract_scene_graph::SceneState CurrentStateMonitor::getCurrentState() const
+tesseract::scene_graph::SceneState CurrentStateMonitor::getCurrentState() const
 {
   return std::as_const(*impl_).getCurrentState();
 }
 ros::Time CurrentStateMonitor::getCurrentStateTime() const { return std::as_const(*impl_).getCurrentStateTime(); }
-std::pair<tesseract_scene_graph::SceneState, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
+std::pair<tesseract::scene_graph::SceneState, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
 {
   return std::as_const(*impl_).getCurrentStateAndTime();
 }

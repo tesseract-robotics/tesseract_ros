@@ -60,7 +60,7 @@ void SetThemeTool::initialized(rviz::DisplayContext* context)
       data_->tool_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
       data_->tool_button->setPopupMode(QToolButton::InstantPopup);
       data_->tool_button->setToolTip("Set the application theme.");
-      data_->tool_button->setIcon(tesseract_gui::icons::getTesseractIcon());
+      data_->tool_button->setIcon(tesseract::gui::icons::getTesseractIcon());
       data_->toolbar->addWidget(data_->tool_button);
 
       QSettings ms;
@@ -96,14 +96,14 @@ void SetThemeTool::onThemeDefaultSelected()
 
 void SetThemeTool::onThemeDarkSelected()
 {
-  qApp->setStyleSheet(tesseract_gui::themes::getDarkTheme());
+  qApp->setStyleSheet(tesseract::gui::themes::getDarkTheme());
   data_->tool_button->setText("Theme (Dark)");
   data_->theme_index = 1;
 }
 
 void SetThemeTool::onThemeLightSelected()
 {
-  qApp->setStyleSheet(tesseract_gui::themes::getLightTheme());
+  qApp->setStyleSheet(tesseract::gui::themes::getLightTheme());
   data_->tool_button->setText("Theme (Light)");
   data_->theme_index = 2;
 }

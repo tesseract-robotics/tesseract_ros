@@ -37,21 +37,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/Geometry.h>
 #include <tesseract_rosutils/utils.h>
 
-using namespace tesseract_geometry;
+using namespace tesseract::geometry;
 using namespace tesseract_rosutils;
 
 /**
  * @brief Tests if the toMsg and fromMsg result in the same object
  * @param geometry Input msg
  */
-inline void testToMsgFromMsg(const tesseract_geometry::Geometry& object)
+inline void testToMsgFromMsg(const tesseract::geometry::Geometry& object)
 {
   // Serialize to ros message
   tesseract_msgs::Geometry msg;
   EXPECT_TRUE(toMsg(msg, object));
 
   // Deserialize to object
-  tesseract_geometry::Geometry::Ptr object_new;
+  tesseract::geometry::Geometry::Ptr object_new;
   EXPECT_TRUE(fromMsg(object_new, msg));
 
   // Check for equality
@@ -78,9 +78,9 @@ TEST(TesseractRosutilsGeometryMsgConversions, Cone)  // NOLINT
 
 TEST(TesseractRosutilsGeometryMsgConversions, ConvexMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::ConvexMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
 }
@@ -93,9 +93,9 @@ TEST(TesseractRosutilsGeometryMsgConversions, Cylinder)  // NOLINT
 
 TEST(TesseractRosutilsGeometryMsgConversions, Mesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
 }
@@ -121,14 +121,14 @@ TEST(TesseractRosutilsGeometryMsgConversions, Octree)  // NOLINT
   pc.points.emplace_back(-.5, 0.5, 0.5);
   {
     std::unique_ptr<octomap::OcTree> ot = createOctree(pc, 1, false, true);
-    auto object = std::make_shared<tesseract_geometry::Octree>(
-        std::move(ot), tesseract_geometry::OctreeSubType::BOX, false, true);
+    auto object = std::make_shared<tesseract::geometry::Octree>(
+        std::move(ot), tesseract::geometry::OctreeSubType::BOX, false, true);
     testToMsgFromMsg(*object);
   }
   {
     std::unique_ptr<octomap::OcTree> ot = createOctree(pc, 1, false, true);
-    auto object = std::make_shared<tesseract_geometry::Octree>(
-        std::move(ot), tesseract_geometry::OctreeSubType::BOX, false, false);
+    auto object = std::make_shared<tesseract::geometry::Octree>(
+        std::move(ot), tesseract::geometry::OctreeSubType::BOX, false, false);
     testToMsgFromMsg(*object);
   }
 }
@@ -141,18 +141,18 @@ TEST(TesseractRosutilsGeometryMsgConversions, Plane)  // NOLINT
 
 TEST(TesseractRosutilsGeometryMsgConversions, PolygonMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::PolygonMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::PolygonMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
 }
 
 TEST(TesseractRosutilsGeometryMsgConversions, SDFMesh)  // NOLINT
 {
-  tesseract_common::GeneralResourceLocator locator;
+  tesseract::common::GeneralResourceLocator locator;
   std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
-  auto object = tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>(
+  auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
 }

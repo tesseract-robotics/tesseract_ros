@@ -37,12 +37,12 @@ struct EnvironmentMonitorProperties::Implementation
   Ogre::SceneManager* scene_manager{ nullptr };
   Ogre::SceneNode* scene_node{ nullptr };
   std::string monitor_namespace;
-  tesseract_environment::EnvironmentMonitor::Ptr monitor;
+  tesseract::environment::EnvironmentMonitor::Ptr monitor;
   ros::Subscriber snapshot;
 
-  std::shared_ptr<const tesseract_gui::ComponentInfo> component_info;
-  tesseract_gui::SceneGraphRenderManager::Ptr render_manager;
-  tesseract_gui::ContactResultsRenderManager::Ptr contact_results_render_manager;
+  std::shared_ptr<const tesseract::gui::ComponentInfo> component_info;
+  tesseract::gui::SceneGraphRenderManager::Ptr render_manager;
+  tesseract::gui::ContactResultsRenderManager::Ptr contact_results_render_manager;
 
   rviz::EnumProperty* display_mode_property{ nullptr };
   rviz::StringProperty* urdf_description_string_property{ nullptr };
@@ -58,7 +58,7 @@ EnvironmentMonitorProperties::EnvironmentMonitorProperties(rviz::Display* parent
 {
   data_->parent = parent;
   data_->monitor_namespace = monitor_namespace;
-  data_->component_info = tesseract_gui::ComponentInfoManager::create("rviz_scene");
+  data_->component_info = tesseract::gui::ComponentInfoManager::create("rviz_scene");
 
   data_->main_property = main_property;
   if (data_->main_property == nullptr)
@@ -113,7 +113,7 @@ EnvironmentMonitorProperties::EnvironmentMonitorProperties(rviz::Display* parent
 
 EnvironmentMonitorProperties::~EnvironmentMonitorProperties()
 {
-  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  tesseract::gui::EnvironmentManager::remove(data_->component_info);
 }
 
 void EnvironmentMonitorProperties::onInitialize(Ogre::SceneManager* scene_manager, Ogre::SceneNode* scene_node)
@@ -123,7 +123,7 @@ void EnvironmentMonitorProperties::onInitialize(Ogre::SceneManager* scene_manage
   onDisplayModeChanged();
 }
 
-std::shared_ptr<const tesseract_gui::ComponentInfo> EnvironmentMonitorProperties::getComponentInfo() const
+std::shared_ptr<const tesseract::gui::ComponentInfo> EnvironmentMonitorProperties::getComponentInfo() const
 {
   return data_->component_info;
 }
@@ -195,7 +195,7 @@ void EnvironmentMonitorProperties::onURDFDescriptionChanged()
 
   data_->parent->deleteStatus("Tesseract");
 
-  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  tesseract::gui::EnvironmentManager::remove(data_->component_info);
   data_->render_manager = nullptr;
   data_->contact_results_render_manager = nullptr;
 
@@ -203,8 +203,8 @@ void EnvironmentMonitorProperties::onURDFDescriptionChanged()
   data_->nh.getParam(data_->urdf_description_string_property->getStdString(), urdf_xml_string);
   data_->nh.getParam(data_->urdf_description_string_property->getStdString() + "_semantic", srdf_xml_string);
 
-  auto env = std::make_shared<tesseract_environment::Environment>();
-  auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
+  auto env = std::make_shared<tesseract::environment::Environment>();
+  auto locator = std::make_shared<tesseract::common::GeneralResourceLocator>();
   if (env->init(urdf_xml_string, srdf_xml_string, locator))
   {
     if (data_->monitor != nullptr)
@@ -222,8 +222,8 @@ void EnvironmentMonitorProperties::onURDFDescriptionChanged()
       Q_EMIT componentInfoChanged(data_->component_info);
 
       auto env_wrapper =
-          std::make_shared<tesseract_gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
-      tesseract_gui::EnvironmentManager::set(env_wrapper);
+          std::make_shared<tesseract::gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
+      tesseract::gui::EnvironmentManager::set(env_wrapper);
 
       onJointStateTopicChanged();
     }
@@ -244,11 +244,11 @@ void EnvironmentMonitorProperties::onEnvironmentTopicChanged()
   if (data_->monitor != nullptr)
     data_->monitor->shutdown();
 
-  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  tesseract::gui::EnvironmentManager::remove(data_->component_info);
   data_->render_manager = nullptr;
   data_->contact_results_render_manager = nullptr;
 
-  auto env = std::make_shared<tesseract_environment::Environment>();
+  auto env = std::make_shared<tesseract::environment::Environment>();
   data_->monitor = std::make_unique<tesseract_monitoring::ROSEnvironmentMonitor>(env, data_->monitor_namespace);
 
   if (data_->monitor != nullptr)
@@ -267,8 +267,8 @@ void EnvironmentMonitorProperties::onEnvironmentTopicChanged()
     Q_EMIT componentInfoChanged(data_->component_info);
 
     auto env_wrapper =
-        std::make_shared<tesseract_gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
-    tesseract_gui::EnvironmentManager::set(env_wrapper);
+        std::make_shared<tesseract::gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
+    tesseract::gui::EnvironmentManager::set(env_wrapper);
 
     onJointStateTopicChanged();
   }
@@ -284,17 +284,17 @@ void EnvironmentMonitorProperties::snapshotCallback(const tesseract_msgs::Enviro
 
   data_->parent->deleteStatus("Tesseract");
 
-  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  tesseract::gui::EnvironmentManager::remove(data_->component_info);
   data_->render_manager = nullptr;
   data_->contact_results_render_manager = nullptr;
 
-  tesseract_environment::Commands commands = tesseract_rosutils::fromMsg(msg->command_history);
+  tesseract::environment::Commands commands = tesseract_rosutils::fromMsg(msg->command_history);
   std::unordered_map<std::string, double> jv;
-  tesseract_common::TransformMap fjv;
+  tesseract::common::TransformMap fjv;
   tesseract_rosutils::fromMsg(jv, msg->joint_states);
   tesseract_rosutils::fromMsg(fjv, msg->floating_joint_states);
-  auto env = std::make_shared<tesseract_environment::Environment>();
-  auto locator = std::make_shared<tesseract_common::GeneralResourceLocator>();
+  auto env = std::make_shared<tesseract::environment::Environment>();
+  auto locator = std::make_shared<tesseract::common::GeneralResourceLocator>();
   env->setResourceLocator(locator);
   if (env->init(commands))
   {
@@ -315,8 +315,8 @@ void EnvironmentMonitorProperties::snapshotCallback(const tesseract_msgs::Enviro
       Q_EMIT componentInfoChanged(data_->component_info);
 
       auto env_wrapper =
-          std::make_shared<tesseract_gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
-      tesseract_gui::EnvironmentManager::set(env_wrapper);
+          std::make_shared<tesseract::gui::MonitorEnvironmentWrapper>(data_->component_info, data_->monitor);
+      tesseract::gui::EnvironmentManager::set(env_wrapper);
 
       onJointStateTopicChanged();
     }
@@ -338,7 +338,7 @@ void EnvironmentMonitorProperties::onEnvironmentSnapshotTopicChanged()
   // Shutdown the callback
   data_->snapshot.shutdown();
 
-  tesseract_gui::EnvironmentManager::remove(data_->component_info);
+  tesseract::gui::EnvironmentManager::remove(data_->component_info);
   data_->render_manager = nullptr;
   data_->contact_results_render_manager = nullptr;
 

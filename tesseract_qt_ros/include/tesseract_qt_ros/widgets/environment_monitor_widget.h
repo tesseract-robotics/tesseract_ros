@@ -44,7 +44,7 @@ namespace Ui
 class EnvironmentMonitorWidget;
 }
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class ComponentInfo;
 class EnvironmentMonitorWidget : public QWidget
@@ -83,6 +83,6 @@ private:
 
   void snapshotCallback(const tesseract_msgs::EnvironmentConstPtr& msg);
 };
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 
 #endif  // TESSERACT_QT_ROS_ENVIRONMENT_MONITOR_WIDGET_H

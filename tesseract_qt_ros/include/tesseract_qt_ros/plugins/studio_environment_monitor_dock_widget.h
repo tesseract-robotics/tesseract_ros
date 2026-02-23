@@ -28,7 +28,7 @@
 #include <tesseract_qt/studio/studio_dock_widget.h>
 #endif
 
-namespace tesseract_gui
+namespace tesseract::gui
 {
 class StudioEnvironmentMonitorDockWidget : public StudioDockWidget
 {
@@ -53,5 +53,5 @@ private:
   std::unique_ptr<Implementation> data_;
 };
 
-}  // namespace tesseract_gui
+}  // namespace tesseract::gui
 #endif  // TESSERACT_QT_ROS_STUDIO_ENVIRONMENT_MONITOR_DOCK_WIDGET_H

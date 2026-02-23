@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_task_composer/core/task_composer_server.h>
 
-using namespace tesseract_environment;
+using namespace tesseract::environment;
 using tesseract_planning_server::TesseractPlanningServer;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
   if (!task_composer_config.empty())
   {
-    tesseract_common::GeneralResourceLocator locator;
+    tesseract::common::GeneralResourceLocator locator;
     std::filesystem::path config(task_composer_config);
     planning_server->getTaskComposerServer().loadConfig(config, locator);
   }
