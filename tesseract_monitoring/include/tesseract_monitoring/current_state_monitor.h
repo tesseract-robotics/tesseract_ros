@@ -37,7 +37,7 @@
 #ifndef TESSERACT_MONITORING_CURRENT_STATE_H
 #define TESSERACT_MONITORING_CURRENT_STATE_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <functional>
@@ -45,8 +45,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/fwd.h>
-#include <tesseract_scene_graph/fwd.h>
+#include <tesseract/environment/fwd.h>
+#include <tesseract/scene_graph/fwd.h>
 
 namespace ros
 {

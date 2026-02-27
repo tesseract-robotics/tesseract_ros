@@ -16,7 +16,7 @@ find_package(Eigen3 REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_motion_planners REQUIRED COMPONENTS core simple OPTIONAL_COMPONENTS descartes ompl trajopt trajopt_ifopt)
 find_package(tesseract_task_composer REQUIRED COMPONENTS core planning)
-find_package(tesseract_common REQUIRED)
+find_package(tesseract REQUIRED COMPONENTS common)
 find_package(tesseract_rosutils REQUIRED)
 find_package(tesseract_monitoring REQUIRED)
 
@@ -105,7 +105,7 @@ configure_package(
   DEPENDENCIES
     Boost
     Eigen3
-    tesseract_common
+    "tesseract COMPONENTS common"
     tesseract_command_language
     tesseract_rosutils
     tesseract_monitoring

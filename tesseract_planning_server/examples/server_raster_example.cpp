@@ -1,10 +1,10 @@
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/node_handle.h>
 #include <tesseract_msgs/GetMotionPlanAction.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/environment.h>
+#include <tesseract/environment/environment.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 
 using namespace tesseract::environment;

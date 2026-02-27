@@ -12,8 +12,7 @@
 
   <depend>tesseract_monitoring</depend>
   <depend>tesseract_msgs</depend>
-  <depend>tesseract_common</depend>
-  <depend>tesseract_command_language</depend>
+  <depend>tesseract</depend>
   <depend>tesseract_task_composer</depend>
   <depend>tesseract_motion_planners</depend>
   <depend>tesseract_rosutils</depend>

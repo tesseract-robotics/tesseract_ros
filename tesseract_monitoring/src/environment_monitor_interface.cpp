@@ -23,7 +23,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/service.h>
 #include <ros/console.h>
@@ -36,9 +36,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_monitoring/environment_monitor_interface.h>
 #include <tesseract_rosutils/utils.h>
 
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/command.h>
+#include <tesseract/scene_graph/scene_state.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/command.h>
 
 namespace tesseract_monitoring
 {

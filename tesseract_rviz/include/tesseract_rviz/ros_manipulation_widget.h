@@ -31,10 +31,10 @@ public Q_SLOTS:
   void onRender(float dt) override;
   void onLinkVisibilityChanged(const std::vector<std::string>& links);
   void onGroupNameChanged(const QString& group_name);
-  void onManipulationStateChanged(const tesseract_scene_graph::SceneState& state, int state_index);
+  void onManipulationStateChanged(const tesseract::scene_graph::SceneState& state, int state_index);
 
 private Q_SLOTS:
-  void onEnvironmentSet(const std::shared_ptr<const tesseract_environment::Environment>& env);
+  void onEnvironmentSet(const std::shared_ptr<const tesseract::environment::Environment>& env);
   void onModeChanged(int mode);
   void onTCPChanged();
   void markerFeedback(const std::string& reference_frame,

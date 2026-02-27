@@ -25,12 +25,12 @@
 #ifndef TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
 #define TESSERACT_MONITORING_ENVIRONMENT_MONITOR_INTERFACE_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/environment_monitor_interface.h>
+#include <tesseract/environment/environment_monitor_interface.h>
 
 namespace tesseract_monitoring
 {

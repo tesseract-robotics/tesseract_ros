@@ -11,9 +11,9 @@
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_rosutils/utils.h>
 
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/command.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/command.h>
 
 #include <tesseract_msgs/EnvironmentState.h>
 #include <tesseract_msgs/Environment.h>

@@ -26,22 +26,22 @@
 #ifndef TESSERACT_ROSUTILS_UTILS_H
 #define TESSERACT_ROSUTILS_UTILS_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_common/eigen_types.h>
-#include <tesseract_common/collision_margin_data.h>
-#include <tesseract_srdf/kinematics_information.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/common/eigen_types.h>
+#include <tesseract/common/collision_margin_data.h>
+#include <tesseract/srdf/kinematics_information.h>
 
-#include <tesseract_common/fwd.h>
-#include <tesseract_geometry/fwd.h>
-#include <tesseract_collision/core/fwd.h>
-#include <tesseract_scene_graph/fwd.h>
-#include <tesseract_environment/fwd.h>
-#include <tesseract_collision/core/fwd.h>
+#include <tesseract/common/fwd.h>
+#include <tesseract/geometry/fwd.h>
+#include <tesseract/collision/fwd.h>
+#include <tesseract/scene_graph/fwd.h>
+#include <tesseract/environment/fwd.h>
+#include <tesseract/collision/fwd.h>
 #include <tesseract_motion_planners/core/fwd.h>
 #include <tesseract_task_composer/core/fwd.h>
 #include <tesseract_msgs/TransformMap.h>
@@ -490,7 +490,7 @@ std::unique_ptr<tesseract::task_composer::TaskComposerNodeInfo>
 fromMsg(const tesseract_msgs::TaskComposerNodeInfo& node_info_msg);
 
 /**
- * @brief Converts a tesseract_common::JointTrajectory msg to a trajectory_msgs::JointTrajectory object
+ * @brief Converts a tesseract::common::JointTrajectory msg to a trajectory_msgs::JointTrajectory object
  * @param joint_trajectory Input JointTrajectory msg
  * @return Resulting Tesseract
  */
@@ -498,7 +498,7 @@ trajectory_msgs::JointTrajectory toMsg(const tesseract::common::JointTrajectory&
                                        const tesseract::scene_graph::SceneState& initial_state);
 
 /**
- * @brief Convert trajectory_msgs::JointTrajectory to Tesseract tesseract_common::JointTrajectory
+ * @brief Convert trajectory_msgs::JointTrajectory to Tesseract tesseract::common::JointTrajectory
  * @param joint_trajectory The trajectory to convert
  * @return A tesseract joint trajectory
  */

@@ -23,16 +23,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/node_handle.h>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/environment_cache.h>
-#include <tesseract_environment/environment_monitor.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/environment_cache.h>
+#include <tesseract/environment/environment_monitor.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_task_composer/core/task_composer_server.h>
 

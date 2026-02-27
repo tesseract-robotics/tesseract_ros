@@ -17,14 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(tesseract_collision REQUIRED COMPONENTS core)
-find_package(tesseract_common REQUIRED)
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_geometry REQUIRED) # This should not be required, must be doing something wrong when creating targets
+find_package(tesseract REQUIRED COMPONENTS common environment geometry scene_graph srdf visualization collision)
 find_package(tesseract_motion_planners REQUIRED COMPONENTS core)
-find_package(tesseract_scene_graph REQUIRED)
-find_package(tesseract_srdf REQUIRED)
-find_package(tesseract_visualization REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_task_composer REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -43,13 +37,13 @@ tesseract_variables()
 
 add_library(${PROJECT_NAME} SHARED src/plotting.cpp src/conversions.cpp src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  tesseract::tesseract_environment
-  tesseract::tesseract_scene_graph
-  tesseract::tesseract_srdf
-  tesseract::tesseract_geometry
-  tesseract::tesseract_collision_core
-  tesseract::tesseract_visualization
-  tesseract::tesseract_common
+  tesseract::environment
+  tesseract::scene_graph
+  tesseract::srdf
+  tesseract::geometry
+  tesseract::collision
+  tesseract::visualization
+  tesseract::common
   tesseract::tesseract_motion_planners_core
   tesseract::tesseract_task_composer
   tesseract::tesseract_command_language
@@ -78,13 +72,8 @@ configure_package(
   DEPENDENCIES
     Boost
     Eigen3
-    "tesseract_collision COMPONENTS core"
-    tesseract_common
-    tesseract_environment
+    "tesseract COMPONENTS common collision environment geometry scene_graph srdf visualization"
     "tesseract_motion_planners COMPONENTS core"
-    tesseract_scene_graph
-    tesseract_srdf
-    tesseract_visualization
     tesseract_command_language
     tesseract_task_composer
     yaml-cpp

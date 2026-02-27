@@ -2,7 +2,7 @@ add_executable(${PROJECT_NAME}_environment_monitor_demo environment_monitor_widg
 target_link_libraries(
   ${PROJECT_NAME}_environment_monitor_demo
   PRIVATE ${PROJECT_NAME}_widgets
-          tesseract::tesseract_common
+          tesseract::common
           Qt5::Core
           Qt5::Widgets)
 
