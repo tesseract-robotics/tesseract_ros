@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <ros/node_handle.h>
@@ -53,12 +53,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_msgs/GetEnvironmentInformation.h>
 #include <tesseract_msgs/SaveSceneGraph.h>
 
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/command.h>
-#include <tesseract_environment/utils.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/scene_graph/scene_state.h>
+#include <tesseract/scene_graph/graph.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/command.h>
+#include <tesseract/environment/utils.h>
 #include <tesseract_rosutils/utils.h>
 
 namespace tesseract_monitoring

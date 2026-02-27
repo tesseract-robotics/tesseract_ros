@@ -26,14 +26,14 @@
 #ifndef TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
 #define TESSERACT_ROS_TESSERACT_PLANNING_SERVER_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/fwd.h>
-#include <tesseract_environment/fwd.h>
+#include <tesseract/common/fwd.h>
+#include <tesseract/environment/fwd.h>
 #include <tesseract_task_composer/core/fwd.h>
 
 namespace tesseract_planning_server

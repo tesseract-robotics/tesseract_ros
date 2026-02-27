@@ -55,8 +55,8 @@
 #include <rviz/ogre_helpers/point_cloud.h>
 
 #include <filesystem>
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_geometry/geometries.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/geometry/geometries.h>
 
 const std::string USER_VISIBILITY = "user_visibility";
 

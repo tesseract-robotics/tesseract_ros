@@ -23,7 +23,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/node_handle.h>
 #include <actionlib/server/simple_action_server.h>
@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/scene_state.h>
+#include <tesseract/scene_graph/scene_state.h>
 #include <tesseract_planning_server/tesseract_planning_server.h>
 #include <tesseract_task_composer/core/task_composer_server.h>
 #include <tesseract_task_composer/core/task_composer_context.h>
@@ -71,19 +71,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_msgs/GetMotionPlanAction.h>
 
-#include <tesseract_common/profile_dictionary.h>
-#include <tesseract_common/any_poly.h>
-#include <tesseract_common/stopwatch.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/environment_cache.h>
-#include <tesseract_environment/environment_monitor.h>
+#include <tesseract/common/profile_dictionary.h>
+#include <tesseract/common/any_poly.h>
+#include <tesseract/common/stopwatch.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/environment_cache.h>
+#include <tesseract/environment/environment_monitor.h>
 #include <tesseract_command_language/poly/instruction_poly.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/constants.h>
 
-#include <tesseract_common/cereal_serialization.h>
+#include <tesseract/common/cereal_serialization.h>
 #include <tesseract_command_language/cereal_serialization.h>
-#include <tesseract_common/serialization.h>
+#include <tesseract/common/serialization.h>
 
 using tesseract::command_language::InstructionPoly;
 using tesseract::common::Serialization;

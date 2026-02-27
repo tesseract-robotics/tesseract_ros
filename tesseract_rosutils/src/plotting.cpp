@@ -23,7 +23,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <future>
 #include <thread>
@@ -43,24 +43,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rosutils/conversions.h>
 
-#include <tesseract_common/joint_state.h>
-#include <tesseract_scene_graph/link.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_environment/environment.h>
+#include <tesseract/common/joint_state.h>
+#include <tesseract/scene_graph/link.h>
+#include <tesseract/scene_graph/scene_state.h>
+#include <tesseract/environment/environment.h>
 
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils.h>
 
 #include <tesseract_command_language/cereal_serialization.h>
-#include <tesseract_common/serialization.h>
+#include <tesseract/common/serialization.h>
 
 #include <tesseract_motion_planners/core/utils.h>
 
-#include <tesseract_visualization/markers/arrow_marker.h>
-#include <tesseract_visualization/markers/axis_marker.h>
-#include <tesseract_visualization/markers/contact_results_marker.h>
-#include <tesseract_visualization/markers/geometry_marker.h>
-#include <tesseract_visualization/markers/toolpath_marker.h>
+#include <tesseract/visualization/markers/arrow_marker.h>
+#include <tesseract/visualization/markers/axis_marker.h>
+#include <tesseract/visualization/markers/contact_results_marker.h>
+#include <tesseract/visualization/markers/geometry_marker.h>
+#include <tesseract/visualization/markers/toolpath_marker.h>
 
 namespace tesseract_rosutils
 {

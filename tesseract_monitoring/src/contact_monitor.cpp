@@ -28,7 +28,7 @@
 #include <tesseract_monitoring/contact_monitor.h>
 #include <tesseract_monitoring/environment_monitor.h>
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/node_handle.h>
 #include <sensor_msgs/JointState.h>
@@ -44,12 +44,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_monitoring/constants.h>
 
-#include <tesseract_common/contact_allowed_validator.h>
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/environment_monitor.h>
-#include <tesseract_visualization/markers/contact_results_marker.h>
+#include <tesseract/common/contact_allowed_validator.h>
+#include <tesseract/collision/discrete_contact_manager.h>
+#include <tesseract/scene_graph/scene_state.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/environment_monitor.h>
+#include <tesseract/visualization/markers/contact_results_marker.h>
 
 namespace tesseract_monitoring
 {

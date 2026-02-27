@@ -22,17 +22,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/resource_locator.h>
-#include <tesseract_common/unit_test_utils.h>
-#include <tesseract_common/utils.h>
-#include <tesseract_geometry/geometries.h>
-#include <tesseract_geometry/impl/octree_utils.h>
-#include <tesseract_geometry/mesh_parser.h>
+#include <tesseract/common/resource_locator.h>
+#include <tesseract/common/unit_test_utils.h>
+#include <tesseract/common/utils.h>
+#include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/octree_utils.h>
+#include <tesseract/geometry/mesh_parser.h>
 
 #include <tesseract_msgs/Geometry.h>
 #include <tesseract_rosutils/utils.h>
@@ -79,7 +79,7 @@ TEST(TesseractRosutilsGeometryMsgConversions, Cone)  // NOLINT
 TEST(TesseractRosutilsGeometryMsgConversions, ConvexMesh)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
-  std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
+  std::string path = locator.locateResource("package://tesseract/support/meshes/sphere_p25m.stl")->getFilePath();
   auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::ConvexMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
@@ -94,7 +94,7 @@ TEST(TesseractRosutilsGeometryMsgConversions, Cylinder)  // NOLINT
 TEST(TesseractRosutilsGeometryMsgConversions, Mesh)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
-  std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
+  std::string path = locator.locateResource("package://tesseract/support/meshes/sphere_p25m.stl")->getFilePath();
   auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::Mesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
@@ -142,7 +142,7 @@ TEST(TesseractRosutilsGeometryMsgConversions, Plane)  // NOLINT
 TEST(TesseractRosutilsGeometryMsgConversions, PolygonMesh)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
-  std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
+  std::string path = locator.locateResource("package://tesseract/support/meshes/sphere_p25m.stl")->getFilePath();
   auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::PolygonMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());
@@ -151,7 +151,7 @@ TEST(TesseractRosutilsGeometryMsgConversions, PolygonMesh)  // NOLINT
 TEST(TesseractRosutilsGeometryMsgConversions, SDFMesh)  // NOLINT
 {
   tesseract::common::GeneralResourceLocator locator;
-  std::string path = locator.locateResource("package://tesseract_support/meshes/sphere_p25m.stl")->getFilePath();
+  std::string path = locator.locateResource("package://tesseract/support/meshes/sphere_p25m.stl")->getFilePath();
   auto object = tesseract::geometry::createMeshFromResource<tesseract::geometry::SDFMesh>(
       locator.locateResource(path), Eigen::Vector3d(.1, .2, .3), true, true, true, true, true);
   testToMsgFromMsg(*object.back());

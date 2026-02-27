@@ -28,15 +28,15 @@
 #ifndef TESSERACT_MONITORING_CONTACT_MONITOR_H
 #define TESSERACT_MONITORING_CONTACT_MONITOR_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/constants.h>
-#include <tesseract_collision/core/fwd.h>
-#include <tesseract_environment/fwd.h>
+#include <tesseract/collision/fwd.h>
+#include <tesseract/environment/fwd.h>
 
 namespace ros
 {

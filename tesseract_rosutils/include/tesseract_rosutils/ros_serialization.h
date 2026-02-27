@@ -1,7 +1,7 @@
 #ifndef TESSERACT_ROSUTILS_ROS_SERIALIZATION_H
 #define TESSERACT_ROSUTILS_ROS_SERIALIZATION_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/serialization.h>
 #include <fstream>

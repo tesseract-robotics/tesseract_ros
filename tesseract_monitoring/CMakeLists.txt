@@ -5,8 +5,7 @@ find_package(ros_industrial_cmake_boilerplate REQUIRED)
 extract_package_metadata(pkg)
 project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_common REQUIRED)
+find_package(tesseract REQUIRED COMPONENTS environment common)
 find_package(tesseract_rosutils REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -26,7 +25,7 @@ tesseract_variables()
 
 # Tesseract ROS Nodes
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::tesseract_common tesseract::tesseract_environment tesseract::tesseract_rosutils ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::common tesseract::environment tesseract::tesseract_rosutils ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_environment ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_environment PUBLIC VERSION 17)
@@ -42,7 +41,7 @@ target_include_directories(${PROJECT_NAME}_environment_node PUBLIC "$<BUILD_INTE
 target_include_directories(${PROJECT_NAME}_environment_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_contacts src/contact_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts PUBLIC tesseract::tesseract_common tesseract::tesseract_environment tesseract::tesseract_rosutils ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_contacts PUBLIC tesseract::common tesseract::environment tesseract::tesseract_rosutils ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_contacts ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_contacts PUBLIC VERSION 17)
@@ -58,7 +57,7 @@ target_include_directories(${PROJECT_NAME}_contacts_node PRIVATE "$<BUILD_INTERF
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_environment_interface SHARED src/environment_monitor_interface.cpp)
-target_link_libraries(${PROJECT_NAME}_environment_interface PUBLIC tesseract::tesseract_common tesseract::tesseract_environment tesseract::tesseract_rosutils ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment_interface PUBLIC tesseract::common tesseract::environment tesseract::tesseract_rosutils ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment_interface PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_environment_interface ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_environment_interface PUBLIC VERSION 17)
@@ -94,8 +93,7 @@ configure_package(
   DEPENDENCIES
     Eigen3
     orocos_kdl
-    tesseract_common
-    tesseract_environment
+    "tesseract COMPONENTS common environment"
     tesseract_rosutils
     "catkin REQUIRED COMPONENTS roscpp tesseract_msgs dynamic_reconfigure pluginlib tf2_ros tf2_eigen visualization_msgs"
 )

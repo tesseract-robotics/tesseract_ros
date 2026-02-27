@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 #include <filesystem>
@@ -82,16 +82,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/lexical_cast.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/types.h>
-#include <tesseract_common/joint_state.h>
-#include <tesseract_environment/environment.h>
-#include <tesseract_environment/commands.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/link.h>
-#include <tesseract_scene_graph/joint.h>
-#include <tesseract_geometry/geometries.h>
-#include <tesseract_geometry/utils.h>
-#include <tesseract_collision/core/common.h>
+#include <tesseract/common/types.h>
+#include <tesseract/common/joint_state.h>
+#include <tesseract/environment/environment.h>
+#include <tesseract/environment/commands.h>
+#include <tesseract/scene_graph/graph.h>
+#include <tesseract/scene_graph/link.h>
+#include <tesseract/scene_graph/joint.h>
+#include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/utils.h>
+#include <tesseract/collision/common.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_task_composer/core/task_composer_node_info.h>
 

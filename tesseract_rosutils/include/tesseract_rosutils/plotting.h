@@ -26,15 +26,15 @@
 #ifndef TESSERACT_ROSUTILS_PLOTTING_H
 #define TESSERACT_ROSUTILS_PLOTTING_H
 
-#include <tesseract_common/macros.h>
+#include <tesseract/common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_visualization/fwd.h>
+#include <tesseract/visualization/fwd.h>
 #include <tesseract_command_language/fwd.h>
 
-#include <tesseract_visualization/visualization.h>
+#include <tesseract/visualization/visualization.h>
 
 #include <ros/message_forward.h>
 namespace tesseract_msgs

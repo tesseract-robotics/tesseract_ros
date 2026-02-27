@@ -2,7 +2,7 @@
 #define TESSERACT_RVIZ_TYPES_H
 
 #include <rviz/ogre_helpers/point_cloud.h>
-#include <tesseract_geometry/impl/octree.h>
+#include <tesseract/geometry/impl/octree.h>
 
 namespace tesseract_rviz
 {

@@ -15,9 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED thread date_time system filesystem)
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_common REQUIRED)
-find_package(tesseract_visualization REQUIRED)
+find_package(tesseract REQUIRED COMPONENTS environment common visualization)
 find_package(tesseract_rosutils REQUIRED)
 find_package(tesseract_monitoring REQUIRED)
 find_package(Eigen3 REQUIRED)
