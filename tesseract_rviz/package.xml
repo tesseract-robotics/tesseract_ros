@@ -14,7 +14,7 @@
   <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_monitoring</depend>
-  <depend>tesseract_motion_planners</depend>
+  <depend>tesseract_planning</depend>
   <depend>tesseract_qt</depend>
 
   <build_depend>eigen</build_depend>

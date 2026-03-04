@@ -18,9 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(tesseract REQUIRED COMPONENTS common environment geometry scene_graph srdf visualization collision)
-find_package(tesseract_motion_planners REQUIRED COMPONENTS core)
-find_package(tesseract_command_language REQUIRED)
-find_package(tesseract_task_composer REQUIRED)
+find_package(tesseract_planning REQUIRED COMPONENTS motion_planners command_language task_composer)
 find_package(yaml-cpp REQUIRED)
 
 # Catkin Packages
@@ -44,9 +42,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::collision
   tesseract::visualization
   tesseract::common
-  tesseract::tesseract_motion_planners_core
-  tesseract::tesseract_task_composer
-  tesseract::tesseract_command_language
+  tesseract::motion_planners
+  tesseract::task_composer
+  tesseract::command_language
   yaml-cpp
   Eigen3::Eigen
   ${Boost_LIBRARIES}
@@ -73,9 +71,7 @@ configure_package(
     Boost
     Eigen3
     "tesseract COMPONENTS common collision environment geometry scene_graph srdf visualization"
-    "tesseract_motion_planners COMPONENTS core"
-    tesseract_command_language
-    tesseract_task_composer
+    "tesseract_planning COMPONENTS motion_planners command_language task_composer"
     yaml-cpp
     "catkin COMPONENTS tesseract_msgs roscpp roslib eigen_conversions geometry_msgs std_msgs visualization_msgs"
 )

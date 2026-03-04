@@ -11,9 +11,7 @@
   <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
   <depend>tesseract</depend>
-  <depend>tesseract_motion_planners</depend>
-  <depend>tesseract_command_language</depend>
-  <depend>tesseract_task_composer</depend>
+  <depend>tesseract_planning</depend>
   <depend>tesseract_msgs</depend>
   <depend>yaml-cpp</depend>
 
