@@ -42,8 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/fwd.h>
 #include <tesseract/environment/fwd.h>
 #include <tesseract/collision/fwd.h>
-#include <tesseract_motion_planners/core/fwd.h>
-#include <tesseract_task_composer/core/fwd.h>
+#include <tesseract/motion_planners/fwd.h>
+#include <tesseract/task_composer/fwd.h>
 #include <tesseract_msgs/TransformMap.h>
 
 #include <ros/message_forward.h>

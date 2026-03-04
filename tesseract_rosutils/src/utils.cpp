@@ -92,8 +92,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/geometry/geometries.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/collision/common.h>
-#include <tesseract_motion_planners/core/types.h>
-#include <tesseract_task_composer/core/task_composer_node_info.h>
+#include <tesseract/motion_planners/types.h>
+#include <tesseract/task_composer/task_composer_node_info.h>
 
 #include <tesseract_rosutils/utils.h>
 

@@ -13,10 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(tesseract_command_language REQUIRED)
-find_package(tesseract_motion_planners REQUIRED COMPONENTS core simple OPTIONAL_COMPONENTS descartes ompl trajopt trajopt_ifopt)
-find_package(tesseract_task_composer REQUIRED COMPONENTS core planning)
 find_package(tesseract REQUIRED COMPONENTS common)
+find_package(tesseract_planning REQUIRED COMPONENTS command_language motion_planners motion_planners_simple task_composer task_composer_planning OPTIONAL_COMPONENTS motion_planners_descartes motion_planners_ompl motion_planners_trajopt motion_planners_trajopt_ifopt)
 find_package(tesseract_rosutils REQUIRED)
 find_package(tesseract_monitoring REQUIRED)
 
@@ -25,31 +23,31 @@ tesseract_variables()
 
 set(LIB_COMPILE_DEFINITIONS ${TESSERACT_COMPILE_DEFINITIONS})
 set(LIB_SOURCE_LINK_LIBRARIES
-  tesseract::tesseract_command_language
-  tesseract::tesseract_motion_planners_core
-  tesseract::tesseract_motion_planners_simple
-  tesseract::tesseract_task_composer
+  tesseract::command_language
+  tesseract::motion_planners
+  tesseract::motion_planners_simple
+  tesseract::task_composer
   tesseract::tesseract_rosutils
   tesseract::tesseract_monitoring_environment
 )
 
-if(tesseract_motion_planners_trajopt_FOUND)
-  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_trajopt)
+if(tesseract_planning_motion_planners_trajopt_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::motion_planners_trajopt)
   list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_TRAJOPT")
 endif()
 
-if(tesseract_motion_planners_trajopt_ifopt_FOUND)
-  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_trajopt_ifopt)
+if(tesseract_planning_motion_planners_trajopt_ifopt_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::motion_planners_trajopt_ifopt)
   list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_TRAJOPT_IFOPT")
 endif()
 
-if(tesseract_motion_planners_ompl_FOUND)
-  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_ompl)
+if(tesseract_planning_motion_planners_ompl_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::motion_planners_ompl)
   list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_OMPL")
 endif()
 
-if(tesseract_motion_planners_descartes_FOUND)
-  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::tesseract_motion_planners_descartes)
+if(tesseract_planning_motion_planners_descartes_FOUND)
+  list(APPEND LIB_SOURCE_LINK_LIBRARIES tesseract::motion_planners_descartes)
   list(APPEND LIB_COMPILE_DEFINITIONS "-DTESSERACT_PLANNING_SERVER_HAS_DESCARTES")
 endif()
 
@@ -76,7 +74,7 @@ target_include_directories(${PROJECT_NAME}_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_raster_example examples/server_raster_example.cpp)
-target_link_libraries(${PROJECT_NAME}_raster_example PRIVATE tesseract::tesseract_command_language tesseract::tesseract_task_composer ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_raster_example PRIVATE tesseract::command_language tesseract::task_composer ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_raster_example PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME}_raster_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_raster_example PRIVATE VERSION 17)
@@ -106,11 +104,9 @@ configure_package(
     Boost
     Eigen3
     "tesseract COMPONENTS common"
-    tesseract_command_language
     tesseract_rosutils
     tesseract_monitoring
-    "tesseract_motion_planners COMPONENTS core simple OPTIONAL_COMPONENTS descartes ompl trajopt trajopt_ifopt"
-    "tesseract_task_composer COMPONENTS core planning"
+    "tesseract_planning COMPONENTS command_language motion_planners motion_planners_simple task_composer task_composer_planning OPTIONAL_COMPONENTS motion_planners_descartes motion_planners_ompl motion_planners_trajopt motion_planners_trajopt_ifopt"
     "catkin COMPONENTS tesseract_msgs tf2_ros tf2_eigen"
 )
 

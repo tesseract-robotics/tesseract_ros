@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/visualization/fwd.h>
-#include <tesseract_command_language/fwd.h>
+#include <tesseract/command_language/fwd.h>
 
 #include <tesseract/visualization/visualization.h>
 

@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/node_handle.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_examples/car_seat_example.h>
+#include <tesseract/examples/car_seat_example.h>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/scene_graph/graph.h>
 #include <tesseract/environment/environment.h>

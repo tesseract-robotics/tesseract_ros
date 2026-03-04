@@ -7,7 +7,7 @@ project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
 
 find_package(catkin REQUIRED COMPONENTS roscpp roslib std_srvs)
 find_package(tesseract REQUIRED COMPONENTS environment)
-find_package(tesseract_examples REQUIRED)
+find_package(tesseract_planning REQUIRED COMPONENTS examples)
 find_package(tesseract_monitoring REQUIRED)
 find_package(tesseract_rosutils REQUIRED)
 
@@ -19,7 +19,7 @@ tesseract_variables()
 macro(add_example test_name test_file)
   add_executable(${test_name} ${test_file})
   target_link_libraries(${test_name}
-    tesseract::tesseract_examples
+    tesseract::examples
     tesseract::environment
     tesseract::tesseract_rosutils
     tesseract::tesseract_monitoring_environment
