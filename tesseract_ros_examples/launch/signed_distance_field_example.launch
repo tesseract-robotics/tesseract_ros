@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="rviz" default="true"/>
+
+  <!-- The environment (including the SignedDistanceField link) is built programmatically by the
+       node, so no URDF parameters are required. -->
+  <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_signed_distance_field_example_node"
+        name="tesseract_ros_examples_signed_distance_field_example_node" output="screen"/>
+
+  <!-- Launch visualization -->
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_signed_distance_field_example_rviz"
+        args="-d $(find tesseract_ros_examples)/config/examples.rviz"/>
+</launch>

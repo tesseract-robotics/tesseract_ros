@@ -44,6 +44,7 @@ add_example(${PROJECT_NAME}_pick_and_place_example_node src/pick_and_place_examp
 add_example(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node src/puzzle_piece_auxillary_axes_example_node.cpp)
 add_example(${PROJECT_NAME}_puzzle_piece_example_node src/puzzle_piece_example_node.cpp)
 add_example(${PROJECT_NAME}_scene_graph_example_node src/scene_graph_example_node.cpp)
+add_example(${PROJECT_NAME}_signed_distance_field_example_node src/signed_distance_field_example_node.cpp)
 
 # Mark executables and/or libraries for installation
 install(
@@ -58,6 +59,7 @@ install(
     ${PROJECT_NAME}_puzzle_piece_example_node
     ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
     ${PROJECT_NAME}_scene_graph_example_node
+    ${PROJECT_NAME}_signed_distance_field_example_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

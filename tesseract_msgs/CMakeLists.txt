@@ -79,6 +79,7 @@ add_message_files(
     PluginInfoContainer.msg
     ProfileMap.msg
     SceneGraph.msg
+    SignedDistanceField.msg
     StringDoublePair.msg
     StringLimitsPair.msg
     StringPair.msg

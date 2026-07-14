@@ -20,7 +20,7 @@ Features
 
 #. Mesh
 #. Convex Mesh
-#. SDF Mesh
+#. Signed Distance Field
 #. Octree
 
 Creating Geometry Shapes
@@ -79,26 +79,26 @@ Example Explanation
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
       :start-after: // Manually create mesh
-      :end-before: // Manually create signed distance field mesh
+      :end-before: // Manually create convex mesh
 
    .. Note::
 
       This shows how to create a mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.
 
-#. Create a signed distance field mesh.
+#. Create a signed distance field.
+
+   A signed distance field is a volumetric geometry storing the signed distance to a surface (negative inside) on a dense grid. It is created from a distance function sampled over a domain rather than from vertices and faces.
+
+   .. code-block:: c++
+
+      // A unit sphere field sampled over [-1, 1]^3 at 16 cells per axis
+      tesseract::geometry::SignedDistanceFunction sphere = [](const Eigen::Vector3d& p) { return p.norm() - 0.5; };
+      auto sdf = tesseract::geometry::createSignedDistanceField(
+          sphere, Eigen::Vector3d(-1, -1, -1), Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(16, 16, 16));
 
    .. Note::
 
-      This should be the same as a mesh, but when interperated as the collision object it will be encoded as a signed distance field.
-
-   .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
-      :language: c++
-      :start-after: // Manually create signed distance field mesh
-      :end-before: // Manually create convex mesh
-
-   .. Note::
-
-      This shows how to create a SDF mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.
+      ``createSignedDistanceField`` returns a lazy field that samples the grid on demand; use ``createDiscreteSignedDistanceField`` to sample it eagerly. A field can also be loaded from a standard OpenVDB ``.vdb`` file via the URDF ``tesseract:signed_distance_field`` tag.
 
 #. Create a convex mesh.
 

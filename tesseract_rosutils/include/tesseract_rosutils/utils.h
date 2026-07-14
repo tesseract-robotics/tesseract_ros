@@ -133,6 +133,22 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract::geometry::G
 
 bool fromMsg(std::shared_ptr<tesseract::geometry::Geometry>& geometry, const tesseract_msgs::Geometry& geometry_msg);
 
+/**
+ * @brief Grid-sample positions in the SURFACE SHELL of a SignedDistanceField (|phi| <= band),
+ *        in the field's local frame.
+ *
+ * For voxel-cloud visualization of an SDF: a filled (whole-part) SDF is negative through its
+ * ENTIRE volume, so drawing every ``phi <= 0`` sample renders the solid interior, which is not
+ * visible, but throttles the renderer. The zero-crossing shell (this function) is both far cheaper and
+ * what one actually wants to see (the surface).
+ *
+ * @param sdf   The field (discretized on read if lazy, via getDistances()).
+ * @param band  Shell half-width in the field's distance units (metres); typically ~1 voxel.
+ * @return Sample positions with ``|phi| <= band``.
+ */
+std::vector<Eigen::Vector3d> sdfSurfaceShellPoints(const tesseract::geometry::SignedDistanceField& sdf,
+                                                   double band);
+
 bool toMsg(tesseract_msgs::Material& material_msg, const std::shared_ptr<tesseract::scene_graph::Material>& material);
 
 bool fromMsg(std::shared_ptr<tesseract::scene_graph::Material>& material, const tesseract_msgs::Material& material_msg);
