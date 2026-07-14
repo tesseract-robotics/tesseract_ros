@@ -15,7 +15,7 @@ Features
    * Cone
    * Mesh
    * Convex Mesh
-   * SDF Mesh
+   * Signed Distance Field
    * Octomap
 
 #. Origin
@@ -24,7 +24,7 @@ Features
 
 #. URDF Version
 
-   * The original implementation of Tesseract interpreted mesh tags different than what is called version 2. It originally converted mesh geometry types to convex hull because there was no way to distinguish different types of meshes. Now in version 2 it supports the shape types (mesh, convex_mesh, sdf_mesh, etc.), therefore in version 2 the mesh tag is now interpreted as a detailed mesh and is no longer converted to a convex hull. To get the same behavior using version 2 change the tag to convex_mesh and set convert equal to true. For backwards compatibility any URDF without a version is assumed version 1 and mesh tags will be converted to convex hulls.
+   * The original implementation of Tesseract interpreted mesh tags different than what is called version 2. It originally converted mesh geometry types to convex hull because there was no way to distinguish different types of meshes. Now in version 2 it supports the shape types (mesh, convex_mesh, signed_distance_field, etc.), therefore in version 2 the mesh tag is now interpreted as a detailed mesh and is no longer converted to a convex hull. To get the same behavior using version 2 change the tag to convex_mesh and set convert equal to true. For backwards compatibility any URDF without a version is assumed version 1 and mesh tags will be converted to convex hulls.
 
 Change URDF Version
 ===================
@@ -82,14 +82,14 @@ This will create a convex hull shape type. This shape is more efficient than a r
      - Optional
      - If true the mesh is converted to a convex hull. Default convert = false.
 
-Create SDF Mesh
----------------
+Create Signed Distance Field
+----------------------------
 
 .. code-block:: xml
 
-   <sdf_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" />
+   <tesseract:signed_distance_field filename="package://tesseract_support/meshes/sphere.vdb" scale="1 1 1" margin="0.0" />
 
-This will create a signed distance field shape type, which only affects collision shapes. This shape is more efficient than a regular mesh for collision checking, but not as efficient as convex hull.
+This creates a volumetric signed distance field collision shape from a standard OpenVDB FloatGrid file (``.vdb``); the file must contain one FloatGrid with an axis-aligned, uniform transform. The field stores the signed distance to the surface (negative inside) on a dense grid, which SDF-aware collision backends sample directly. It only affects collision shapes.
 
 .. list-table::
    :widths: 25 25 50
@@ -100,10 +100,13 @@ This will create a signed distance field shape type, which only affects collisio
      - Description
    * - filename
      - Required
-     - A path to a convex or non-convex mesh.
+     - A path to a standard OpenVDB FloatGrid file (``.vdb``).
    * - scale
      - Optional
-     - Scales the mesh axis aligned bounding box. Default scale = [1, 1, 1].
+     - Scales each axis of the field. Must be positive. Default scale = [1, 1, 1].
+   * - margin
+     - Optional
+     - Distance margin applied around the surface. Must be non-negative. Default margin = 0.0.
 
 Create Octree/Octomap
 ---------------------

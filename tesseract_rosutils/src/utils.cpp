@@ -82,6 +82,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/lexical_cast.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <cmath>
+#include <algorithm>
+#include <vector>
 #include <tesseract/common/types.h>
 #include <tesseract/common/joint_state.h>
 #include <tesseract/environment/environment.h>
@@ -90,6 +93,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/scene_graph/link.h>
 #include <tesseract/scene_graph/joint.h>
 #include <tesseract/geometry/geometries.h>
+#include <tesseract/geometry/impl/signed_distance_field_utils.h>
 #include <tesseract/geometry/utils.h>
 #include <tesseract/collision/common.h>
 #include <tesseract/motion_planners/types.h>
@@ -237,44 +241,6 @@ inline bool toMsg(tesseract_msgs::Mesh& mesh_msgs, const tesseract::geometry::Ge
 
       break;
     }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      const auto& mesh = static_cast<const tesseract::geometry::SDFMesh&>(geometry);
-
-      const tesseract::common::VectorVector3d& vertices = *(mesh.getVertices());
-      mesh_msgs.vertices.resize(vertices.size());
-      for (size_t i = 0; i < vertices.size(); ++i)
-      {
-        mesh_msgs.vertices[i].x = vertices[i](0);
-        mesh_msgs.vertices[i].y = vertices[i](1);
-        mesh_msgs.vertices[i].z = vertices[i](2);
-      }
-
-      const Eigen::VectorXi& faces = *(mesh.getFaces());
-      mesh_msgs.faces.resize(static_cast<size_t>(faces.size()));
-      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
-        mesh_msgs.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
-
-      if (mesh.getResource() && mesh.getResource()->isFile())
-      {
-        mesh_msgs.file_path = mesh.getResource()->getFilePath();
-      }
-      if (mesh_msgs.file_path.empty())
-      {
-        mesh_msgs.scale[0] = 1;
-        mesh_msgs.scale[1] = 1;
-        mesh_msgs.scale[2] = 1;
-      }
-      else
-      {
-        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
-        mesh_msgs.scale[0] = scale.x();
-        mesh_msgs.scale[1] = scale.y();
-        mesh_msgs.scale[2] = scale.z();
-      }
-
-      break;
-    }
     default:
     {
       ROS_ERROR("Unable to construct primitive shape message for shape of type %d",
@@ -284,6 +250,38 @@ inline bool toMsg(tesseract_msgs::Mesh& mesh_msgs, const tesseract::geometry::Ge
   }
 
   return true;
+}
+
+std::vector<Eigen::Vector3d> sdfSurfaceShellPoints(const tesseract::geometry::SignedDistanceField& sdf, double band)
+{
+  const Eigen::AlignedBox3d& domain = sdf.getDomain();
+  const Eigen::Vector3i& dims = sdf.getDimensions();
+  const std::vector<double>& distances = sdf.getDistances();  // discretizes a lazy field
+
+  const int nx = dims.x(), ny = dims.y(), nz = dims.z();
+  // Grid sample spacing (guard single-sample axes).
+  const Eigen::Vector3d spacing(domain.sizes().x() / std::max(nx - 1, 1),
+                                domain.sizes().y() / std::max(ny - 1, 1),
+                                domain.sizes().z() / std::max(nz - 1, 1));
+
+  std::vector<Eigen::Vector3d> points;
+  for (int k = 0; k < nz; ++k)
+  {
+    for (int j = 0; j < ny; ++j)
+    {
+      for (int i = 0; i < nx; ++i)
+      {
+        const double d = distances[static_cast<std::size_t>(i + nx * (j + ny * k))];
+        // Surface shell only: skip the deep interior (d < -band) and exterior (d > band).
+        if (std::abs(d) > band)
+          continue;
+        points.emplace_back(domain.min().x() + i * spacing.x(),
+                            domain.min().y() + j * spacing.y(),
+                            domain.min().z() + k * spacing.z());
+      }
+    }
+  }
+  return points;
 }
 
 /** \brief Construct the message that corresponds to the shape. Return false on failure. */
@@ -356,6 +354,18 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract::geometry::G
       geometry_msgs.octomap_sub_type.type = static_cast<uint8_t>(octree.getSubType());
       break;
     }
+    case tesseract::geometry::GeometryType::SIGNED_DISTANCE_FIELD:
+    {
+      const auto& sdf = static_cast<const tesseract::geometry::SignedDistanceField&>(geometry);
+
+      geometry_msgs.type = tesseract_msgs::Geometry::SIGNED_DISTANCE_FIELD;
+      geometry_msgs.signed_distance_field.vdb = tesseract::geometry::writeSignedDistanceFieldVDB(sdf);
+      const Eigen::Vector3d& scale = sdf.getScale();
+      geometry_msgs.signed_distance_field.scale[0] = scale.x();
+      geometry_msgs.signed_distance_field.scale[1] = scale.y();
+      geometry_msgs.signed_distance_field.scale[2] = scale.z();
+      break;
+    }
     case tesseract::geometry::GeometryType::MESH:
     {
       geometry_msgs.type = tesseract_msgs::Geometry::MESH;
@@ -365,12 +375,6 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract::geometry::G
     case tesseract::geometry::GeometryType::CONVEX_MESH:
     {
       geometry_msgs.type = tesseract_msgs::Geometry::CONVEX_MESH;
-      toMsg(geometry_msgs.mesh, geometry);
-      break;
-    }
-    case tesseract::geometry::GeometryType::SDF_MESH:
-    {
-      geometry_msgs.type = tesseract_msgs::Geometry::SDF_MESH;
       toMsg(geometry_msgs.mesh, geometry);
       break;
     }
@@ -390,8 +394,6 @@ bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract::geometry::G
         geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::MESH;
       else if (compound_mesh_type == tesseract::geometry::GeometryType::CONVEX_MESH)
         geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::CONVEX_MESH;
-      else if (compound_mesh_type == tesseract::geometry::GeometryType::SDF_MESH)
-        geometry_msgs.compound_mesh_type = tesseract_msgs::Geometry::SDF_MESH;
       else
         throw std::runtime_error("Invalid compound mesh type!");
 
@@ -452,27 +454,6 @@ inline std::shared_ptr<tesseract::geometry::PolygonMesh> fromMsg(uint8_t type, c
     return std::make_shared<tesseract::geometry::ConvexMesh>(vertices, faces);
   }
 
-  if (type == tesseract_msgs::Geometry::SDF_MESH)
-  {
-    auto vertices = std::make_shared<tesseract::common::VectorVector3d>(mesh_msg.vertices.size());
-    auto faces = std::make_shared<Eigen::VectorXi>(mesh_msg.faces.size());
-
-    for (unsigned int i = 0; i < mesh_msg.vertices.size(); ++i)
-      (*vertices)[i] = Eigen::Vector3d(mesh_msg.vertices[i].x, mesh_msg.vertices[i].y, mesh_msg.vertices[i].z);
-
-    for (unsigned int i = 0; i < mesh_msg.faces.size(); ++i)
-      (*faces)[static_cast<int>(i)] = static_cast<int>(mesh_msg.faces[i]);
-
-    if (!mesh_msg.file_path.empty())
-      return std::make_shared<tesseract::geometry::SDFMesh>(
-          vertices,
-          faces,
-          std::make_shared<tesseract::common::SimpleLocatedResource>(mesh_msg.file_path, mesh_msg.file_path),
-          Eigen::Vector3f(mesh_msg.scale[0], mesh_msg.scale[1], mesh_msg.scale[2]).cast<double>());
-
-    return std::make_shared<tesseract::geometry::SDFMesh>(vertices, faces);
-  }
-
   return nullptr;
 }
 
@@ -511,8 +492,7 @@ bool fromMsg(std::shared_ptr<tesseract::geometry::Geometry>& geometry, const tes
                                                             geometry_msg.plane_coeff[3]);
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::MESH ||
-           geometry_msg.type == tesseract_msgs::Geometry::CONVEX_MESH ||
-           geometry_msg.type == tesseract_msgs::Geometry::SDF_MESH)
+           geometry_msg.type == tesseract_msgs::Geometry::CONVEX_MESH)
   {
     geometry = fromMsg(geometry_msg.type, geometry_msg.mesh);
   }
@@ -521,6 +501,23 @@ bool fromMsg(std::shared_ptr<tesseract::geometry::Geometry>& geometry, const tes
     std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(geometry_msg.octomap)));
     auto sub_type = static_cast<tesseract::geometry::OctreeSubType>(geometry_msg.octomap_sub_type.type);
     geometry = std::make_shared<tesseract::geometry::Octree>(om, sub_type);
+  }
+  else if (geometry_msg.type == tesseract_msgs::Geometry::SIGNED_DISTANCE_FIELD)
+  {
+    const auto& sdf_msg = geometry_msg.signed_distance_field;
+    const auto& scale = sdf_msg.scale;
+    const Eigen::Vector3d sdf_scale(scale[0], scale[1], scale[2]);
+    const bool has_vdb = !sdf_msg.vdb.empty();
+    const bool has_nvdb = !sdf_msg.nvdb.empty();
+    if (has_vdb && has_nvdb)
+      throw std::runtime_error("fromMsg: SignedDistanceField message has both a vdb and an nvdb payload; "
+                               "exactly one is expected");
+    if (has_vdb)
+      geometry = tesseract::geometry::readSignedDistanceFieldVDB(sdf_msg.vdb, sdf_scale);
+    else if (has_nvdb)
+      geometry = tesseract::geometry::readSignedDistanceFieldNVDB(sdf_msg.nvdb, sdf_scale);
+    else
+      throw std::runtime_error("fromMsg: SignedDistanceField message has neither a vdb nor an nvdb payload");
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::COMPOUND_MESH)
   {
