@@ -52,7 +52,11 @@ struct ROSContactResultsRenderManager::Implementation
       if (ns.first == tesseract::gui::EntityContainer::RESOURCE_NS)
       {
         for (const auto& entity : ns.second)
+        {
           scene_manager->destroyEntity(entity.unique_name);
+          // Also release the generated Ogre mesh resource (leaks per rebuild otherwise).
+          tesseract_rviz::removeGeneratedMeshResource(entity.unique_name);
+        }
       }
     }
 

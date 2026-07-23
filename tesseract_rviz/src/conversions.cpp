@@ -30,6 +30,7 @@
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
 #include <OgreMesh.h>
+#include <OgreMeshManager.h>
 #include <OgreRibbonTrail.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -55,6 +56,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/point_cloud.h>
 
+#include <cstdlib>
 #include <filesystem>
 #include <tesseract/common/resource_locator.h>
 #include <tesseract/geometry/geometries.h>
@@ -113,6 +115,20 @@ std::string getEnvNamespaceFromTopic(const std::string& topic)
     return tokens.at(0);
 
   return std::string();
+}
+
+void removeGeneratedMeshResource(const std::string& resource_entity_name)
+{
+  // createEntityForMeshData registers its mesh in the Ogre::MeshManager under
+  // "<entity name>::mesh". destroyEntity() does NOT release that resource, so a
+  // clear/rebuild cycle leaked every generated mesh (CPU + GPU buffers; multi-GB
+  // per planning run). Callers destroying a RESOURCE_NS entity must call this
+  // alongside destroyEntity(). No-op for entities without a generated mesh
+  // (e.g. point clouds).
+  const std::string mesh_name = resource_entity_name + "::mesh";
+  auto& mesh_mgr = Ogre::MeshManager::getSingleton();
+  if (mesh_mgr.resourceExists(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME))
+    mesh_mgr.remove(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 }
 
 Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
@@ -190,7 +206,11 @@ Ogre::Entity* createEntityForMeshData(Ogre::SceneManager& scene,
   auto entity = entity_container.addUntrackedEntity(tesseract::gui::EntityContainer::RESOURCE_NS);
   std::string mesh_name = entity.unique_name + "::mesh";
   Ogre::MeshPtr ogre_mesh = object->convertToMesh(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-  ogre_mesh->buildEdgeList();
+  // NOTE: no buildEdgeList() -- edge lists exist solely for stencil shadows, which
+  // rviz never enables, and building them is O(edges log edges) PER MESH on the GUI
+  // thread. On large CAD collision meshes it dominated every scene rebuild (the
+  // profiled 99%-CPU stall during planning; one full rebuild is queued per
+  // add/remove-link environment event).
 
   Ogre::Entity* ogre_entity = scene.createEntity(entity.unique_name, mesh_name);
 
@@ -776,7 +796,9 @@ Ogre::SceneNode* loadLinkGeometry(Ogre::SceneManager& scene,
       const double surface_band = spacing.maxCoeff();
 
       std::vector<rviz::PointCloud::Point> points;
-      for (const Eigen::Vector3d& p : tesseract_rosutils::sdfSurfaceShellPoints(sdf, surface_band))
+      std::vector<Eigen::Vector3d> shell = tesseract_rosutils::sdfSurfaceShellPoints(sdf, surface_band);
+      points.reserve(shell.size());
+      for (const Eigen::Vector3d& p : shell)
       {
         rviz::PointCloud::Point point;
         point.position.x = static_cast<float>(p.x());

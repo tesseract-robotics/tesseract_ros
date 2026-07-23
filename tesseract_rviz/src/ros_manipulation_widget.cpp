@@ -137,7 +137,11 @@ void ROSManipulationWidget::clearContainer(const tesseract::gui::EntityContainer
     if (ns.first == container.RESOURCE_NS)
     {
       for (const auto& entity : ns.second)
+      {
         data_->context->getSceneManager()->destroyEntity(entity.unique_name);
+        // Also release the generated Ogre mesh resource (leaks per rebuild otherwise).
+        tesseract_rviz::removeGeneratedMeshResource(entity.unique_name);
+      }
     }
   }
 
