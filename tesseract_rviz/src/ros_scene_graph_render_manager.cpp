@@ -54,7 +54,11 @@ struct ROSSceneGraphRenderManager::Implementation
       if (ns.first == container.RESOURCE_NS)
       {
         for (const auto& entity : ns.second)
+        {
           scene_manager->destroyEntity(entity.unique_name);
+          // Also release the generated Ogre mesh resource (leaks per rebuild otherwise).
+          tesseract_rviz::removeGeneratedMeshResource(entity.unique_name);
+        }
       }
     }
 
